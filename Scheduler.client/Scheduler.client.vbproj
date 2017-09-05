@@ -11,7 +11,8 @@
     <AssemblyName>Scheduler.client</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <MyType>WindowsForms</MyType>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -58,6 +59,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
@@ -67,6 +69,7 @@
   </ItemGroup>
   <ItemGroup>
     <Import Include="Microsoft.VisualBasic" />
+    <Import Include="Scheduler.core" />
     <Import Include="System" />
     <Import Include="System.Collections" />
     <Import Include="System.Collections.Generic" />
@@ -79,13 +82,8 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Form1.vb">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Form1.Designer.vb">
-      <DependentUpon>Form1.vb</DependentUpon>
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Controllers\AutoReplentish.vb" />
+    <Compile Include="Controllers\MainController.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -101,17 +99,24 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="Screens\clsSnapShot.vb" />
-    <Compile Include="Screens\Form2.Designer.vb">
-      <DependentUpon>Form2.vb</DependentUpon>
+    <Compile Include="Root.vb" />
+    <Compile Include="SchedulerClient.vb" />
+    <Compile Include="Screens\MainView.Designer.vb">
+      <DependentUpon>MainView.vb</DependentUpon>
     </Compile>
-    <Compile Include="Screens\Form2.vb">
+    <Compile Include="Screens\MainView.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Screens\frmSchedule.Designer.vb">
       <DependentUpon>frmSchedule.vb</DependentUpon>
     </Compile>
     <Compile Include="Screens\frmSchedule.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Screens\MessageDialog.Designer.vb">
+      <DependentUpon>MessageDialog.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Screens\MessageDialog.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Screens\SplashScreen1.Designer.vb">
@@ -128,8 +133,9 @@
       <CustomToolNamespace>My.Resources</CustomToolNamespace>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Screens\Form2.resx">
-      <DependentUpon>Form2.vb</DependentUpon>
+    <EmbeddedResource Include="Screens\MainView.resx">
+      <DependentUpon>MainView.vb</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Screens\frmSchedule.resx">
       <DependentUpon>frmSchedule.vb</DependentUpon>
@@ -159,7 +165,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ScheduleMaker\Scheduler.core.vbproj">
+    <ProjectReference Include="..\Scheduler.core\Scheduler.core.vbproj">
       <Project>{b318e1e8-8e83-4cb5-8e17-a741b7e3a7b7}</Project>
       <Name>Scheduler.core</Name>
     </ProjectReference>

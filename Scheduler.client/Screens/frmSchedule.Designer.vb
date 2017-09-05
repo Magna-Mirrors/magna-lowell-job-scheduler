@@ -47,7 +47,7 @@ Partial Class frmSchedule
         Me.Button4 = New System.Windows.Forms.Button()
         Me.cmdSend = New System.Windows.Forms.Button()
         Me.cmdClear = New System.Windows.Forms.Button()
-        Me.Button1 = New System.Windows.Forms.Button()
+        Me.Button2 = New System.Windows.Forms.Button()
         CType(Me.dgvEdit, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.mnuEdit.SuspendLayout()
         CType(Me.dgv, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -197,7 +197,7 @@ Partial Class frmSchedule
         'cmdDown
         '
         Me.cmdDown.Anchor = System.Windows.Forms.AnchorStyles.Top
-        Me.cmdDown.BackgroundImage = Global.Scheduler.client.My.Resources.arrow_down
+        Me.cmdDown.BackgroundImage = Global.Scheduler.client.My.Resources.Resources.arrow_down
         Me.cmdDown.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch
         Me.cmdDown.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.cmdDown.Location = New System.Drawing.Point(572, 223)
@@ -306,19 +306,19 @@ Partial Class frmSchedule
         Me.cmdClear.TextAlign = System.Drawing.ContentAlignment.BottomCenter
         Me.cmdClear.UseVisualStyleBackColor = True
         '
-        'Button1
+        'Button2
         '
-        Me.Button1.Anchor = System.Windows.Forms.AnchorStyles.Top
-        Me.Button1.BackgroundImage = Global.Scheduler.client.My.Resources.Resources.approve
-        Me.Button1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch
-        Me.Button1.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Button1.Location = New System.Drawing.Point(572, 296)
-        Me.Button1.Name = "Button1"
-        Me.Button1.Size = New System.Drawing.Size(79, 67)
-        Me.Button1.TabIndex = 4
-        Me.Button1.Text = "Approve Edits"
-        Me.Button1.TextAlign = System.Drawing.ContentAlignment.BottomCenter
-        Me.Button1.UseVisualStyleBackColor = True
+        Me.Button2.Anchor = System.Windows.Forms.AnchorStyles.Top
+        Me.Button2.BackgroundImage = Global.Scheduler.client.My.Resources.Resources.approve
+        Me.Button2.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch
+        Me.Button2.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Button2.Location = New System.Drawing.Point(572, 296)
+        Me.Button2.Name = "Button2"
+        Me.Button2.Size = New System.Drawing.Size(79, 67)
+        Me.Button2.TabIndex = 4
+        Me.Button2.Text = "Approve Edits"
+        Me.Button2.TextAlign = System.Drawing.ContentAlignment.BottomCenter
+        Me.Button2.UseVisualStyleBackColor = True
         '
         'frmSchedule
         '
@@ -335,7 +335,7 @@ Partial Class frmSchedule
         Me.Controls.Add(Me.cmdEdit)
         Me.Controls.Add(Me.cmdSend)
         Me.Controls.Add(Me.TreeView1)
-        Me.Controls.Add(Me.Button1)
+        Me.Controls.Add(Me.Button2)
         Me.Controls.Add(Me.lblLineName)
         Me.Controls.Add(Me.cmdMove)
         Me.Controls.Add(Me.lblNew)
@@ -355,7 +355,7 @@ Partial Class frmSchedule
     Friend WithEvents ilCustomers As System.Windows.Forms.ImageList
     Friend WithEvents lblLineName As System.Windows.Forms.Label
     Friend WithEvents dgvEdit As System.Windows.Forms.DataGridView
-    Friend WithEvents Button1 As System.Windows.Forms.Button
+    Friend WithEvents Button2 As System.Windows.Forms.Button
     Friend WithEvents dgv As System.Windows.Forms.DataGridView
     Friend WithEvents lblNew As System.Windows.Forms.Label
     Friend WithEvents Label1 As System.Windows.Forms.Label

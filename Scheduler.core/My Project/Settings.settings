@@ -1,0 +1,27 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="My" GeneratedClassName="MySettings" UseMySettingsClassName="true">
+  <Profiles />
+  <Settings>
+    <Setting Name="RawDatabase" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">\\dntbaan01\prod\prod\raw.mdb</Value>
+    </Setting>
+    <Setting Name="CustomerSQL" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Select *from Customers order by CustomerName</Value>
+    </Setting>
+    <Setting Name="LineSQL" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Select * from Lines where Schedule_Enabled =True order by Name</Value>
+    </Setting>
+    <Setting Name="ScheduleFile" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Schedule.txt</Value>
+    </Setting>
+    <Setting Name="PlanningFile" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Plan.txt</Value>
+    </Setting>
+    <Setting Name="Combine" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="TC_Enabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
