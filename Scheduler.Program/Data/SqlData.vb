@@ -2,44 +2,50 @@
 
 Public Class SqlData
     Protected ReadOnly _Cfg As SvcParams
+    Private ReadOnly LgSvr As iLoggingService
+    Private Const PlanQuery As String = "SELECT top 100 percent Schedule_Job_History.TargetLineId, Schedule_Job_History.Position AS priority, Part_Info.PN, Schedule_Job_History.ID, SUM(Schedule_Part_Order_History.Qty) 
+                      AS Ordered, SUM(Schedule_Part_Production_History.Qty) AS Built, MAX(Schedule_Job_History.Quantity) AS Qty, Schedule_Job_History.ID AS PartId, 
+                      Schedule_Job_History.Flags, Part_Info.Desc1, Part_Info.Name, Schedule_Job_History.Status
+                      FROM Schedule_Job_History INNER JOIN
+                      Part_Info ON Schedule_Job_History.PartId = Part_Info.PartId LEFT OUTER JOIN
+                      Schedule_Part_Production_History ON Schedule_Job_History.ID = Schedule_Part_Production_History.JobId LEFT OUTER JOIN
+                      Schedule_Part_Order_History ON Schedule_Job_History.ID = Schedule_Part_Order_History.JobId
+                      WHERE (Schedule_Job_History.Status < 4) AND (Schedule_Job_History.TargetLineId = {0})
+                      GROUP BY Schedule_Job_History.Position, Schedule_Job_History.ID, Schedule_Job_History.TargetLineId, Part_Info.PN, Schedule_Job_History.Status, Part_Info.Desc1, 
+                      Part_Info.Name, Schedule_Job_History.Flags
+                      ORDER BY Schedule_Job_History.TargetLineId, priority"
 
-    Private Const PlanQuery As String = "SELECT TOP (100) PERCENT dbo.Schedule_Job_History.TargetLineId,dbo.Schedule_Job_History.Id, MAX(dbo.Schedule_Job_History.Priority) AS Priority, dbo.Part_Info.PN, 
-                      SUM(dbo.Schedule_Part_Order_History.Qty) AS Ordered, SUM(dbo.Schedule_Part_Production_History.Qty) AS Built, MAX(dbo.Schedule_Job_History.Quantity) AS Q, 
-                      dbo.Schedule_Job_History.ID AS PartId,dbo.Schedule_Job_History.Flags, dbo.Part_Info.Desc1, dbo.Part_Info.Name
-                      FROM dbo.Schedule_Job_History INNER JOIN
-                      dbo.Schedule_Part_Order_History ON dbo.Schedule_Job_History.ID = dbo.Schedule_Part_Order_History.JobId INNER JOIN
-                      dbo.Schedule_Part_Production_History ON dbo.Schedule_Job_History.ID = dbo.Schedule_Part_Production_History.JobId INNER JOIN
-                      dbo.Part_Info ON dbo.Schedule_Job_History.PartId = dbo.Part_Info.PartId
-                      WHERE (dbo.Schedule_Job_History.Status < 5) AND (dbo.Schedule_Job_History.TargetLineId = {0})
-                      GROUP BY dbo.Schedule_Job_History.Priority, dbo.Schedule_Job_History.ID, dbo.Schedule_Job_History.TargetLineId, dbo.Part_Info.PN, dbo.Schedule_Job_History.Status, 
-                      dbo.Part_Info.Desc1, dbo.Part_Info.Name"
+    Private Const LineQuery As String = "SELECT eqp_Lines.Id as LineId, eqp_Lines.CustomerId, eqp_Lines.LineName, eqp_Lines.LineDefinition, eqp_Lines.MaxConcurrentLogins, eqp_Lines.WcfFileName, 
+                      eqp_Lines.SelectCmd, eqp_Lines.ScheduleFolder, eqp_Lines.SchedulerMethod, eqp_Lines.WorkBufferMinutes, Part_Customers.Name as CustomerName, 
+                      Part_Program_Line_Map.ProgramId, Part_Program_Line_Map.LH, Part_Program_Line_Map.RH
+                      FROM eqp_Lines INNER JOIN
+                      Part_Customers ON eqp_Lines.CustomerId = Part_Customers.Id LEFT OUTER JOIN
+                      Part_Program_Line_Map ON eqp_Lines.Id = Part_Program_Line_Map.LineId
+                      WHERE (eqp_Lines.SchedulerMethod > 0)
+                      ORDER BY CustomerId"
 
-    Private Const LineQuery As String = "SELECT dbo.eqp_Lines.Id, dbo.eqp_Lines.LineName, dbo.eqp_Lines.LineDefinition, dbo.eqp_Lines.MaxConcurrentLogins, dbo.eqp_Lines.WcfFileName, dbo.eqp_Lines.SelectCmd, 
-                                         dbo.eqp_Lines.ScheduleFolder, dbo.eqp_Lines.SchedularMethod, dbo.Part_Programs.Customer, dbo.Part_Programs.Name AS Program
-                                         FROM dbo.eqp_Lines INNER JOIN
-                                         dbo.Schedule_Line_Program_Compatability_Map ON dbo.eqp_Lines.Id = dbo.Schedule_Line_Program_Compatability_Map.LineId INNER JOIN
-                                         dbo.Part_Programs ON dbo.Schedule_Line_Program_Compatability_Map.ProgramId = dbo.Part_Programs.ProgId"
 
-    Private Const GetpartsQuery = "SELECT dbo.Part_Info.PN, dbo.Part_Info.Desc1 AS [Desc], dbo.Schedule_Line_Program_Compatability_Map.LineId, dbo.Part_Info.PartId
+    Private Const GetpartsQuery = "SELECT dbo.Part_Info.PN, dbo.Part_Info.Desc1 AS [Desc], dbo.Part_Program_Line_Map.LineId, dbo.Part_Info.PartId
                       FROM dbo.Part_Info INNER JOIN
                       dbo.Part_Programs ON dbo.Part_Info.ProgId = dbo.Part_Programs.ProgId INNER JOIN
-                      dbo.Schedule_Line_Program_Compatability_Map ON dbo.Part_Programs.ProgId = dbo.Schedule_Line_Program_Compatability_Map.ProgramId AND 
-                      dbo.Schedule_Line_Program_Compatability_Map.LineId = {0} "
+                      dbo.Part_Program_Line_Map ON dbo.Part_Programs.ProgId = dbo.Part_Program_Line_Map.ProgramId AND 
+                      dbo.Part_Program_Line_Map.LineId = {0} "
 
 
-    Public Sub New()
 
-    End Sub
 
-    Public Sub New(Prms As SvcParams)
-        _Cfg = Prms
+
+    Public Sub New(LgSvr As iLoggingService, Atools As AppTools)
+        _Cfg = Atools.GetProgramParams
+        Me.LgSvr = LgSvr
     End Sub
 
     Public Function ValidateParts(PartReq As ValidatePartsRequest) As ValidatePartsResponse
         Dim Rslt As New ValidatePartsResponse
+        Dim PartList As New List(Of Part)
+
         Dim Pry = PartReq.Parts.Select(Function(x) x.PN).ToArray
         PartReq.Parts.Select(Function(x) x.Valid = False)
-
         For Each p In Pry
             p = String.Format("'{0}'", p)
         Next
@@ -52,6 +58,7 @@ Public Class SqlData
                     Dim Pr = (From x In PartReq.Parts Where x.PN = dRead("PN")).FirstOrDefault
                     If Pr IsNot Nothing Then
                         Pr.Valid = True
+                        Pr.Desc = dRead("Desc")
                     End If
                 End While
             End Using
@@ -78,6 +85,8 @@ Public Class SqlData
         Return Rslt
     End Function
 
+
+
     Public Function GetLinesData() As GetLinesResponse
         Dim Rslt As New GetLinesResponse
 
@@ -90,14 +99,15 @@ Public Class SqlData
                     Dim Itm As New Line
                     With Itm
                         .Description = dRead("LineDefinition")
-                        .Id = dRead("Id")
+                        .Id = dRead("LineId")
                         .Name = dRead("LineName")
-                        .SchedulerMethod = dRead("SchedularMethod")
+                        .SchedulerMethod = If(DBNull.Value.Equals(dRead("SchedulerMethod")), "", dRead("SchedulerMethod")) 'dRead("SchedulerMethod")
                         .SelectCmd = dRead("SelectCmd")
                         .WcfFileName = dRead("WcfFileName")
-                        .ScheduleFolder = dRead("ScheduleFolder")
-                        .Customer = dRead("Customer")
-                        .Program = dRead("Program")
+                        .ScheduleFolder = If(DBNull.Value.Equals(dRead("ScheduleFolder")), "", dRead("ScheduleFolder"))
+                        .CustomerName = If(DBNull.Value.Equals(dRead("CustomerName")), "", dRead("CustomerName"))
+                        .CustomerId = If(DBNull.Value.Equals(dRead("CustomerId")), 0, dRead("CustomerId"))
+                        .ProgramId = If(DBNull.Value.Equals(dRead("ProgramId")), 0, dRead("ProgramId"))
                     End With
                     Rslt.Lines.Add(Itm)
                 End While
@@ -116,14 +126,15 @@ Public Class SqlData
                     Dim Itm As New Line
                     With Itm
                         .Description = dRead("LineDefinition")
-                        .Id = dRead("Id")
+                        .Id = dRead("LineId")
                         .Name = dRead("LineName")
-                        .SchedulerMethod = dRead("SchedularMethod")
+                        .SchedulerMethod = dRead("SchedulerMethod")
                         .SelectCmd = dRead("SelectCmd")
                         .WcfFileName = dRead("WcfFileName")
                         .ScheduleFolder = dRead("ScheduleFolder")
-                        .Customer = dRead("Customer")
-                        .Program = dRead("Program")
+                        .CustomerName = dRead("CustomerName")
+                        .CustomerId = dRead("CustomerId")
+                        .ProgramId = dRead("Program")
                     End With
                     Return Itm
                 End While
@@ -132,38 +143,73 @@ Public Class SqlData
         Return Nothing
     End Function
 
+    Public Function updateJobPosition(JobId_Id As Integer, Position As Integer) As TransactionResult
+        Dim Rslt As New TransactionResult
+        Try
+            Using Cn As New SqlClient.SqlConnection(GetConnectionString)
+                Cn.Open()
+                Dim UpStr As String = "Update Schedule_Job_History Set Position = {0} where Id = {1}"
+                Dim Cmd As New SqlClient.SqlCommand(String.Format(UpStr, Position, JobId_Id), Cn)
+                Cn.Close()
+                Rslt.Result = Cmd.ExecuteNonQuery
+            End Using
+        Catch ex As Exception
+            LgSvr.SendAlert(New LogEventArgs("Update Job Position", ex))
+            Rslt.Result = -1
+            Rslt.ResultString = ex.Message
+        End Try
+        Return Rslt
+    End Function
+
+    Public Function updateJobStatus(JobId_Id As Integer, Status As PlanStatus) As TransactionResult
+        Dim Rslt As New TransactionResult
+        Try
+            Using Cn As New SqlClient.SqlConnection(GetConnectionString)
+                Cn.Open()
+                Dim UpStr As String = "Update Schedule_Job_History Set Status = {0} where Id = {1}"
+                Dim Cmd As New SqlClient.SqlCommand(String.Format(UpStr, Status, JobId_Id), Cn)
+                Cn.Close()
+                Rslt.Result = Cmd.ExecuteNonQuery
+            End Using
+        Catch ex As Exception
+            LgSvr.SendAlert(New LogEventArgs("Update Job Status", ex))
+            Rslt.Result = -1
+            Rslt.ResultString = ex.Message
+        End Try
+        Return Rslt
+    End Function
 
 
-    Public Function GetPlanData(LineData As Line) As GetPlanResponse
+
+
+
+    Public Function GetPlanData(Line_Id As Integer) As GetPlanResponse
         Dim Pr As New GetPlanResponse
         Dim Items As New List(Of PlanItem)
         Using Cn As New SqlClient.SqlConnection(GetConnectionString)
             Cn.Open()
-            Dim Cmd As New SqlClient.SqlCommand(String.Format(PlanQuery, LineData.Id), Cn)
+            Dim Cmd As New SqlClient.SqlCommand(String.Format(PlanQuery, Line_Id), Cn)
             Using dRead As IDataReader = Cmd.ExecuteReader()
                 While dRead.Read
                     Dim Itm As New PlanItem
                     With Itm
-                        .Id = dRead("ID")
-                        .Built = dRead("Built")
-                        .Desc = dRead("Desc")
-                        .DueDate = dRead("Desc")
-                        .Ordered = dRead("Ordered")
-                        .OrderId = dRead("OrderId")
-                        .PartNumber = dRead("PartNumber")
-                        .QTY = dRead("Qty")
-                        .Status = dRead("Status")
-                        .Flags = dRead("Flags")
-                        .Position = dRead("Position")
-                    End With
-                    Items.Add(Itm)
+                            .Id = dRead("ID")
+                            .Built = If(DBNull.Value.Equals(dRead("Built")), 0, dRead("Built"))
+                            .Desc = dRead("Desc")
+                            .DueDate = If(DBNull.Value.Equals(dRead("Desc")), "", dRead("Desc"))
+                            .Ordered = If(DBNull.Value.Equals(dRead("Ordered")), 0, dRead("Ordered"))
+                            .OrderId = dRead("OrderId")
+                            .PartNumber = dRead("PartNumber")
+                            .QTY = dRead("Qty")
+                            .Status = dRead("Status")
+                            .Flags = dRead("Flags")
+                            .Position = dRead("Position")
+                        End With
+                        Items.Add(Itm)
                 End While
             End Using
         End Using
-
-        Pr.ScheduleData = From x In Items Where x.Status = PlanStatus.Scheduled OrElse x.Status = PlanStatus.Suspended
-        Pr.PlanData = From x In Items Where x.Status = PlanStatus.Planed
-
+        Pr.PlanData.AddRange(From x In Items Where x.Status = PlanStatus.Scheduled OrElse x.Status = PlanStatus.Suspended OrElse x.Status = PlanStatus.Planed)
         Return Pr
     End Function
 
@@ -247,7 +293,7 @@ Public Class SqlData
         With CnS
             .DataSource = _Cfg.SqlSeverName
             .UserID = _Cfg.SqlUserName
-            .Password = _Cfg.UserPw
+            .Password = _Cfg.SqlPw
             .InitialCatalog = _Cfg.SqlDbName
         End With
 

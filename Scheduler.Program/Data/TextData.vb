@@ -19,17 +19,23 @@ Public Class TextData
 
     Public Function getPlanData(LineData As Line) As GetPlanResponse
         Dim Resp As New GetPlanResponse
-        If GetPlanTxtFileData(Resp, LineData) Then
-            GetScheduleTxtFileData(Resp, LineData)
-        End If
-        If Resp.Result = 0 Then
-            Resp.Result = 1
-        End If
+        Try
+            Dim IdSeed As Integer = 0
+            If GetScheduleTxtFileData(Resp, LineData, IdSeed) Then
+                GetPlanTxtFileData(Resp, LineData, IdSeed)
+            End If
+            If Resp.Result = 0 Then
+                Resp.Result = 1
+            End If
+        Catch ex As Exception
+
+        End Try
+
         Return Resp
     End Function
 
 
-    Private Function GetPlanTxtFileData(ByRef Resp As GetPlanResponse, LineData As Line) As Boolean
+    Private Function GetPlanTxtFileData(ByRef Resp As GetPlanResponse, LineData As Line, IdSeed As Integer) As Boolean
         Dim FName As String = "plan.txt"
 
         Dim filename As String = Path.Combine(LineData.ScheduleFolder, FName)
@@ -45,6 +51,8 @@ Public Class TextData
                             Dim Data2Add As String() = PlanLine.Split(",")
                             If Data2Add.GetUpperBound(0) = 5 OrElse Data2Add.GetUpperBound(0) = 6 Then
                                 Dim Pi As New PlanItem
+                                IdSeed += 1
+                                Pi.OrderId = IdSeed
                                 Pi.Position = _AppTools.GetOrderPosition(Data2Add(0), Pi.MMDDYY, Pi.HHMM)
                                 Pi.PartNumber = Data2Add(1)
                                 Pi.QTY = Data2Add(2)
@@ -52,7 +60,8 @@ Public Class TextData
                                 Pi.Built = Data2Add(4)
                                 Pi.Desc = Data2Add(5)
                                 Pi.Status = PlanStatus.Planed
-                                Pi.Flags = Data2Add.Length > 6 AndAlso Data2Add(6).ToLowerInvariant = "t" 'truck indicator
+                                Pi.Flags = 0
+                                Pi.Truck = Data2Add.Length > 6 AndAlso Data2Add(6).ToLowerInvariant = "t"
                                 Pi.Chk = True
                                 Pi.LastLoadTime = Now
                                 Resp.PlanData.Add(Pi)
@@ -74,7 +83,7 @@ Public Class TextData
     End Function
 
 
-    Private Function GetScheduleTxtFileData(ByRef Resp As GetPlanResponse, LineData As Line) As Boolean
+    Private Function GetScheduleTxtFileData(ByRef Resp As GetPlanResponse, LineData As Line, IdSeed As Integer) As Boolean
         Dim FName As String = "Schedule.txt"
 
         Dim filename As String = Path.Combine(LineData.ScheduleFolder, FName)
@@ -90,6 +99,8 @@ Public Class TextData
                             Dim Data2Add As String() = ScheduleLine.Split(",")
                             If Data2Add.GetUpperBound(0) = 6 OrElse Data2Add.GetUpperBound(0) = 7 Then
                                 Dim Pi As New PlanItem
+                                IdSeed += 1
+                                Pi.OrderId = IdSeed
                                 Pi.Position = _AppTools.GetOrderPosition(Data2Add(0), Pi.MMDDYY, Pi.HHMM)
                                 Pi.PartNumber = Data2Add(1)
                                 Pi.QTY = Data2Add(2)
@@ -116,8 +127,10 @@ Public Class TextData
 
                                 Pi.Chk = True
                                 Pi.LastLoadTime = Now
+                                If Pi.Status = PlanStatus.Scheduled Then
+                                    Resp.PlanData.Add(Pi)
+                                End If
 
-                                Resp.ScheduleData.Add(Pi)
                             End If
                         Loop
                     End If
@@ -150,16 +163,18 @@ Public Class TextData
             Using PathWriter As StreamWriter = File.CreateText(filename)
                 For Each R In Req.PlanData
                     With R
-                        If .Built = 0 AndAlso .Ordered = 0 Then
-                            Dim data2Write As String = String.Format("{0},{1},{2},{3},{4},{5},{6}",
-                                                .BuildID,
-                                                .PartNumber,
-                                                .QTY,
-                                                .Built,
-                                                .Ordered,
-                                                .Desc,
-                                                  If(.Flags.HasFlag(OrderFlags.Truck), "T", ""))
-                            PathWriter.WriteLine(data2Write)
+                        If R.Status = PlanStatus.Planed Or R.Status = PlanStatus.Unknown Then
+                            If .Built = 0 AndAlso .Ordered = 0 Then
+                                Dim data2Write As String = String.Format("{0},{1},{2},{3},{4},{5},{6}",
+                                                    .BuildID,
+                                                    .PartNumber,
+                                                    .QTY,
+                                                    .Built,
+                                                    .Ordered,
+                                                    .Desc,
+                                                      If(.Flags.HasFlag(OrderFlags.Truck), "T", ""))
+                                PathWriter.WriteLine(data2Write)
+                            End If
                         End If
                     End With
                 Next

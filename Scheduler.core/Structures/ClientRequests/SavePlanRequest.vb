@@ -3,8 +3,6 @@ Public Class SavePlanRequest
     <DataMember()>
     Public Property PlanData As List(Of PlanItem)
     <DataMember()>
-    Public Property ScheduleData As List(Of PlanItem)
-    <DataMember()>
     Public Property LineData As Line
     <DataMember()>
     Public Property UserId As Integer

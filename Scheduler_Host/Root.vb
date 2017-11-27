@@ -1,21 +1,23 @@
 ﻿Imports System.Threading
 Imports Scheduler.Program
+Imports Autofac
+Imports Scheduler.core
 
 Module Root
     Dim jTask As Threading.Thread
     Dim Are As New AutoResetEvent(False)
     Dim Ccont As Control
+    Dim Container As IContainer
+    Dim d
 
 
     Sub Main()
 
         Dim S As String = ""
         System.Console.WriteLine("Starting Scheduler Service")
-        Try
-            OnStart()
-        Catch ex As Exception
 
-        End Try
+        OnStart()
+
 
         System.Console.WriteLine("Type EXIT to Stop Scheduler Service")
         While UCase(S) <> "EXIT"
@@ -29,8 +31,22 @@ Module Root
 
     Private Sub OnStart()
         Try
-            Ccont = New Control
-            Ccont.StartController()
+
+            Dim Builder As New Autofac.ContainerBuilder
+            Builder.RegisterType(Of Control)
+            Builder.RegisterType(Of LoggingService).As(Of iLoggingService)().SingleInstance()
+            Builder.RegisterType(Of AppTools).SingleInstance()
+            Builder.RegisterType(Of SqlData).SingleInstance()
+            Builder.RegisterType(Of DataManager).SingleInstance()
+            Builder.RegisterType(Of SchedulerService)().As(Of iSchedulerService)()
+            Builder.RegisterType(Of SvcParams)().SingleInstance()
+            Builder.RegisterType(Of MdbData).SingleInstance()
+
+            Container = Builder.Build()
+
+
+            Ccont = Container.Resolve(Of Control)
+            Ccont.StartController(Container)
         Catch ex As Exception
 
         End Try
@@ -45,4 +61,6 @@ Module Root
         End Try
 
     End Sub
+
+
 End Module

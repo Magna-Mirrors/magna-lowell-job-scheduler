@@ -13,7 +13,9 @@ Public Class Part
     Public Property Valid As Boolean
 
     Public Sub New()
-
+        Id = Nothing
+        Desc = ""
+        Valid = False
     End Sub
 
 End Class

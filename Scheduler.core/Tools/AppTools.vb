@@ -9,6 +9,9 @@ Public Class AppTools
         End If
     End Sub
 
+    Public Function GetUnitxTimeStamp() As Long
+        Return CLng((DateTime.Now - New DateTime(1970, 1, 1, 0, 0, 0, 0)).TotalSeconds * 10000) * 100
+    End Function
 
     Public Function GetOrderPosition(BuildId As String, ByRef mmddyy As String, ByRef hhmm As String) As Integer
         Dim Pos As Integer = 0
@@ -25,7 +28,7 @@ Public Class AppTools
     End Function
 
     Public Function GetProgramParams() As SvcParams
-        Dim Cpath As String = Path.GetDirectoryName(SvcParams.ParamPath)
+        Dim Cpath As String = Path.GetDirectoryName(SvcParams.ParamPathAndFile)
         DetectPath(Cpath)
         If Not File.Exists(SvcParams.ParamPathAndFile) Then
             ConfigurationManager(Of SvcParams).Save(SvcParams.getDefaults)

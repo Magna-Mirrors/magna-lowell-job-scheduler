@@ -1,7 +1,7 @@
 ﻿Imports System.Runtime.Serialization
 <DataContract(Name:="SchedulerMethods")>
 Public Enum SchedulerMethods
-    <EnumMember> None = 0
+    <EnumMember> [None] = 0
     <EnumMember> MdbAndPlanFiles = 1
     <EnumMember> MsSql = 2
 End Enum
@@ -39,7 +39,7 @@ End Enum
 
 <DataContract(Name:="NotifyOptions")>
 Public Enum NotifyOptions
-    <EnumMember> None = 0
+    <EnumMember> [None] = 0
     <EnumMember> Display = 1
     <EnumMember> Log = 2
     <EnumMember> Email = 4
@@ -47,7 +47,7 @@ End Enum
 
 <DataContract(Name:="uAccessLevels")>
 Public Enum uAccessLevels
-    <EnumMember> None = 0
+    <EnumMember> [None] = 0
     <EnumMember> [Operator] = 1
     <EnumMember> Supervisor = 2
     <EnumMember> Tech = 3
@@ -59,4 +59,6 @@ End Enum
 Public Enum OrderFlags
     <EnumMember> Truck = 1
     <EnumMember> C = 2
+    <EnumMember> Flag2 = 4
+    <EnumMember> Flag3 = 8
 End Enum

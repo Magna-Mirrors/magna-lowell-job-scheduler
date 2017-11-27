@@ -68,7 +68,15 @@ Public Class SchedulerClient
     End Function
 
     Public Function GetPlan(Sourcedata As GetPlanRequest) As GetPlanResponse Implements iSchedulerService.GetPlan
-        Return MyBase.Channel.GetPlan(Sourcedata)
+        Try
+            Return MyBase.Channel.GetPlan(Sourcedata)
+        Catch ex As Exception
+            Dim R = New GetPlanResponse
+            R.Result = -1
+            R.ResultString = ex.Message
+            Return R
+        End Try
+
     End Function
 
     Public Function SavePlan(SourceData As SavePlanRequest) As TransactionResult Implements iSchedulerService.SavePlan
@@ -77,5 +85,21 @@ Public Class SchedulerClient
 
     Public Function ValidatePlanItems(SourceData As ValidatePartsRequest) As ValidatePartsResponse Implements iSchedulerService.ValidatePlanItems
         Return MyBase.Channel.ValidatePlanItems(SourceData)
+    End Function
+
+    Public Function GetNextOrder(SourceData As GetNextOrderRequest) As GetNextOrderResult Implements iSchedulerService.GetNextOrder
+        Return MyBase.Channel.GetNextOrder(SourceData)
+    End Function
+
+    Public Function SkipThisorder(SourceData As SkipOrderRequest) As SkipOrderResult Implements iSchedulerService.SkipThisorder
+        Return MyBase.Channel.SkipThisorder(SourceData)
+    End Function
+
+    Public Function RemoveThisorder(SourceData As RemoveOrderRequest) As RemoveOrderResult Implements iSchedulerService.RemoveThisorder
+        Return MyBase.Channel.RemoveThisorder(SourceData)
+    End Function
+
+    Public Function GetLineSchedule(SourceData As GetScheduleRequest) As GetScheduleResult Implements iSchedulerService.GetLineSchedule
+        Return MyBase.Channel.GetLineSchedule(SourceData)
     End Function
 End Class

@@ -7,15 +7,15 @@ Imports Scheduler.Program
 Public NotInheritable Class LoggingService
     Implements iLoggingService
 
-    Private Shared ReadOnly m_Instance As New Lazy(Of LoggingService)(Function() New LoggingService(), LazyThreadSafetyMode.ExecutionAndPublication)
+    ' Private Shared ReadOnly m_Instance As New Lazy(Of LoggingService)(Function() New LoggingService(), LazyThreadSafetyMode.ExecutionAndPublication)
     Private ReadOnly Logger As Logger = LogManager.GetCurrentClassLogger()
     Public Property ActivityId As Integer
 
-    Public Shared ReadOnly Property Instance() As LoggingService
-        Get
-            Return m_Instance.Value
-        End Get
-    End Property
+    'Public Shared ReadOnly Property Instance() As LoggingService
+    '    Get
+    ' Return m_Instance.Value
+    ' End Get
+    ' End Property
 
 
     Public Sub New()

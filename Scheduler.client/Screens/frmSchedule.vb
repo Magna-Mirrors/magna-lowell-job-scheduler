@@ -2,6 +2,13 @@
 
 
 Public Class frmSchedule
+    Private Sub cmdUp_Click(sender As Object, e As EventArgs) Handles cmdUp.Click
+
+    End Sub
+
+    Private Sub dgv_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles dgv.CellContentClick
+
+    End Sub
     'Dim LastPlanLoadTime As Date
     'Dim Customers As New System.Data.DataSet
     ''   Dim CustomerSS As New clsSnapShot(My.Settings.RawDatabase, My.Settings.CustomerSQL)

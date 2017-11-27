@@ -1,13 +1,11 @@
 ﻿<DataContract()>
-Public Class GetPlanResponse
-    <DataMember()>
-    Public Property PlanData As List(Of PlanItem)
+Public Class RemoveOrderResult
     <DataMember()>
     Public Property Result As Integer
     <DataMember()>
     Public Property ResultString As String
     Public Sub New()
-        PlanData = New List(Of PlanItem)
+        Result = 0
         ResultString = ""
     End Sub
 End Class

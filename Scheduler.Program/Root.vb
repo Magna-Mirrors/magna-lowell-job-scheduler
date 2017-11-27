@@ -8,7 +8,7 @@ Module Root
 
     Public Sub OnStart()
 
-        Controller.StartController()
+        '   Controller.StartController()
     End Sub
 
     Public Sub OnStop()

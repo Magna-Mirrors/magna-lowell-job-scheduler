@@ -95,6 +95,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Interfaces\iSchedulerService.vb" />
+    <Compile Include="Structures\ClientRequests\GetNextOrderRequest.vb" />
+    <Compile Include="Structures\ClientRequests\GetScheduleRequest.vb" />
+    <Compile Include="Structures\ClientRequests\RemoveOrderRequest.vb" />
+    <Compile Include="Structures\ClientRequests\SkipOrderRequest.vb" />
+    <Compile Include="Structures\ClientResponces\GetNextOrderResult.vb" />
+    <Compile Include="Structures\ClientResponces\GetScheduleResult.vb" />
+    <Compile Include="Structures\ClientResponces\RemoveOrderReault.vb" />
+    <Compile Include="Structures\ClientResponces\SkipOrderResult.vb" />
     <Compile Include="Structures\Parameters\ActivityItem.vb" />
     <Compile Include="Structures\ClientRequests\GetPartsForLineRequest.vb" />
     <Compile Include="Structures\ClientResponces\GetLineResponse.vb" />

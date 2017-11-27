@@ -2,18 +2,16 @@
 Imports Scheduler.core
 
 Public Class MdbData
-
+    Protected ReadOnly ATools As AppTools
     Protected ReadOnly Prms As SvcParams
     Private Const ConString As String = "Provider=Microsoft.Jet.OLEDB.4.0; Ole DB Services=-4; Data Source= {0}"
 
-    Public Sub New()
 
+
+    Public Sub New(Apt As AppTools)
+        ATools = Apt
+        Me.Prms = Apt.GetProgramParams
     End Sub
-
-    Public Sub New(Prm As SvcParams)
-        Me.Prms = Prm
-    End Sub
-
 
     Public Function ValidateParts(PartReq As ValidatePartsRequest) As ValidatePartsResponse
         Dim Res As New ValidatePartsResponse
@@ -21,23 +19,24 @@ Public Class MdbData
             Dim FilePath = Path.Combine(Me.Prms.WcfRootPath, PartReq.LineData.WcfFileName)
             Using Cn As New OleDb.OleDbConnection(String.Format(ConString, FilePath))
                 Cn.Open()
-                Dim Pry = PartReq.Parts.Select(Function(x) x.PN).ToArray
-                PartReq.Parts.Select(Function(x) x.Valid = False)
+                Dim Pry() As String = (From y In PartReq.Parts Where y.Valid = False).Select(Function(x) x.PN).ToArray
+                ' PartReq.Parts.Select(Function(x) x.Valid = False)
+                Dim Cmd As New OleDb.OleDbCommand(String.Format("{0} where Magna_pn in('{1}')", PartReq.LineData.SelectCmd, Join(Pry, "','")), Cn)
+                Dim RetParts As New List(Of Part)
 
-                For Each p In Pry
-                    p = String.Format("'{0}'", p)
-                Next
-
-                Dim Cmd As New OleDb.OleDbCommand(String.Format("{0} where pn in({1})", PartReq.LineData.SelectCmd, Join(Pry, ",")))
                 Using dRead As IDataReader = Cmd.ExecuteReader()
                     While dRead.Read
-                        Dim Pr = (From x In PartReq.Parts Where x.PN = dRead("PN")).FirstOrDefault
-                        If Pr IsNot Nothing Then
-                            Pr.Valid = True
-                        End If
+                        RetParts.Add(New Part() With {.PN = dRead("PN"), .Desc = dRead("Desc")})
                     End While
                 End Using
+                For Each Pr In PartReq.Parts
+                    If Not Pr.Valid Then
+                        Pr.Valid = RetParts.Any(Function(x) x.PN = Pr.PN)
+                    End If
+                Next
+
             End Using
+            Res.ResultString = ""
         Catch ex As Exception
             Res.Result = -1
             Res.ResultString = "MdbValidateParts Err " & ex.Message

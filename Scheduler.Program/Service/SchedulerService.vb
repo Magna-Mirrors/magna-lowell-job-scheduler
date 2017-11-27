@@ -2,35 +2,51 @@
 
 Public Class SchedulerService
     Implements iSchedulerService
+    Private ReadOnly DataMgr As DataManager
 
-
-    Public Sub New()
-
+    Public Sub New(Dm As DataManager)
+        DataMgr = Dm
     End Sub
 
 
     Private Function SchedulerService_GetLine(Lineid As Integer) As GetLineResponse Implements iSchedulerService.GetLine
-        Return DataManager.Instance.GetLine(Lineid)
+        Return DataMgr.GetLine(Lineid)
     End Function
 
     Private Function SchedulerService_GetLines() As GetLinesResponse Implements iSchedulerService.GetLines
-        Return DataManager.Instance.GetLines()
+        Return DataMgr.GetLines()
     End Function
 
     Public Function GetPlan(Sourcedata As GetPlanRequest) As GetPlanResponse Implements iSchedulerService.GetPlan
-        Return DataManager.Instance.GetPlan(Sourcedata)
+        Return DataMgr.GetPlan(Sourcedata)
     End Function
 
     Public Function SavePlan(SourceData As SavePlanRequest) As TransactionResult Implements iSchedulerService.SavePlan
-        Return DataManager.Instance.SavePlan(SourceData)
+        Return DataMgr.SavePlan(SourceData)
     End Function
 
     Public Function ValidatePlanItems(SourceData As ValidatePartsRequest) As ValidatePartsResponse Implements iSchedulerService.ValidatePlanItems
-        Return DataManager.Instance.ValidatePlanItems(SourceData)
+        Return DataMgr.ValidatePlanItems(SourceData)
     End Function
 
 
     Public Function GetpartsForLine(SourceData As GetPartsForLineRequest) As getPartsforLineResponse Implements iSchedulerService.GetpartsForLine
-        Return DataManager.Instance.GetpartsForLine(SourceData)
+        Return DataMgr.GetpartsForLine(SourceData)
+    End Function
+
+    Public Function GetNextOrder(SourceData As GetNextOrderRequest) As GetNextOrderResult Implements iSchedulerService.GetNextOrder
+        Return DataMgr.GetNextOrder(SourceData)
+    End Function
+
+    Public Function SkipThisorder(SourceData As SkipOrderRequest) As SkipOrderResult Implements iSchedulerService.SkipThisorder
+        Return DataMgr.SkipThisorder(SourceData)
+    End Function
+
+    Public Function RemoveThisorder(SourceData As RemoveOrderRequest) As RemoveOrderResult Implements iSchedulerService.RemoveThisorder
+        Return DataMgr.RemoveThisorder(SourceData)
+    End Function
+
+    Public Function GetLineSchedule(SourceData As GetScheduleRequest) As GetScheduleResult Implements iSchedulerService.GetLineSchedule
+        Return DataMgr.GetLineSchedule(SourceData)
     End Function
 End Class

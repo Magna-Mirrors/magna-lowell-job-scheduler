@@ -9,7 +9,7 @@ Public Class Service1
 
         jTask = New Thread(Sub()
                                Are.Reset()
-                               processController = New Control()
+                               '    processController = New Control()
                                Are.WaitOne()
                            End Sub)
 

@@ -24,11 +24,11 @@ Partial Class frmSchedule
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmSchedule))
-        Dim DataGridViewCellStyle5 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle6 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle1 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle2 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Me.TreeView1 = New System.Windows.Forms.TreeView()
+        Dim DataGridViewCellStyle3 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle4 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Me.Linetree = New System.Windows.Forms.TreeView()
         Me.ilCustomers = New System.Windows.Forms.ImageList(Me.components)
         Me.lblLineName = New System.Windows.Forms.Label()
         Me.dgvEdit = New System.Windows.Forms.DataGridView()
@@ -53,16 +53,16 @@ Partial Class frmSchedule
         CType(Me.dgv, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
-        'TreeView1
+        'Linetree
         '
-        Me.TreeView1.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+        Me.Linetree.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
             Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.TreeView1.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.TreeView1.ItemHeight = 20
-        Me.TreeView1.Location = New System.Drawing.Point(-1, 2)
-        Me.TreeView1.Name = "TreeView1"
-        Me.TreeView1.Size = New System.Drawing.Size(161, 700)
-        Me.TreeView1.TabIndex = 0
+        Me.Linetree.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Linetree.ItemHeight = 20
+        Me.Linetree.Location = New System.Drawing.Point(-1, 2)
+        Me.Linetree.Name = "Linetree"
+        Me.Linetree.Size = New System.Drawing.Size(218, 700)
+        Me.Linetree.TabIndex = 0
         '
         'ilCustomers
         '
@@ -74,7 +74,7 @@ Partial Class frmSchedule
         '
         Me.lblLineName.AutoSize = True
         Me.lblLineName.Font = New System.Drawing.Font("Microsoft Sans Serif", 21.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblLineName.Location = New System.Drawing.Point(200, 9)
+        Me.lblLineName.Location = New System.Drawing.Point(232, 9)
         Me.lblLineName.Name = "lblLineName"
         Me.lblLineName.Size = New System.Drawing.Size(268, 33)
         Me.lblLineName.TabIndex = 2
@@ -84,28 +84,28 @@ Partial Class frmSchedule
         '
         Me.dgvEdit.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
             Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        DataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Control
-        DataGridViewCellStyle5.Font = New System.Drawing.Font("Arial Narrow", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        DataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.WindowText
-        DataGridViewCellStyle5.SelectionBackColor = System.Drawing.SystemColors.Highlight
-        DataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText
-        DataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
-        Me.dgvEdit.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle5
+        DataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control
+        DataGridViewCellStyle1.Font = New System.Drawing.Font("Arial Narrow", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        DataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText
+        DataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight
+        DataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText
+        DataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.dgvEdit.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle1
         Me.dgvEdit.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
         Me.dgvEdit.ContextMenuStrip = Me.mnuEdit
-        DataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
-        DataGridViewCellStyle6.BackColor = System.Drawing.SystemColors.Window
-        DataGridViewCellStyle6.Font = New System.Drawing.Font("Arial Narrow", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        DataGridViewCellStyle6.ForeColor = System.Drawing.SystemColors.ControlText
-        DataGridViewCellStyle6.SelectionBackColor = System.Drawing.SystemColors.Highlight
-        DataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.HighlightText
-        DataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
-        Me.dgvEdit.DefaultCellStyle = DataGridViewCellStyle6
-        Me.dgvEdit.Location = New System.Drawing.Point(172, 83)
+        DataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window
+        DataGridViewCellStyle2.Font = New System.Drawing.Font("Arial Narrow", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        DataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText
+        DataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight
+        DataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText
+        DataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
+        Me.dgvEdit.DefaultCellStyle = DataGridViewCellStyle2
+        Me.dgvEdit.Location = New System.Drawing.Point(223, 85)
         Me.dgvEdit.Name = "dgvEdit"
         Me.dgvEdit.RowHeadersWidth = 20
-        Me.dgvEdit.Size = New System.Drawing.Size(375, 629)
+        Me.dgvEdit.Size = New System.Drawing.Size(360, 629)
         Me.dgvEdit.TabIndex = 3
         '
         'mnuEdit
@@ -141,23 +141,23 @@ Partial Class frmSchedule
         Me.dgv.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
             Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        DataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control
-        DataGridViewCellStyle1.Font = New System.Drawing.Font("Arial Narrow", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        DataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText
-        DataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight
-        DataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText
-        DataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
-        Me.dgv.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle1
+        DataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control
+        DataGridViewCellStyle3.Font = New System.Drawing.Font("Arial Narrow", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        DataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.WindowText
+        DataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight
+        DataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText
+        DataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.dgv.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle3
         Me.dgv.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        DataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
-        DataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window
-        DataGridViewCellStyle2.Font = New System.Drawing.Font("Arial Narrow", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        DataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText
-        DataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight
-        DataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText
-        DataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
-        Me.dgv.DefaultCellStyle = DataGridViewCellStyle2
+        DataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Window
+        DataGridViewCellStyle4.Font = New System.Drawing.Font("Arial Narrow", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        DataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.ControlText
+        DataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight
+        DataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText
+        DataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
+        Me.dgv.DefaultCellStyle = DataGridViewCellStyle4
         Me.dgv.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically
         Me.dgv.Location = New System.Drawing.Point(674, 83)
         Me.dgv.MultiSelect = False
@@ -175,9 +175,9 @@ Partial Class frmSchedule
         '
         Me.lblNew.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.lblNew.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblNew.Location = New System.Drawing.Point(172, 54)
+        Me.lblNew.Location = New System.Drawing.Point(223, 56)
         Me.lblNew.Name = "lblNew"
-        Me.lblNew.Size = New System.Drawing.Size(375, 26)
+        Me.lblNew.Size = New System.Drawing.Size(341, 26)
         Me.lblNew.TabIndex = 6
         Me.lblNew.Text = "New Plan"
         Me.lblNew.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
@@ -200,7 +200,7 @@ Partial Class frmSchedule
         Me.cmdDown.BackgroundImage = Global.Scheduler.client.My.Resources.Resources.arrow_down
         Me.cmdDown.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch
         Me.cmdDown.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.cmdDown.Location = New System.Drawing.Point(572, 223)
+        Me.cmdDown.Location = New System.Drawing.Point(589, 225)
         Me.cmdDown.Name = "cmdDown"
         Me.cmdDown.Size = New System.Drawing.Size(79, 67)
         Me.cmdDown.TabIndex = 15
@@ -214,7 +214,7 @@ Partial Class frmSchedule
         Me.cmdUp.BackgroundImage = Global.Scheduler.client.My.Resources.Resources.arrow_up
         Me.cmdUp.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch
         Me.cmdUp.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.cmdUp.Location = New System.Drawing.Point(572, 150)
+        Me.cmdUp.Location = New System.Drawing.Point(589, 152)
         Me.cmdUp.Name = "cmdUp"
         Me.cmdUp.Size = New System.Drawing.Size(79, 67)
         Me.cmdUp.TabIndex = 14
@@ -228,7 +228,7 @@ Partial Class frmSchedule
         Me.cmdEdit.BackgroundImage = Global.Scheduler.client.My.Resources.Resources.fast_backward
         Me.cmdEdit.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch
         Me.cmdEdit.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.cmdEdit.Location = New System.Drawing.Point(572, 515)
+        Me.cmdEdit.Location = New System.Drawing.Point(589, 517)
         Me.cmdEdit.Name = "cmdEdit"
         Me.cmdEdit.Size = New System.Drawing.Size(79, 67)
         Me.cmdEdit.TabIndex = 13
@@ -242,7 +242,7 @@ Partial Class frmSchedule
         Me.cmdMove.BackgroundImage = Global.Scheduler.client.My.Resources.Resources.fast_forward
         Me.cmdMove.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch
         Me.cmdMove.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.cmdMove.Location = New System.Drawing.Point(570, 442)
+        Me.cmdMove.Location = New System.Drawing.Point(587, 444)
         Me.cmdMove.Name = "cmdMove"
         Me.cmdMove.Size = New System.Drawing.Size(79, 67)
         Me.cmdMove.TabIndex = 12
@@ -270,7 +270,7 @@ Partial Class frmSchedule
         Me.Button4.BackgroundImage = Global.Scheduler.client.My.Resources.Resources.delete
         Me.Button4.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch
         Me.Button4.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Button4.Location = New System.Drawing.Point(570, 369)
+        Me.Button4.Location = New System.Drawing.Point(587, 371)
         Me.Button4.Name = "Button4"
         Me.Button4.Size = New System.Drawing.Size(81, 67)
         Me.Button4.TabIndex = 11
@@ -312,7 +312,7 @@ Partial Class frmSchedule
         Me.Button2.BackgroundImage = Global.Scheduler.client.My.Resources.Resources.approve
         Me.Button2.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch
         Me.Button2.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Button2.Location = New System.Drawing.Point(572, 296)
+        Me.Button2.Location = New System.Drawing.Point(589, 298)
         Me.Button2.Name = "Button2"
         Me.Button2.Size = New System.Drawing.Size(79, 67)
         Me.Button2.TabIndex = 4
@@ -334,7 +334,7 @@ Partial Class frmSchedule
         Me.Controls.Add(Me.Label1)
         Me.Controls.Add(Me.cmdEdit)
         Me.Controls.Add(Me.cmdSend)
-        Me.Controls.Add(Me.TreeView1)
+        Me.Controls.Add(Me.Linetree)
         Me.Controls.Add(Me.Button2)
         Me.Controls.Add(Me.lblLineName)
         Me.Controls.Add(Me.cmdMove)
@@ -351,7 +351,7 @@ Partial Class frmSchedule
         Me.PerformLayout()
 
     End Sub
-    Friend WithEvents TreeView1 As System.Windows.Forms.TreeView
+    Friend WithEvents Linetree As System.Windows.Forms.TreeView
     Friend WithEvents ilCustomers As System.Windows.Forms.ImageList
     Friend WithEvents lblLineName As System.Windows.Forms.Label
     Friend WithEvents dgvEdit As System.Windows.Forms.DataGridView
