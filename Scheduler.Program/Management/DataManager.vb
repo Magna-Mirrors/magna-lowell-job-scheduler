@@ -145,20 +145,18 @@ Public Class DataManager
         'GetOrderId
         If SourceData.Lineid Then
             Dim Resp = _SqlAccess.GetActiveOrders(SourceData.Lineid)
-            Dim Sd = From x In Resp.PlanData Where x.Status = PlanStatus.Scheduled
+            Dim Sd = (From x In Resp.PlanData Where x.Status = PlanStatus.Scheduled).ToList()       'get all orders that are scheduled
             If Sd IsNot Nothing AndAlso Sd.Count > 0 Then
-                Sd(0).Position = Sd.Count
+                Sd(0).Position = Sd.Count                                                           'set position to found plan list count
                 _SqlAccess.updateOrderPosition(Sd(0).OrderId, Sd(0).Position)
                 If Sd.Count = 1 Then
                     Rslt.Item = Sd(0)
                     Rslt.Result = 1
                 Else
+                    Rslt.Item = Sd(1)
+                    Rslt.Result = 1
                     For i = 1 To Sd.Count - 1
                         _SqlAccess.updateOrderPosition(Sd(i).OrderId, Sd(i).Position)
-                        If i = 1 Then
-                            Rslt.Item = Sd(i)
-                            Rslt.Result = 1
-                        End If
                     Next
                 End If
             Else
