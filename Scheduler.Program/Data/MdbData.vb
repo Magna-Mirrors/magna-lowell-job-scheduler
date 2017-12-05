@@ -6,8 +6,6 @@ Public Class MdbData
     Protected ReadOnly Prms As SvcParams
     Private Const ConString As String = "Provider=Microsoft.Jet.OLEDB.4.0; Ole DB Services=-4; Data Source= {0}"
 
-
-
     Public Sub New(Apt As AppTools)
         ATools = Apt
         Me.Prms = Apt.GetProgramParams
@@ -19,9 +17,14 @@ Public Class MdbData
             Dim FilePath = Path.Combine(Me.Prms.WcfRootPath, PartReq.LineData.WcfFileName)
             Using Cn As New OleDb.OleDbConnection(String.Format(ConString, FilePath))
                 Cn.Open()
-                Dim Pry() As String = (From y In PartReq.Parts Where y.Valid = False).Select(Function(x) x.PN).ToArray
+
                 ' PartReq.Parts.Select(Function(x) x.Valid = False)
-                Dim Cmd As New OleDb.OleDbCommand(String.Format("{0} where Magna_pn in('{1}')", PartReq.LineData.SelectCmd, Join(Pry, "','")), Cn)
+                Dim Pry() As String = (From y In PartReq.Parts Where y.Valid = False).Select(Function(x) x.PN).ToArray
+                Dim SrchItms As String = String.Format("'{0}'", Join(Pry, "','"))
+                Dim Cmd As New OleDb.OleDbCommand(PartReq.LineData.SelectCmd.Replace("@partNumbers", SrchItms), Cn)
+
+                '  Cmd.Parameters.AddWithValue("@partNumbers", SrchItms)
+
                 Dim RetParts As New List(Of Part)
 
                 Using dRead As IDataReader = Cmd.ExecuteReader()
@@ -44,6 +47,9 @@ Public Class MdbData
         Res.parts = PartReq.Parts
         Return Res
     End Function
+
+
+
 
     Public Function GetParts(PartReq As GetPartsForLineRequest) As getPartsforLineResponse
         Dim Res As New getPartsforLineResponse

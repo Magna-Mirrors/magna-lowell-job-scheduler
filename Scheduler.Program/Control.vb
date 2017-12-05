@@ -1,17 +1,21 @@
 ﻿Imports System.ServiceModel
 Imports System.ServiceModel.Description
+Imports System.Threading
 Imports Autofac
 Imports Autofac.Integration.Wcf
 
 Public Class Control
     Private LogService As iLoggingService
+    Private ct As New CancellationTokenSource()
+    Private ReadOnly mErpHandler As BaanOrderHandling
+    Private ErpTask As Task
 
-    Public Sub New(LgSvc As iLoggingService)
+    Public Sub New(LgSvc As iLoggingService, ErpHandling As BaanOrderHandling)
         LogService = LgSvc
+        mErpHandler = ErpHandling
     End Sub
 
     Public Sub StartController(Con As IContainer)
-
         StartServiceHost(Con)
     End Sub
 
@@ -35,7 +39,6 @@ Public Class Control
         Catch ex As Exception
             LogService.SendAlert(New Scheduler.core.LogEventArgs("Service Host start", ex))
         End Try
-
     End Sub
 
 
@@ -44,10 +47,23 @@ Public Class Control
             If SvcHost IsNot Nothing Then
                 SvcHost.Close()
                 SvcHost = Nothing
+                StopOrderHandling()
             End If
         Catch ex As Exception
             LogService.SendAlert(New Scheduler.core.LogEventArgs("Err @ StopServiceHost ", ex))
         End Try
 
     End Sub
+
+
+    Public Sub StartOrderHandling()
+        ErpTask = mErpHandler.RunAsync(ct.Token)
+    End Sub
+
+    Public Async Sub StopOrderHandling()
+        ct.Cancel()
+        Await ErpTask
+    End Sub
+
+
 End Class

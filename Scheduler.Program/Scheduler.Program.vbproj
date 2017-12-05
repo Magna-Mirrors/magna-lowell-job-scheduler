@@ -83,6 +83,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Control.vb" />
+    <Compile Include="Data\ErpSql.vb" />
     <Compile Include="Data\MdbData.vb" />
     <Compile Include="Data\SqlData.vb" />
     <Compile Include="Data\TextData.vb" />
@@ -104,6 +105,7 @@
     </Compile>
     <Compile Include="Notification\iLoggingService.vb" />
     <Compile Include="Notification\LoggingService.vb" />
+    <Compile Include="Programs\BaanOrderHandling.vb" />
     <Compile Include="Root.vb" />
     <Compile Include="Service\SchedulerService.vb" />
   </ItemGroup>

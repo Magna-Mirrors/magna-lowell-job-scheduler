@@ -5,6 +5,9 @@ Imports System.Xml.Serialization
 Public Class SvcParams
     Public Shared ReadOnly ParamPath As String = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "MagnaSchedulerService", "Settings")
     Public Shared ReadOnly ParamPathAndFile As String = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "MagnaSchedulerService", "Settings", "Config.xml")
+
+    Private _ErpEncUserPw As String
+
     Private _encUserPw As String
     <DataMember()>
     Public Property SqlSeverName As String
@@ -54,6 +57,48 @@ Public Class SvcParams
         End Set
     End Property
 
+
+    Public Property ErpSqlServername As String
+    Public Property ErpSqlDbName As String
+    Public Property ErpSqlUserName As String
+
+    <XmlIgnore>
+    Public Property ErpSqlPassword As String 'encrypted
+        Get
+            Return clsCryptography.Decrypt(_ErpEncUserPw)
+        End Get
+        Set(value As String)
+            _ErpEncUserPw = clsCryptography.Encrypt(value)
+        End Set
+    End Property
+
+
+    Public Property ErpSqlPw As String 'encrypted
+        Get
+            Return _ErpEncUserPw
+        End Get
+        Set(value As String)
+            _ErpEncUserPw = value
+        End Set
+    End Property
+
+
+
+    Public Property NewErpSqlPw As String 'InjectedValue
+        Get
+            Return ""
+        End Get
+        Set(value As String)
+            If value.Length > 0 Then
+                _ErpEncUserPw = clsCryptography.Encrypt(value)
+            End If
+        End Set
+    End Property
+
+
+    Public Property UpdateOrdersIntervalMinutes As Integer
+
+
     Public Shared Function getDefaults() As SvcParams
         Dim p As New SvcParams
         With p
@@ -63,6 +108,12 @@ Public Class SvcParams
             .SqlPw = "1234"
             .WcfRootPath = "E:\_Projects\M\Magna\Lowell\DainaWare\SupportFiles\WCF\"
             .PlanTextRootPath = "E:\_Projects\M\Magna\Lowell\DainaWare\SupportFiles\Schedule\"
+
+            .ErpSqlServername = "HOLMSDBDEV02"  'Test server = "HOLMSDBDEV02" '"holmssqlinst01\instance01"
+            .ErpSqlDbName = "MALshopfloorTD"
+            .ErpSqlUserName = "MALsfEOL"
+            .NewErpSqlPw = "test123"
+            .UpdateOrdersIntervalMinutes = 5
         End With
         Return p
     End Function

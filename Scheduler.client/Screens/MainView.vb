@@ -126,7 +126,6 @@ Public Class MainView
 
     Private Sub btnRefresh_Click(sender As Object, e As EventArgs) Handles btnRefresh.Click
         RetreshLineData()
-
     End Sub
 
 
@@ -173,6 +172,7 @@ Public Class MainView
                 Dim Ts As Long = Utility.GetUnitxTimeStamp
                 For I = 0 To Litms.Count - 1
                     Litms(I).Position = Ts + I
+                    Litms(I).Chk = "*"
                 Next
             End If
 
@@ -192,14 +192,24 @@ Public Class MainView
 
     Private Function GetPlanAtRow(R As Integer) As PlanItem
         If dgvEdit.Rows(R).DataBoundItem IsNot Nothing AndAlso dgvEdit.Rows(R).DataBoundItem.GetType.Name = "PlanItem" Then
-            Return DirectCast(dgvEdit.SelectedRows(0).DataBoundItem, PlanItem)
+            Return DirectCast(dgvEdit.Rows(R).DataBoundItem, PlanItem)
         End If
         Return Nothing
     End Function
 
 
     Private Sub cmdSendPlan_Click(sender As Object, e As EventArgs) Handles cmdSendPlan.Click
-        SaveThePlan()
+        If ValidatePlan() Then
+            SaveThePlan()
+        Else
+            Dim Litms As List(Of PlanItem) = DirectCast(PlandataSource.DataSource, List(Of PlanItem))
+            For Each I In Litms
+                If I.Chk <> "OK" Then
+                    I.Chk = "PN?"
+                End If
+            Next
+        End If
+
     End Sub
 
 
@@ -208,10 +218,6 @@ Public Class MainView
         Dim ListToSave As List(Of PlanItem) = DirectCast(PlandataSource.DataSource, List(Of PlanItem))
 
         For i = 0 To ListToSave.Count - 1
-            If Not ListToSave(i).Chk Then
-                'suppli alarm not all items a validated
-                Exit Sub
-            End If
             ListToSave(i).Position = Ts + i
         Next
 
@@ -225,6 +231,10 @@ Public Class MainView
         Dim SaveResult = Root.ClientAccess.SavePlan(PR)
         If SaveResult.Result > 0 Then
             getThePlan()
+            Dim Litms As List(Of PlanItem) = DirectCast(PlandataSource.DataSource, List(Of PlanItem))
+            For Each I In Litms
+                I.Chk = "Done"
+            Next
         Else
 
         End If
@@ -236,7 +246,14 @@ Public Class MainView
             Dim Itm = DirectCast(dgvEdit.SelectedRows(0).DataBoundItem, PlanItem)
             If Itm.OrderId > 0 Then
                 Itm.Status = PlanStatus.Removed
+                If Itm.OrderId = 0 Then
+                    Dim Lst As List(Of PlanItem) = DirectCast(PlandataSource.DataSource, List(Of PlanItem))
+                    Lst.Remove(Itm)
+                    PlandataSource.ResetBindings(False)
+                End If
                 RefreshRowColors()
+                e.Row.Cells(4).Value = "X"
+                e.Row.Cells(4).Style.BackColor = System.Drawing.Color.Yellow
                 e.Cancel = True
             End If
         End If
@@ -249,13 +266,11 @@ Public Class MainView
 
 
     Private Sub RefreshRowColors()
-        cmdSendPlan.Enabled = False
+        '  cmdSendPlan.Enabled = False
         Dim ValidPns As Boolean = True
         Try
             For Each R As DataGridViewRow In dgvEdit.Rows
-
                 Dim Itm = GetPlanAtRow(R.Index)
-
                 If dgvEdit.Rows.Count = 0 Then
                     ValidPns = False
                     Exit For
@@ -267,27 +282,38 @@ Public Class MainView
 
                 Select Case Itm.Status
                     Case PlanStatus.Unknown
-                        R.DefaultCellStyle.BackColor = System.Drawing.Color.Yellow
+                        ' R.DefaultCellStyle.BackColor = System.Drawing.Color.Yellow
                         dgvEdit.Item(0, R.Index).ToolTipText = "New Order"
                     Case PlanStatus.Planed
                         R.DefaultCellStyle.BackColor = System.Drawing.Color.White
                         dgvEdit.Item(0, R.Index).ToolTipText = "Planned"
                     Case PlanStatus.Removed
-                        R.DefaultCellStyle.BackColor = System.Drawing.Color.Salmon
+                        '  R.DefaultCellStyle.BackColor = System.Drawing.Color.Salmon
                         dgvEdit.Item(0, R.Index).ToolTipText = "This Item Is set to be Deleted"
                     Case Else
-                        R.DefaultCellStyle.BackColor = System.Drawing.Color.White
+                        ' R.DefaultCellStyle.BackColor = System.Drawing.Color.White
                         dgvEdit.Item(0, R.Index).ToolTipText = Itm.Status.ToString
                 End Select
-                If Not Itm.Chk Then
-                    ValidPns = False
-                End If
+
+                Select Case Itm.Chk
+                    Case "OK" : R.Cells(4).Style.BackColor = System.Drawing.Color.Lime
+                    Case "Done" : R.Cells(4).Style.BackColor = System.Drawing.Color.Lime
+                    Case "PN?" : R.Cells(4).Style.BackColor = System.Drawing.Color.Salmon
+                    Case "*" : R.Cells(4).Style.BackColor = System.Drawing.Color.Yellow
+                    Case "X" : R.Cells(4).Style.BackColor = System.Drawing.Color.Yellow
+                    Case Else : R.Cells(4).Style.BackColor = System.Drawing.Color.Coral
+                End Select
+
+
+                'If Itm.Chk = "PN?" Then
+                '    ValidPns = False
+                'End If
             Next
 
         Catch ex As Exception
 
         End Try
-        cmdSendPlan.Enabled = ValidPns
+        ' cmdSendPlan.Enabled = True
     End Sub
 
 
@@ -328,12 +354,20 @@ Public Class MainView
         End If
     End Sub
 
-    Private Sub BtnApproveEdits_Click(sender As Object, e As EventArgs) Handles BtnApproveEdits.Click
+    'Private Sub BtnApproveEdits_Click(sender As Object, e As EventArgs) Handles BtnApproveEdits.Click
+    '    ValidatePlan()
+    'End Sub
+
+
+    Private Function ValidatePlan() As Boolean
         Dim Litms As List(Of PlanItem) = DirectCast(PlandataSource.DataSource, List(Of PlanItem))
         Dim Vpr As New ValidatePartsRequest(CurrentLine)
-
+        Dim Failed As Boolean = False
         For Each P In Litms
-            Vpr.Parts.Add(New Part() With {.PN = P.PartNumber, .Valid = P.Chk, .Desc = P.Desc})
+            If P.Status <> PlanStatus.Removed Then
+                Vpr.Parts.Add(New Part() With {.PN = P.PartNumber, .Valid = False, .Desc = P.Desc})
+            End If
+
         Next
 
         Vpr.LineData = CurrentLine
@@ -344,20 +378,44 @@ Public Class MainView
                 Dim Prts = From x In Litms Where x.PartNumber = p.PN
                 If Prts IsNot Nothing AndAlso Prts.Count > 0 Then
                     For Each i In Prts
-                        i.Chk = True
                         i.Desc = p.Desc
+                        If p.Id IsNot Nothing Then
+                            i.PartId = p.Id
+                        Else
+                            ' Stop
+                        End If
+                        i.Chk = "OK"
                     Next
                 End If
+            Else
+                Dim Prts = From x In Litms Where x.PartNumber = p.PN
+                For Each i In Prts
+                    i.Chk = "PN?"
+                Next
             End If
         Next
 
         For Each j In Litms
-            If Not j.Chk Then
-                Exit Sub
+            If Not j.Chk = "OK" Then
+                If j.Status <> PlanStatus.Removed Then
+                    j.Chk = "PN?"
+                    Failed = True
+                End If
+
             End If
         Next
-        cmdSendPlan.Enabled = True
-    End Sub
+        PlandataSource.ResetBindings(False)
+        '  RefreshRowColors()
+
+        If Failed Then
+            Return False
+        End If
+
+        '  cmdSendPlan.Enabled = True
+        Return True
+    End Function
+
+
 
     Private Sub lblLineName_Click(sender As Object, e As EventArgs) Handles lblLineName.Click
 
@@ -375,6 +433,8 @@ Public Class MainView
         End If
     End Sub
     Private Sub cmdRun_Click()
+        Dim pARTS As New List(Of PlanItem)
+
         'ByVal sender As System.Object,
         'ByVal e As System.EventArgs) Handles cmdRun.Click
         '  dgvEdit.DataSource = Nothing
@@ -408,9 +468,30 @@ Public Class MainView
                         Dim rowNew As DataRow
                         rowNew = Table.NewRow()
 
+                        Dim Pn As String = ""
+                        Dim Qty As String = 0
+                        Dim Desc As String = ""
+
+
                         For LoopCounter = 0 To SingleRowData.GetUpperBound(0)
                             rowNew(LoopCounter) = SingleRowData.GetValue(LoopCounter)
+                            Select Case LoopCounter
+                                Case 0 : Pn = SingleRowData.GetValue(LoopCounter)
+                                Case 1 : Qty = SingleRowData.GetValue(LoopCounter)
+                                Case 2 : Desc = SingleRowData.GetValue(LoopCounter)
+                            End Select
                         Next
+
+                        If IsNumeric(Qty) AndAlso Pn.Length > 4 Then
+                            Dim P As New PlanItem()
+                            P.PartNumber = Pn
+                            P.QTY = Qty
+                            P.Desc = Desc
+                            P.CreationDate = Now
+                            P.DueDate = Now
+                            P.Chk = "*"
+                            pARTS.Add(P)
+                        End If
 
                         LoopCounter = 0
 
@@ -430,6 +511,12 @@ Public Class MainView
         Catch exp As Exception
             MessageBox.Show(exp.Message)
         End Try
+
+        If pARTS.Count > 0 Then
+            Dim Litms As List(Of PlanItem) = DirectCast(PlandataSource.DataSource, List(Of PlanItem))
+            Litms.AddRange(pARTS)
+            PlandataSource.ResetBindings(False)
+        End If
 
     End Sub
     Private Sub cmdCopyRowToClipboard_Click()
@@ -461,6 +548,49 @@ Public Class MainView
 
     Private Sub btn_Click(sender As Object, e As EventArgs) Handles btn.Click
         PasetDataToGrid()
+    End Sub
+
+    Private Sub dgvEdit_Resize(sender As Object, e As EventArgs) Handles dgvEdit.Resize
+        dgvEdit.Columns(0).Width = dgvEdit.Width * 0.3
+        dgvEdit.Columns(1).Width = dgvEdit.Width * 0.1
+        dgvEdit.Columns(2).Width = dgvEdit.Width * 0.3
+        dgvEdit.Columns(3).Width = dgvEdit.Width * 0.1
+        dgvEdit.Columns(4).Width = dgvEdit.Width * 0.1
+
+    End Sub
+
+    Private Sub dgv_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles dgv.CellContentClick
+
+    End Sub
+
+    Private Sub dgv_Resize(sender As Object, e As EventArgs) Handles dgv.Resize
+        dgv.Columns(0).Width = dgv.Width * 0.25
+        dgv.Columns(1).Width = dgv.Width * 0.25
+        dgv.Columns(2).Width = dgv.Width * 0.1
+        dgv.Columns(3).Width = dgv.Width * 0.1
+        dgv.Columns(4).Width = dgv.Width * 0.1
+        dgv.Columns(5).Width = dgv.Width * 0.15
+        dgv.Columns(6).Width = dgv.Width * 0.1
+    End Sub
+
+    Private Sub dgvEdit_BackColorChanged(sender As Object, e As EventArgs) Handles dgvEdit.BackColorChanged
+
+    End Sub
+
+    Private Sub dgvEdit_CellValueChanged(sender As Object, e As DataGridViewCellEventArgs) Handles dgvEdit.CellValueChanged
+        If e.ColumnIndex > 3 Then Exit Sub
+        If LoadingPlan Then Exit Sub
+        Try
+            dgvEdit.Rows(e.RowIndex).Cells(4).Value = "*"
+            dgvEdit.Rows(e.RowIndex).Cells(4).Style.BackColor = System.Drawing.Color.Yellow
+        Catch ex As Exception
+
+        End Try
+
+    End Sub
+
+    Private Sub BtnApproveEdits_Click(sender As Object, e As EventArgs) Handles BtnApproveEdits.Click
+
     End Sub
 End Class
 

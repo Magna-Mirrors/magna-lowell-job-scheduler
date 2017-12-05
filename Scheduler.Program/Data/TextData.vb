@@ -41,6 +41,7 @@ Public Class TextData
         Dim filename As String = Path.Combine(LineData.ScheduleFolder, FName)
         If File.Exists(filename) Then
             Try
+                Dim FDate = IO.File.GetLastWriteTime(filename)
                 Using ScheduleReader As StreamReader = File.OpenText(filename)
                     If ScheduleReader.EndOfStream Then
                         mRsltString = String.Format("There is no {0} for this Line at this time", FName)
@@ -62,10 +63,9 @@ Public Class TextData
                                 Pi.Status = PlanStatus.Planed
                                 Pi.Flags = 0
                                 Pi.Truck = Data2Add.Length > 6 AndAlso Data2Add(6).ToLowerInvariant = "t"
-                                Pi.Chk = True
-                                Pi.LastLoadTime = Now
+                                Pi.Chk = "OK"
+                                Pi.LastLoadTime = FDate
                                 Resp.PlanData.Add(Pi)
-
                             End If
                         Loop
                     End If
@@ -125,7 +125,7 @@ Public Class TextData
                                 Pi.DueDate = If(Data2Add.Length > 6 AndAlso IsDate(Data2Add(6).ToString), CDate(Data2Add(6)), Now)
 
 
-                                Pi.Chk = True
+                                Pi.Chk = "OK"
                                 Pi.LastLoadTime = Now
                                 If Pi.Status = PlanStatus.Scheduled Then
                                     Resp.PlanData.Add(Pi)
@@ -149,6 +149,8 @@ Public Class TextData
 
     Public Function SavePlan(Req As SavePlanRequest) As TransactionResult
         'TODO: get PlanData-------------------------------------
+        'open the plan and get the date of the plan see if the plan is diferent form the date of the plan when it was opened
+
         Dim Rslt As New TransactionResult
         Dim filename As String = Path.Combine(Req.LineData.ScheduleFolder, "plan.txt")
         If File.Exists(filename) Then

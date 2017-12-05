@@ -3,15 +3,13 @@ Imports Scheduler.core
 Imports Scheduler.core.Classes
 Imports System.Drawing
 
-Public NotInheritable Class DataManager
-    ' Implements iSchedulerService
+Public Class DataManager
 
-    '   Private Shared ReadOnly m_Instance As New Lazy(Of DataManager)(Function() New DataManager(), LazyThreadSafetyMode.ExecutionAndPublication)
     Protected ReadOnly _LoggingService As iLoggingService
     Protected ReadOnly _SqlAccess As SqlData
     Protected ReadOnly _MdbAccess As MdbData
     Protected ReadOnly _Tools As AppTools
-
+    Protected ReadOnly _ErpAccess As ErpSql
     Private _Cfg As SvcParams
     'this is the goto spot got getting part information
 
@@ -23,7 +21,7 @@ Public NotInheritable Class DataManager
 
 
 
-    Public Sub New(LgSvc As iLoggingService, Atool As AppTools, SqlSvc As SqlData, MdbAccess As MdbData)
+    Public Sub New(LgSvc As iLoggingService, Atool As AppTools, SqlSvc As SqlData, MdbAccess As MdbData, ErpAccess As ErpSql)
         Dim Prm = Atool.GetProgramParams
         _Tools = Atool
         _Cfg = Prm
@@ -49,7 +47,7 @@ Public NotInheritable Class DataManager
     Public Function GetLines() As GetLinesResponse
         Dim Rslt As New GetLinesResponse
         Try
-            Rslt = _SqlAccess.GetLinesData()
+            Rslt = _SqlAccess.GetLinesData(False)
             Rslt.Result = 1
         Catch ex As Exception
             Rslt.Result = -1
@@ -59,14 +57,33 @@ Public NotInheritable Class DataManager
         Return Rslt
     End Function
 
+
+    Public Function GetSubscribingLines() As GetLinesResponse
+        Dim Rslt As New GetLinesResponse
+        Try
+            Rslt = _SqlAccess.GetLinesData(False)
+            Rslt.Result = 1
+        Catch ex As Exception
+            Rslt.Result = -1
+            Rslt.ResultString = "GetLines Error " & ex.Message
+        End Try
+
+        Return Rslt
+    End Function
+
+
     Public Function GetPlan(Sourcedata As GetPlanRequest) As GetPlanResponse
         Dim nPr As New GetPlanResponse
         Try
             If Sourcedata.LineData.SchedulerMethod = SchedulerMethods.MsSql Then
-                nPr = _SqlAccess.GetPlanData(Sourcedata.LineData.Id)
-            Else
+                nPr = _SqlAccess.GetActiveOrders(Sourcedata.LineData.Id)
+                nPr.Result = 1
+            ElseIf Sourcedata.LineData.SchedulerMethod = SchedulerMethods.MdbAndPlanFiles Then
                 Dim PlanTxt As New TextData(_Tools, _Cfg)
                 nPr = PlanTxt.getPlanData(Sourcedata.LineData)
+                nPr.Result = 1
+            Else
+
             End If
         Catch ex As Exception
 
@@ -110,7 +127,7 @@ Public NotInheritable Class DataManager
     Public Function GetNextOrder(SourceData As GetNextOrderRequest) As GetNextOrderResult
         Dim Rslt As New GetNextOrderResult
         If SourceData.LineId Then
-            Dim Resp = _SqlAccess.GetPlanData(SourceData.LineId)
+            Dim Resp = _SqlAccess.GetActiveOrders(SourceData.LineId)
             Dim Sd = From x In Resp.PlanData Where x.Status = PlanStatus.Scheduled
             If Sd IsNot Nothing AndAlso Sd.Count > 0 Then
                 Rslt.Item = Sd(0)
@@ -127,17 +144,17 @@ Public NotInheritable Class DataManager
         Dim Rslt As New SkipOrderResult
         'GetOrderId
         If SourceData.Lineid Then
-            Dim Resp = _SqlAccess.GetPlanData(SourceData.Lineid)
+            Dim Resp = _SqlAccess.GetActiveOrders(SourceData.Lineid)
             Dim Sd = From x In Resp.PlanData Where x.Status = PlanStatus.Scheduled
             If Sd IsNot Nothing AndAlso Sd.Count > 0 Then
                 Sd(0).Position = Sd.Count
-                _SqlAccess.updateJobPosition(Sd(0).OrderId, Sd(0).Position)
+                _SqlAccess.updateOrderPosition(Sd(0).OrderId, Sd(0).Position)
                 If Sd.Count = 1 Then
                     Rslt.Item = Sd(0)
                     Rslt.Result = 1
                 Else
                     For i = 1 To Sd.Count - 1
-                        _SqlAccess.updateJobPosition(Sd(i).OrderId, Sd(i).Position)
+                        _SqlAccess.updateOrderPosition(Sd(i).OrderId, Sd(i).Position)
                         If i = 1 Then
                             Rslt.Item = Sd(i)
                             Rslt.Result = 1
@@ -162,7 +179,7 @@ Public NotInheritable Class DataManager
     Public Function GetLineSchedule(SourceData As GetScheduleRequest) As GetScheduleResult
         Dim Rslt As New GetScheduleResult
         If SourceData.LineId > 0 Then
-            Dim Sd = From x In _SqlAccess.GetPlanData(SourceData.LineId).PlanData Where x.Status = PlanStatus.Scheduled
+            Dim Sd = From x In _SqlAccess.GetActiveOrders(SourceData.LineId).PlanData Where x.Status = PlanStatus.Scheduled
             Rslt.Items = Sd
             Rslt.Result = 1
         Else
@@ -171,4 +188,89 @@ Public NotInheritable Class DataManager
         End If
         Return Rslt
     End Function
+
+
+
+
+    'Order Management
+    Public Sub ProcessOrders()
+        Dim LinesRequest = _SqlAccess.GetLinesData(True) 'get line information for lines with scheduled controlled in Sql
+        If LinesRequest.Result > 0 Then
+            'get listoflineid
+            Dim rOrder = _SqlAccess.GetActiveOrders(0)
+            If rOrder.Result > 0 Then
+                For Each L In LinesRequest.Lines
+                    'what is the sum of orderes you have now in minutes
+                    Dim LineOrders = From x In rOrder.PlanData Where x.TargetLineId = L.Id
+                    If LineOrders IsNot Nothing AndAlso LineOrders.Count > 0 Then
+                        Dim Ordered = LineOrders.Select(Function(x) x.Built).Sum
+                        Dim Built = LineOrders.Select(Function(x) x.Built).Sum
+                        Dim PPPHAvg = LineOrders.Select(Function(x) x.PPHPP).Average
+                        Dim Resources = ((L.UserCount * PPPHAvg) / 60)
+                        L.QueuedMinutes = ((Ordered - Built) * Resources) 'minutes worth of parts that have been ordered
+                        If (L.QueuedMinutes / L.WorkBufferMinutes) < L.ReOrderPercentThreshold Then
+                            Dim DeltaMin = (L.WorkBufferMinutes - L.QueuedMinutes) 'get hou many minutes that will be needed to fill the requirement
+                            Dim PartsToOrder As Integer = DeltaMin / Resources 'translate this to the number of parts that will be needed
+                            If PartsToOrder > 0 Then
+                                Orderparts(PartsToOrder, LineOrders, L.WC)
+                            End If
+                        End If
+
+                    End If
+                Next
+            End If
+
+
+        End If
+    End Sub
+
+
+    Public Function Orderparts(QtyToOrder As Integer, ActiveOrders As List(Of PlanItem), Wc As String) As Integer
+        Dim Qh As Integer
+        Dim Exess = (From x In ActiveOrders Where x.Built < x.Ordered).ToArray
+        If Exess IsNot Nothing AndAlso Exess.Count > 0 Then
+            For Each E In Exess
+                If QtyToOrder <= 0 Then Exit For
+                Dim Remaining = E.Ordered - E.Built
+                If QtyToOrder >= Remaining Then
+                    'order remaining
+                    OrderThisPart(Remaining, E, Wc)
+                    If E.Status = PlanStatus.Planed Then
+                        _SqlAccess.UpdatePlanStatus(E.OrderId, PlanStatus.Scheduled)
+                    End If
+                    E.Ordered += Remaining
+                    QtyToOrder -= Remaining
+                    Qh += Remaining
+                Else
+                    ' Order this
+                    OrderThisPart(Remaining, E, Wc)
+                    If E.Status = PlanStatus.Planed Then
+                        _SqlAccess.UpdatePlanStatus(E.OrderId, PlanStatus.Scheduled)
+                    End If
+                    QtyToOrder -= Remaining
+                    E.Ordered += Remaining
+                    Qh += Remaining
+                End If
+            Next
+        End If
+
+        Return Qh
+    End Function
+
+    Public Function OrderThisPart(Qty As Integer, OrderItem As PlanItem, Wc As String) As Integer
+        Dim Porder As New PartOrder()
+        With Porder
+            .Id = OrderItem.OrderId
+            .partnumber = OrderItem.PartNumber
+            .Qty = Qty
+            .WC = Wc
+            .PartRequestType = PartOrderType.Order
+        End With
+
+        Dim Result = _ErpAccess.CommitpartOrder(Porder)
+
+        Return 1
+    End Function
+
+
 End Class

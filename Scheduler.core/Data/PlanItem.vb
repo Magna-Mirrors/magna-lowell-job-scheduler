@@ -3,8 +3,11 @@
 Public Class PlanItem
     <DataMember>
     Public Property BuildID As String
+
     <DataMember>
-    Public Property Id As Integer
+    Public Property OrderId As Integer
+    '    <DataMember>
+    '    Public Property Id As Integer
     <DataMember>
     Public Property PartNumber As String
     <DataMember>
@@ -25,8 +28,7 @@ Public Class PlanItem
     Public Property ScheduleDate As Date
     <DataMember>
     Public Property Status As PlanStatus
-    <DataMember>
-    Public Property OrderId As Integer
+
     <DataMember>
     Public Property Position As Long
     <DataMember>
@@ -34,7 +36,7 @@ Public Class PlanItem
     <DataMember>
     Public Property HHMM As String
     <DataMember>
-    Public Property Chk As Boolean
+    Public Property Chk As String
     <DataMember>
     Public Property LastLoadTime As DateTime
     <DataMember>
@@ -43,6 +45,10 @@ Public Class PlanItem
     Public Property PartId As Integer
     <DataMember>
     Public Property TargetLineId As Integer
+
+    <DataMember>
+    Public Property PPHPP As Single
+
 
     <DataMember>
     Public Property Truck As Boolean
@@ -64,7 +70,6 @@ Public Class PlanItem
 
 
     Public Sub New()
-        Id = 0
         OrderId = 0
         PartNumber = ""
         QTY = 0
@@ -78,6 +83,7 @@ Public Class PlanItem
         Position = 0
         Shipdate = Now
         CreationDate = Now
+        PPHPP = 15
         MMDDYY = Format(CreationDate, "MMddyy")
         LastLoadTime = Date.MinValue
         BuildID = String.Format("{0:MMddyy}-{1:hhmm}-{2:0ss}", CreationDate, CreationDate, CreationDate)

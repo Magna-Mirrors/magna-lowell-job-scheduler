@@ -41,6 +41,8 @@ Module Root
             Builder.RegisterType(Of SchedulerService)().As(Of iSchedulerService)()
             Builder.RegisterType(Of SvcParams)().SingleInstance()
             Builder.RegisterType(Of MdbData).SingleInstance()
+            Builder.RegisterType(Of BaanOrderHandling).SingleInstance()
+            Builder.RegisterType(Of ErpSql).SingleInstance()
 
             Container = Builder.Build()
 

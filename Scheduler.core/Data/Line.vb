@@ -21,6 +21,21 @@ Public Class Line
     <DataMember>
     Public Property ProgramId As Integer
 
+    <DataMember>
+    Public Property WorkBufferMinutes As Integer
+
+    <DataMember>
+    Public Property ReOrderPercentThreshold As Single
+
+    <DataMember>
+    Public Property UserCount As Single
+
+    <DataMember>
+    Public Property QueuedMinutes As Single
+
+    <DataMember>
+    Public Property WC As String
+
     Public Sub New()
         Id = 0
         Name = ""
@@ -32,6 +47,10 @@ Public Class Line
         SchedulerMethod = SchedulerMethods.None
         CustomerId = 0
         ProgramId = 0
+        WorkBufferMinutes = 90
+        ReOrderPercentThreshold = 0.8
+        UserCount = 1
+        WC = ""
     End Sub
 
 End Class
