@@ -28,7 +28,8 @@ Public Class TextData
                 Resp.Result = 1
             End If
         Catch ex As Exception
-
+            Resp.ResultString = ex.Message
+            Resp.Result = -1
         End Try
 
         Return Resp

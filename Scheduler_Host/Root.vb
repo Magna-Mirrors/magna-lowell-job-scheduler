@@ -15,12 +15,12 @@ Module Root
     Sub Main()
 
         Dim S As String = ""
-        System.Console.WriteLine("Starting Scheduler Service")
+        Console.WriteLine("Starting Scheduler Service")
 
         OnStart()
 
 
-        System.Console.WriteLine("Type EXIT to Stop Scheduler Service")
+        System.Console.WriteLine(vbNewLine + "Type EXIT to Stop Scheduler Service")
         While S?.ToUpper() <> "EXIT"
             S = System.Console.ReadLine
         End While
@@ -31,38 +31,26 @@ Module Root
 
 
     Private Sub OnStart()
-        Try
+        Dim Builder As New Autofac.ContainerBuilder
+        Builder.RegisterType(Of Control)
+        Builder.RegisterType(Of LoggingService).As(Of iLoggingService)().SingleInstance()
+        Builder.RegisterType(Of AppTools).SingleInstance()
+        Builder.RegisterType(Of SqlData).SingleInstance()
+        Builder.RegisterType(Of DataManager).SingleInstance()
+        Builder.RegisterType(Of SchedulerService)().As(Of iSchedulerService)()
+        Builder.RegisterType(Of SvcParams)().SingleInstance()
+        Builder.RegisterType(Of MdbData).SingleInstance()
+        Builder.RegisterType(Of BaanOrderHandling).SingleInstance()
+        Builder.RegisterType(Of ErpSql).SingleInstance()
 
-            Dim Builder As New Autofac.ContainerBuilder
-            Builder.RegisterType(Of Control)
-            Builder.RegisterType(Of LoggingService).As(Of iLoggingService)().SingleInstance()
-            Builder.RegisterType(Of AppTools).SingleInstance()
-            Builder.RegisterType(Of SqlData).SingleInstance()
-            Builder.RegisterType(Of DataManager).SingleInstance()
-            Builder.RegisterType(Of SchedulerService)().As(Of iSchedulerService)()
-            Builder.RegisterType(Of SvcParams)().SingleInstance()
-            Builder.RegisterType(Of MdbData).SingleInstance()
-            Builder.RegisterType(Of BaanOrderHandling).SingleInstance()
-            Builder.RegisterType(Of ErpSql).SingleInstance()
+        Container = Builder.Build()
 
-            Container = Builder.Build()
-
-
-            Ccont = Container.Resolve(Of Control)
-            Ccont.StartController(Container)
-        Catch ex As Exception
-
-        End Try
-
+        Ccont = Container.Resolve(Of Control)
+        Ccont.StartController(Container)
     End Sub
 
     Private Sub OnStop()
-        Try
-            Ccont.StopController()
-        Catch ex As Exception
-
-        End Try
-
+        Ccont.StopController()
     End Sub
 
 

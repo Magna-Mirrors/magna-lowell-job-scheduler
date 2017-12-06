@@ -244,9 +244,8 @@ Public Class SqlData
                 RetV = Cmd.ExecuteNonQuery()
                 Cmd.Dispose()
             Catch ex As Exception
-
+                LgSvr.SendAlert(New LogEventArgs("UpdatePlanStatus", ex))
             End Try
-
         End Using
         Return RetV
     End Function

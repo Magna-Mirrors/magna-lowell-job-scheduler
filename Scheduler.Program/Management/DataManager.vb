@@ -1,9 +1,4 @@
-﻿Imports System.Threading
-Imports Scheduler.core
-Imports Scheduler.core.Classes
-Imports System.Drawing
-Imports System
-Imports System.Collections.Generic
+﻿Imports Scheduler.core
 Public Class DataManager
 
     Protected ReadOnly _LoggingService As iLoggingService
@@ -74,21 +69,25 @@ Public Class DataManager
 
 
     Public Function GetPlan(Sourcedata As GetPlanRequest) As GetPlanResponse
-        Dim nPr As New GetPlanResponse
-        Try
-            If Sourcedata.LineData.SchedulerMethod = SchedulerMethods.MsSql Then
+        Dim nPr As New GetPlanResponse With {.Result = -1}
+        If Sourcedata.LineData.SchedulerMethod = SchedulerMethods.MsSql Then
+            Try
                 nPr = _SqlAccess.GetActiveOrders(Sourcedata.LineData.Id)
                 nPr.Result = 1
-            ElseIf Sourcedata.LineData.SchedulerMethod = SchedulerMethods.MdbAndPlanFiles Then
-                Dim PlanTxt As New TextData(_Tools, _Cfg)
+            Catch ex As Exception
+                nPr.ResultString = "GetPlan -> MsSql Exception :::: " + ex.Message
+            End Try
+        ElseIf Sourcedata.LineData.SchedulerMethod = SchedulerMethods.MdbAndPlanFiles Then
+            Dim PlanTxt As New TextData(_Tools, _Cfg)
+            Try
                 nPr = PlanTxt.getPlanData(Sourcedata.LineData)
                 nPr.Result = 1
-            Else
-
-            End If
-        Catch ex As Exception
-
-        End Try
+            Catch ex As Exception
+                nPr.ResultString = "GetPlan -> MdbAndPlanFiles Exception :::: " + ex.Message
+            End Try
+        Else
+            nPr.ResultString = "SchedulerMethod must be MsSql OR MdbAndPlanFiles"
+        End If
         Return nPr
     End Function
 
