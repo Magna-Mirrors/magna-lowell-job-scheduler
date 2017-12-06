@@ -4,7 +4,7 @@ Imports System.Xml.Serialization
 <DataContract()>
 Public Class SvcParams
     Public Shared ReadOnly ParamPath As String = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "MagnaSchedulerService", "Settings")
-    Public Shared ReadOnly ParamPathAndFile As String = Path.Combine(ParamPath, "Config.xml")
+    Public Shared ReadOnly ParamPathAndFile As String = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "MagnaSchedulerService", "Settings", "Config.xml")
 
     Private _ErpEncUserPw As String
 
@@ -102,12 +102,12 @@ Public Class SvcParams
     Public Shared Function getDefaults() As SvcParams
         Dim p As New SvcParams
         With p
-            .SqlSeverName = ".\sqlexpress"
+            .SqlSeverName = "Localhost"
             .SqlDbName = "Magna_Lowell"
-            .SqlUserName = "debugUser"
-            .SqlPw = "123456789"
-            .WcfRootPath = "C:\WORK\Magna\DainaWare\SupportFiles\WCF\"
-            .PlanTextRootPath = "C:\WORK\Magna\DainaWare\SupportFiles\Schedule\"
+            .SqlUserName = "sa"
+            .SqlPw = "1234"
+            .WcfRootPath = "E:\_Projects\M\Magna\Lowell\DainaWare\SupportFiles\WCF\"
+            .PlanTextRootPath = "E:\_Projects\M\Magna\Lowell\DainaWare\SupportFiles\Schedule\"
 
             .ErpSqlServername = "HOLMSDBDEV02"  'Test server = "HOLMSDBDEV02" '"holmssqlinst01\instance01"
             .ErpSqlDbName = "MALshopfloorTD"
