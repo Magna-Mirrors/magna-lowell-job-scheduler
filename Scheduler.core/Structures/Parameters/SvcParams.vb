@@ -4,7 +4,7 @@ Imports System.Xml.Serialization
 <DataContract()>
 Public Class SvcParams
     Public Shared ReadOnly ParamPath As String = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "MagnaSchedulerService", "Settings")
-    Public Shared ReadOnly ParamPathAndFile As String = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "MagnaSchedulerService", "Settings", "Config.xml")
+    Public Shared ReadOnly ParamPathAndFile As String = Path.Combine(ParamPath, "Config.xml")
 
     Private _ErpEncUserPw As String
 
