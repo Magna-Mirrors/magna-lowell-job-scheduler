@@ -1,4 +1,7 @@
 ﻿
+Imports System
+Imports System.Runtime.Serialization
+
 <DataContract>
 Public Class PlanItem
     <DataMember>
@@ -36,7 +39,7 @@ Public Class PlanItem
     <DataMember>
     Public Property HHMM As String
     <DataMember>
-    Public Property Chk As String
+    Public Property Chk As String 'NOTE: Why is chk a string?
     <DataMember>
     Public Property LastLoadTime As DateTime
     <DataMember>
@@ -78,13 +81,13 @@ Public Class PlanItem
         Desc = ""
         Status = PlanStatus.Unknown
         Position = 0
-        Chk = False
+        Chk = False 'NOTE: Why is chk a string?
         Flags = 0
         Position = 0
-        Shipdate = Now
-        CreationDate = Now
+        Shipdate = Date.Now
+        CreationDate = Date.Now
         PPHPP = 15
-        MMDDYY = Format(CreationDate, "MMddyy")
+        MMDDYY = CreationDate.ToString("MMddyy")
         LastLoadTime = Date.MinValue
         BuildID = String.Format("{0:MMddyy}-{1:hhmm}-{2:0ss}", CreationDate, CreationDate, CreationDate)
     End Sub

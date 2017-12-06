@@ -1,4 +1,7 @@
-﻿<DataContract()>
+﻿Imports System.Collections.Generic
+Imports System.Runtime.Serialization
+
+<DataContract()>
 Public Class GetLinesResponse
     <DataMember()>
     Public Property Lines As List(Of Line)

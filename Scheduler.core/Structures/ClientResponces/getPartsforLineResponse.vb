@@ -1,4 +1,7 @@
-﻿<DataContract>
+﻿Imports System.Collections.Generic
+Imports System.Runtime.Serialization
+
+<DataContract>
 Public Class getPartsforLineResponse
     <DataMember>
     Public Property parts As List(Of Part)

@@ -2,7 +2,8 @@
 Imports Scheduler.core
 Imports Scheduler.core.Classes
 Imports System.Drawing
-
+Imports System
+Imports System.Collections.Generic
 Public Class DataManager
 
     Protected ReadOnly _LoggingService As iLoggingService
@@ -126,7 +127,7 @@ Public Class DataManager
 
     Public Function GetNextOrder(SourceData As GetNextOrderRequest) As GetNextOrderResult
         Dim Rslt As New GetNextOrderResult
-        If SourceData.LineId Then
+        If SourceData.LineId > 0 Then
             Dim Resp = _SqlAccess.GetActiveOrders(SourceData.LineId)
             Dim Sd = From x In Resp.PlanData Where x.Status = PlanStatus.Scheduled
             If Sd IsNot Nothing AndAlso Sd.Count > 0 Then
@@ -143,7 +144,7 @@ Public Class DataManager
     Public Function SkipThisorder(SourceData As SkipOrderRequest) As SkipOrderResult
         Dim Rslt As New SkipOrderResult
         'GetOrderId
-        If SourceData.Lineid Then
+        If SourceData.Lineid > 0 Then
             Dim Resp = _SqlAccess.GetActiveOrders(SourceData.Lineid)
             Dim Sd = (From x In Resp.PlanData Where x.Status = PlanStatus.Scheduled).ToList()       'get all orders that are scheduled
             If Sd IsNot Nothing AndAlso Sd.Count > 0 Then
@@ -178,7 +179,7 @@ Public Class DataManager
         Dim Rslt As New GetScheduleResult
         If SourceData.LineId > 0 Then
             Dim Sd = From x In _SqlAccess.GetActiveOrders(SourceData.LineId).PlanData Where x.Status = PlanStatus.Scheduled
-            Rslt.Items = Sd
+            Rslt.Items = Sd.ToList()
             Rslt.Result = 1
         Else
             Rslt.Result = 0
@@ -199,7 +200,7 @@ Public Class DataManager
             If rOrder.Result > 0 Then
                 For Each L In LinesRequest.Lines
                     'what is the sum of orderes you have now in minutes
-                    Dim LineOrders = From x In rOrder.PlanData Where x.TargetLineId = L.Id
+                    Dim LineOrders = (From x In rOrder.PlanData Where x.TargetLineId = L.Id).ToList()
                     If LineOrders IsNot Nothing AndAlso LineOrders.Count > 0 Then
                         Dim Ordered = LineOrders.Select(Function(x) x.Built).Sum
                         Dim Built = LineOrders.Select(Function(x) x.Built).Sum
@@ -208,7 +209,7 @@ Public Class DataManager
                         L.QueuedMinutes = ((Ordered - Built) * Resources) 'minutes worth of parts that have been ordered
                         If (L.QueuedMinutes / L.WorkBufferMinutes) < L.ReOrderPercentThreshold Then
                             Dim DeltaMin = (L.WorkBufferMinutes - L.QueuedMinutes) 'get hou many minutes that will be needed to fill the requirement
-                            Dim PartsToOrder As Integer = DeltaMin / Resources 'translate this to the number of parts that will be needed
+                            Dim PartsToOrder As Integer = CInt(DeltaMin / Resources) 'translate this to the number of parts that will be needed
                             If PartsToOrder > 0 Then
                                 Orderparts(PartsToOrder, LineOrders, L.WC)
                             End If

@@ -2,13 +2,14 @@
 Imports Scheduler.Program
 Imports Autofac
 Imports Scheduler.core
+Imports System
 
 Module Root
     Dim jTask As Threading.Thread
     Dim Are As New AutoResetEvent(False)
     Dim Ccont As Control
     Dim Container As IContainer
-    Dim d
+    'Dim d
 
 
     Sub Main()
@@ -20,7 +21,7 @@ Module Root
 
 
         System.Console.WriteLine("Type EXIT to Stop Scheduler Service")
-        While UCase(S) <> "EXIT"
+        While S?.ToUpper() <> "EXIT"
             S = System.Console.ReadLine
         End While
         OnStop()

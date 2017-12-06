@@ -1,4 +1,5 @@
-﻿Imports Scheduler.core
+﻿Imports System.Data.SqlClient
+Imports Scheduler.core
 
 Public Class SqlData
     Protected ReadOnly _Cfg As SvcParams
@@ -57,14 +58,14 @@ Public Class SqlData
             Dim Cmd As New SqlClient.SqlCommand(String.Format(GetpartsQuery, PartReq.LineData.Id, Jn), Cn)
             Using dRead As IDataReader = Cmd.ExecuteReader()
                 While dRead.Read
-                    Dim Pn = dRead("PN")
+                    Dim Pn = CStr(dRead("PN"))
                     Dim Pr = (From x In PartReq.Parts Where x.PN = Pn)
                     If Pr IsNot Nothing Then
                         'update all like parts in PartReq
                         For Each Itm In Pr
-                            Itm.Id = dRead("PartId")
+                            Itm.Id = CInt(dRead("PartId"))
                             Itm.Valid = True
-                            Itm.Desc = dRead("Desc")
+                            Itm.Desc = CStr(dRead("Desc"))
                         Next
                     End If
                 End While
@@ -82,8 +83,8 @@ Public Class SqlData
             Using dRead As IDataReader = Cmd.ExecuteReader()
                 While dRead.Read
                     Dim P As New Part
-                    P.PN = dRead("PN")
-                    P.Desc = dRead("Desc")
+                    P.PN = CStr(dRead("PN"))
+                    P.Desc = CStr(dRead("Desc"))
                     P.Id = dRead("PartId")
                     Rslt.parts.Add(P)
                 End While
@@ -101,30 +102,31 @@ Public Class SqlData
             Cn.Open()
             Dim Wc = If(SqlLinesOnly, "(eqp_Lines.SchedulerMethod =2)", "(eqp_Lines.SchedulerMethod > 0)")
             Dim Cmd As New SqlClient.SqlCommand(String.Format(LineQuery, ""), Cn)
-            Using dRead As IDataReader = Cmd.ExecuteReader()
-                While dRead.Read
-                    Dim Itm As New Line
-                    With Itm
-                        'LineId,	CustomerId,	LineName,	LineDefinition,	MaxConcurrentLogins,	WcfFileName,	SelectCmd,	ScheduleFolder,	SchedulerMethod,	WorkBufferMinutes,	CustomerName,	ProgramId,	LH,	RH, ReOrderPercentThreshold, User_count
-                        .Description = dRead("LineDefinition")
-                        .Id = dRead("LineId")
-                        .Name = dRead("LineName")
-                        .SchedulerMethod = If(DBNull.Value.Equals(dRead("SchedulerMethod")), "", dRead("SchedulerMethod")) 'dRead("SchedulerMethod")
-                        .SelectCmd = dRead("SelectCmd")
-                        .WcfFileName = dRead("WcfFileName")
-                        .ScheduleFolder = If(DBNull.Value.Equals(dRead("ScheduleFolder")), "", dRead("ScheduleFolder"))
-                        .CustomerName = If(DBNull.Value.Equals(dRead("CustomerName")), "", dRead("CustomerName"))
-                        .CustomerId = If(DBNull.Value.Equals(dRead("CustomerId")), 0, dRead("CustomerId"))
-                        .ProgramId = If(DBNull.Value.Equals(dRead("ProgramId")), 0, dRead("ProgramId"))
-                        .WorkBufferMinutes = If(DBNull.Value.Equals(dRead("WorkBufferMinutes")), 0, dRead("WorkBufferMinutes"))
-                        .ReOrderPercentThreshold = If(DBNull.Value.Equals(dRead("ReOrderPercentThreshold")), 0.8, dRead("ReOrderPercentThreshold"))
-                        .UserCount = If(DBNull.Value.Equals(dRead("user_count")), 1, dRead("user_count"))
-                        .WC = If(DBNull.Value.Equals(dRead("WC")), "", dRead("WC"))
-                        .QueuedMinutes = 0
-                    End With
-                    Rslt.Lines.Add(Itm)
-                End While
-            End Using
+            Rslt.Lines.AddRange(ParseOutLines(Cmd))
+            'Using dRead As IDataReader = Cmd.ExecuteReader()
+            '    While dRead.Read
+            '        Dim Itm As New Line
+            '        With Itm
+            '            'LineId,	CustomerId,	LineName,	LineDefinition,	MaxConcurrentLogins,	WcfFileName,	SelectCmd,	ScheduleFolder,	SchedulerMethod,	WorkBufferMinutes,	CustomerName,	ProgramId,	LH,	RH, ReOrderPercentThreshold, User_count
+            '            .Description = dRead("LineDefinition")
+            '            .Id = dRead("LineId")
+            '            .Name = dRead("LineName")
+            '            .SchedulerMethod = If(DBNull.Value.Equals(dRead("SchedulerMethod")), "", dRead("SchedulerMethod")) 'dRead("SchedulerMethod")
+            '            .SelectCmd = dRead("SelectCmd")
+            '            .WcfFileName = dRead("WcfFileName")
+            '            .ScheduleFolder = If(DBNull.Value.Equals(dRead("ScheduleFolder")), "", dRead("ScheduleFolder"))
+            '            .CustomerName = If(DBNull.Value.Equals(dRead("CustomerName")), "", dRead("CustomerName"))
+            '            .CustomerId = If(DBNull.Value.Equals(dRead("CustomerId")), 0, dRead("CustomerId"))
+            '            .ProgramId = If(DBNull.Value.Equals(dRead("ProgramId")), 0, dRead("ProgramId"))
+            '            .WorkBufferMinutes = If(DBNull.Value.Equals(dRead("WorkBufferMinutes")), 0, dRead("WorkBufferMinutes"))
+            '            .ReOrderPercentThreshold = If(DBNull.Value.Equals(dRead("ReOrderPercentThreshold")), 0.8, dRead("ReOrderPercentThreshold"))
+            '            .UserCount = If(DBNull.Value.Equals(dRead("user_count")), 1, dRead("user_count"))
+            '            .WC = If(DBNull.Value.Equals(dRead("WC")), "", dRead("WC"))
+            '            .QueuedMinutes = 0
+            '        End With
+            '        Rslt.Lines.Add(Itm)
+            '    End While
+            'End Using
         End Using
         Return Rslt
     End Function
@@ -137,34 +139,64 @@ Public Class SqlData
             Cn.Open()
 
             Dim Cmd As New SqlClient.SqlCommand(String.Format(LineQuery, "Where Id = " & LineId), Cn)
-            Using dRead As IDataReader = Cmd.ExecuteReader()
-                While dRead.Read
-                    Dim Itm As New Line
-                    With Itm
-                        .Description = dRead("LineDefinition")
-                        .Id = dRead("LineId")
-                        .Name = dRead("LineName")
-                        .SchedulerMethod = dRead("SchedulerMethod")
-                        .SelectCmd = dRead("SelectCmd")
-                        .WcfFileName = dRead("WcfFileName")
-                        .ScheduleFolder = dRead("ScheduleFolder")
-                        .CustomerName = If(DBNull.Value.Equals(dRead("CustomerName")), "", dRead("CustomerName"))
-                        .CustomerId = If(DBNull.Value.Equals(dRead("CustomerId")), 0, dRead("CustomerId"))
-                        .ProgramId = If(DBNull.Value.Equals(dRead("ProgramId")), 0, dRead("ProgramId"))
-                        .WorkBufferMinutes = If(DBNull.Value.Equals(dRead("WorkBufferMinutes")), 0, dRead("WorkBufferMinutes"))
-                        .ReOrderPercentThreshold = If(DBNull.Value.Equals(dRead("ReOrderPercentThreshold")), 0.8, dRead("ReOrderPercentThreshold"))
-                        .UserCount = If(DBNull.Value.Equals(dRead("user_count")), 1, dRead("user_count"))
-                        .WC = If(DBNull.Value.Equals(dRead("WC")), "", dRead("WC"))
-                        .QueuedMinutes = 0
-                    End With
-                    Return Itm
-                End While
-            End Using
+            Return ParseOutLines(Cmd).FirstOrDefault()
+            '    Using dRead As IDataReader = Cmd.ExecuteReader()
+            '        While dRead.Read
+            '            Dim Itm As New Line
+            '            With Itm
+            '                .Description = dRead("LineDefinition")
+            '                .Id = dRead("LineId")
+            '                .Name = dRead("LineName")
+            '                .SchedulerMethod = dRead("SchedulerMethod")
+            '                .SelectCmd = dRead("SelectCmd")
+            '                .WcfFileName = dRead("WcfFileName")
+            '                .ScheduleFolder = dRead("ScheduleFolder")
+            '                .CustomerName = If(DBNull.Value.Equals(dRead("CustomerName")), "", dRead("CustomerName"))
+            '                .CustomerId = If(DBNull.Value.Equals(dRead("CustomerId")), 0, dRead("CustomerId"))
+            '                .ProgramId = If(DBNull.Value.Equals(dRead("ProgramId")), 0, dRead("ProgramId"))
+            '                .WorkBufferMinutes = If(DBNull.Value.Equals(dRead("WorkBufferMinutes")), 0, dRead("WorkBufferMinutes"))
+            '                .ReOrderPercentThreshold = If(DBNull.Value.Equals(dRead("ReOrderPercentThreshold")), 0.8, dRead("ReOrderPercentThreshold"))
+            '                .UserCount = If(DBNull.Value.Equals(dRead("user_count")), 1, dRead("user_count"))
+            '                .WC = If(DBNull.Value.Equals(dRead("WC")), "", dRead("WC"))
+            '                .QueuedMinutes = 0
+            '            End With
+            '            Return Itm
+            '        End While
+            '    End Using
         End Using
         Return Nothing
     End Function
 
-    Public Function updateOrderPosition(OrderId_Id As Integer, Position As Integer) As TransactionResult
+    Private Shared Function ParseOutLines(cmd As SqlCommand) As IEnumerable(Of Line)
+        Dim lines As New List(Of Line)()
+        Using dRead As IDataReader = cmd.ExecuteReader()
+            While dRead.Read
+                Dim Itm As New Line
+                With Itm
+                    'LineId,	CustomerId,	LineName,	LineDefinition,	MaxConcurrentLogins,	WcfFileName,	SelectCmd,	ScheduleFolder,	SchedulerMethod,	WorkBufferMinutes,	CustomerName,	ProgramId,	LH,	RH, ReOrderPercentThreshold, User_count
+                    .Description = CStr(dRead("LineDefinition"))
+                    .Id = CInt(dRead("LineId"))
+                    .Name = CStr(dRead("LineName"))
+                    .SchedulerMethod = If(DBNull.Value.Equals(dRead("SchedulerMethod")), "", dRead("SchedulerMethod")) 'dRead("SchedulerMethod")
+                    .SelectCmd = CStr(dRead("SelectCmd"))
+                    .WcfFileName = CStr(dRead("WcfFileName"))
+                    .ScheduleFolder = If(DBNull.Value.Equals(dRead("ScheduleFolder")), "", dRead("ScheduleFolder"))
+                    .CustomerName = If(DBNull.Value.Equals(dRead("CustomerName")), "", dRead("CustomerName"))
+                    .CustomerId = If(DBNull.Value.Equals(dRead("CustomerId")), 0, dRead("CustomerId"))
+                    .ProgramId = If(DBNull.Value.Equals(dRead("ProgramId")), 0, dRead("ProgramId"))
+                    .WorkBufferMinutes = If(DBNull.Value.Equals(dRead("WorkBufferMinutes")), 0, dRead("WorkBufferMinutes"))
+                    .ReOrderPercentThreshold = If(DBNull.Value.Equals(dRead("ReOrderPercentThreshold")), 0.8, dRead("ReOrderPercentThreshold"))
+                    .UserCount = If(DBNull.Value.Equals(dRead("user_count")), 1, dRead("user_count"))
+                    .WC = If(DBNull.Value.Equals(dRead("WC")), "", dRead("WC"))
+                    .QueuedMinutes = 0
+                End With
+                lines.Add(Itm)
+            End While
+        End Using
+        Return lines
+    End Function
+
+    Public Function updateOrderPosition(OrderId_Id As Integer, Position As Long) As TransactionResult
         Dim Rslt As New TransactionResult
         Try
             Using Cn As New SqlClient.SqlConnection(GetConnectionString)
@@ -312,7 +344,7 @@ Public Class SqlData
         dCmd.Parameters.Add(New SqlClient.SqlParameter("@Status", Pi.Status))
         dCmd.Parameters.Add(New SqlClient.SqlParameter("@LastUpdate", Now))
         dCmd.Parameters.Add(New SqlClient.SqlParameter("@Flags", Pi.Flags))
-    
+
         dCmd.CommandText = String.Format("Update Schedule_Order_History 
             set ShipDate = @ShipDate,
             Quantity = @Quantity,
