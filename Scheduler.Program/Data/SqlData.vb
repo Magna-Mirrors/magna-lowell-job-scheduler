@@ -139,7 +139,7 @@ Public Class SqlData
             Cn.Open()
 
             Dim Cmd As New SqlClient.SqlCommand(String.Format(LineQuery, "Where Id = " & LineId), Cn)
-            Return ParseOutLines(Cmd).FirstOrDefault()
+            Return ParseOutLines(Cmd, True).FirstOrDefault()
             '    Using dRead As IDataReader = Cmd.ExecuteReader()
             '        While dRead.Read
             '            Dim Itm As New Line
@@ -167,7 +167,7 @@ Public Class SqlData
         Return Nothing
     End Function
 
-    Private Shared Function ParseOutLines(cmd As SqlCommand) As IEnumerable(Of Line)
+    Private Shared Function ParseOutLines(cmd As SqlCommand, Optional firstonly As Boolean = False) As IEnumerable(Of Line)
         Dim lines As New List(Of Line)()
         Using dRead As IDataReader = cmd.ExecuteReader()
             While dRead.Read
@@ -191,6 +191,9 @@ Public Class SqlData
                     .QueuedMinutes = 0
                 End With
                 lines.Add(Itm)
+                If firstonly Then
+                    Return lines
+                End If
             End While
         End Using
         Return lines
