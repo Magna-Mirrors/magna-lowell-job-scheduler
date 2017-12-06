@@ -9,7 +9,7 @@ Public Class SavePlanResponse
 
     Public Sub New()
         Result = 0
-        ResultString = 0
+        ResultString = "0"
         lastLoadDate = DateTime.MinValue
     End Sub
 

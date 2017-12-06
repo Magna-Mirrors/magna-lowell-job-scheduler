@@ -7,7 +7,7 @@ Namespace Classes
     Public Class ConfigurationManager(Of T)
 
         Public Shared Function Load() As T
-            Dim Fn As String = SvcParams.ParamPathAndFile
+            Dim Fn = SvcParams.ParamPathAndFile
             Dim serializer As New XmlSerializer(GetType(T))
             Using stream = File.OpenRead(Fn)
 
