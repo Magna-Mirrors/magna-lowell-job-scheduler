@@ -107,7 +107,6 @@ Public Class DataManager
         If SourceData.LineData.SchedulerMethod = SchedulerMethods.MsSql Then
             Rslt = _SqlAccess.ValidateParts(SourceData)
         Else
-
             Rslt = _MdbAccess.ValidateParts(SourceData)
         End If
         Return Rslt
@@ -118,7 +117,6 @@ Public Class DataManager
         If SourceData.LineData.SchedulerMethod = SchedulerMethods.MsSql Then
             Rslt = _SqlAccess.GetParts(SourceData)
         Else
-
             Rslt = _MdbAccess.GetParts(SourceData)
         End If
         Return Rslt
@@ -127,9 +125,8 @@ Public Class DataManager
     Public Function GetNextOrder(SourceData As GetNextOrderRequest) As GetNextOrderResult
         Dim Rslt As New GetNextOrderResult
         If SourceData.LineId > 0 Then
-            Dim Resp = _SqlAccess.GetActiveOrders(SourceData.LineId)
-            Dim Sd = From x In Resp.PlanData Where x.Status = PlanStatus.Scheduled
-            If Sd IsNot Nothing AndAlso Sd.Count > 0 Then
+            Dim Sd = GetPlannedOrders(SourceData.LineId)
+            If Sd IsNot Nothing AndAlso Sd.Any() Then
                 Rslt.Item = Sd(0)
                 Rslt.Result = 1
             Else
@@ -144,9 +141,8 @@ Public Class DataManager
         Dim Rslt As New SkipOrderResult
         'GetOrderId
         If SourceData.Lineid > 0 Then
-            Dim Resp = _SqlAccess.GetActiveOrders(SourceData.Lineid)
-            Dim Sd = (From x In Resp.PlanData Where x.Status = PlanStatus.Scheduled).ToList()       'get all orders that are scheduled
-            If Sd IsNot Nothing AndAlso Sd.Count > 0 Then
+            Dim Sd = GetPlannedOrders(SourceData.Lineid)       'get all orders that are scheduled
+            If Sd IsNot Nothing AndAlso Sd.Any() Then
                 Sd(0).Position = Sd.Count                                                           'set position to found plan list count
                 _SqlAccess.updateOrderPosition(Sd(0).OrderId, Sd(0).Position)
                 If Sd.Count = 1 Then
@@ -177,7 +173,7 @@ Public Class DataManager
     Public Function GetLineSchedule(SourceData As GetScheduleRequest) As GetScheduleResult
         Dim Rslt As New GetScheduleResult
         If SourceData.LineId > 0 Then
-            Dim Sd = From x In _SqlAccess.GetActiveOrders(SourceData.LineId).PlanData Where x.Status = PlanStatus.Scheduled
+            Dim Sd = GetPlannedOrders(SourceData.LineId)
             Rslt.Items = Sd.ToList()
             Rslt.Result = 1
         Else
@@ -213,12 +209,9 @@ Public Class DataManager
                                 Orderparts(PartsToOrder, LineOrders, L.WC)
                             End If
                         End If
-
                     End If
                 Next
             End If
-
-
         End If
     End Sub
 
@@ -270,5 +263,18 @@ Public Class DataManager
         Return 1
     End Function
 
+
+    Private Function GetPlannedOrders(lineid As Integer) As List(Of PlanItem)
+        If lineid <= 0 Then
+            Throw New ArgumentException("Line Id must be greater than zero.", NameOf(lineid))
+        End If
+
+        Dim Resp = _SqlAccess.GetActiveOrders(lineid)
+        If Resp.Result <> 1 Then
+            Dim plans = (From x In Resp.PlanData Where x.Status = PlanStatus.Scheduled).ToList()
+            Return plans
+        End If
+        Return Nothing
+    End Function
 
 End Class
