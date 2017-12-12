@@ -47,15 +47,15 @@ Public Class SvcParams
     End Property
 
     Public Property TempPw As String
-        Get
-            Return ""
-        End Get
-        Set(value As String)
-            If value.Length > 0 Then
-                _encUserPw = clsCryptography.Encrypt(value)
-            End If
-        End Set
-    End Property
+    '    Get
+    '        Return ""
+    '    End Get
+    '    Set(value As String)
+    '        If value.Length > 0 Then
+    '            _encUserPw = clsCryptography.Encrypt(value)
+    '        End If
+    '    End Set
+    'End Property
 
 
     Public Property ErpSqlServername As String

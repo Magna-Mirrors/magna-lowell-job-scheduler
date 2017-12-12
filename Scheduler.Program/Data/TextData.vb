@@ -88,6 +88,7 @@ Public Class TextData
         Dim FName As String = "Schedule.txt"
 
         Dim filename As String = Path.Combine(LineData.ScheduleFolder, FName)
+        'Dim filename As String = Path.Combine("C:\ProgramData\FeyenZylstra\MagnaJobScheduler\DainaWare\SupportFiles\Schedule\D544", FName)
         If File.Exists(filename) Then
             Try
                 Using ScheduleReader As StreamReader = File.OpenText(filename)
@@ -105,8 +106,8 @@ Public Class TextData
                                 Pi.Position = _AppTools.GetOrderPosition(Data2Add(0), Pi.MMDDYY, Pi.HHMM)
                                 Pi.PartNumber = Data2Add(1)
                                 Pi.QTY = Data2Add(2)
-                                Pi.Ordered = Data2Add(3)
-                                Pi.Built = Data2Add(4)
+                                Pi.Built = Data2Add(3)
+                                Pi.Ordered = Data2Add(4)
 
                                 If Pi.Ordered > 0 Then
                                     Pi.Status = PlanStatus.Scheduled

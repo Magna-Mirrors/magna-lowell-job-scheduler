@@ -53,7 +53,7 @@ Public Class SqlData
         PartReq.Parts.Select(Function(x) x.Valid = False)
         Dim Jn = "'" & Join(Pry, "','") & "'"
 
-        Using Cn As New SqlClient.SqlConnection(GetConnectionString)
+        Using Cn = GetConnection()
             Cn.Open()
             Dim Cmd As New SqlClient.SqlCommand(String.Format(GetpartsQuery, PartReq.LineData.Id, Jn), Cn)
             Using dRead As IDataReader = Cmd.ExecuteReader()
@@ -77,7 +77,7 @@ Public Class SqlData
 
     Public Function GetParts(PartReq As GetPartsForLineRequest) As getPartsforLineResponse
         Dim Rslt As New getPartsforLineResponse
-        Using Cn As New SqlClient.SqlConnection(GetConnectionString)
+        Using Cn = GetConnection()
             Cn.Open()
             Dim Cmd As New SqlClient.SqlCommand(String.Format("{0} Where Lineid = {1}", GetpartsQuery, PartReq.LineData.Id), Cn)
             Using dRead As IDataReader = Cmd.ExecuteReader()
@@ -98,7 +98,7 @@ Public Class SqlData
     Public Function GetLinesData(SqlLinesOnly As Boolean) As GetLinesResponse
         Dim Rslt As New GetLinesResponse
 
-        Using Cn As New SqlClient.SqlConnection(GetConnectionString)
+        Using Cn = GetConnection()
             Cn.Open()
             Dim Wc = If(SqlLinesOnly, "(eqp_Lines.SchedulerMethod =2)", "(eqp_Lines.SchedulerMethod > 0)")
             Dim Cmd As New SqlClient.SqlCommand(String.Format(LineQuery, ""), Cn)
@@ -135,7 +135,7 @@ Public Class SqlData
 
 
     Public Function GetLineData(LineId As Integer) As Line
-        Using Cn As New SqlClient.SqlConnection(GetConnectionString)
+        Using Cn = GetConnection()
             Cn.Open()
 
             Dim Cmd As New SqlClient.SqlCommand(String.Format(LineQuery, "Where Id = " & LineId), Cn)
@@ -202,7 +202,7 @@ Public Class SqlData
     Public Function updateOrderPosition(OrderId_Id As Integer, Position As Long) As TransactionResult
         Dim Rslt As New TransactionResult
         Try
-            Using Cn As New SqlClient.SqlConnection(GetConnectionString)
+            Using Cn = GetConnection()
                 Cn.Open()
                 Dim UpStr As String = "Update Schedule_Order_History Set Position = {0} where Id = {1}"
                 Dim Cmd As New SqlClient.SqlCommand(String.Format(UpStr, Position, OrderId_Id), Cn)
@@ -220,7 +220,7 @@ Public Class SqlData
     Public Function updateJobStatus(Order_Id As Integer, Status As PlanStatus) As TransactionResult
         Dim Rslt As New TransactionResult
         Try
-            Using Cn As New SqlClient.SqlConnection(GetConnectionString)
+            Using Cn = GetConnection()
                 Cn.Open()
                 Dim UpStr As String = "Update Schedule_Order_History Set Status = {0} where Id = {1}"
                 Dim Cmd As New SqlClient.SqlCommand(String.Format(UpStr, Status, Order_Id), Cn)
@@ -238,7 +238,7 @@ Public Class SqlData
 
     Public Function UpdatePlanStatus(OrderId As Integer, Status As PlanStatus) As Integer
         Dim RetV As Integer = 0
-        Using Cn As New SqlClient.SqlConnection(GetConnectionString)
+        Using Cn = GetConnection()
             Try
                 Dim Cmd As New SqlClient.SqlCommand(String.Format("Update Schedule_Order_History set Status = {0} where Id = {1}", Status, OrderId), Cn)
                 RetV = Cmd.ExecuteNonQuery()
@@ -253,7 +253,7 @@ Public Class SqlData
     Public Function GetActiveOrders(Lineid As Integer) As GetPlanResponse
         Dim Pr As New GetPlanResponse
         Dim Items As New List(Of PlanItem)
-        Using Cn As New SqlClient.SqlConnection(GetConnectionString)
+        Using Cn = GetConnection()
             Cn.Open()
             Dim WC = If(Lineid > 0, String.Format("AND (Schedule_Order_History.TargetLineId = {0})", Lineid), "")
             Dim Cmd As New SqlClient.SqlCommand(String.Format(ActiveOrderQuery, WC), Cn)
@@ -292,7 +292,7 @@ Public Class SqlData
         Dim Cnt As Integer = PlanItems.Count
 
         Try
-            Using Cn As New SqlClient.SqlConnection(GetConnectionString)
+            Using Cn = GetConnection()
                 Cn.Open()
                 Dim Cmd As SqlClient.SqlCommand
                 For Each R In PlanItems
@@ -357,7 +357,10 @@ Public Class SqlData
            where Id = @ID and Status = 2")
         Return dCmd
     End Function
-
+    Private Function GetConnection() As SqlConnection
+        Dim connstr = GetConnectionString() + "; Persist Security Info=True;"
+        Return New SqlClient.SqlConnection(connstr)
+    End Function
     Private Function GetConnectionString() As String
         Dim CnS As New Data.SqlClient.SqlConnectionStringBuilder
         With CnS
