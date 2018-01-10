@@ -1,4 +1,7 @@
-﻿<DataContract()>
+﻿Imports System.Collections.Generic
+Imports System.Runtime.Serialization
+
+<DataContract()>
 Public Class GetScheduleResult
     <DataMember()>
     Public Property Items As List(Of PlanItem)

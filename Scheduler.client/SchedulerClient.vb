@@ -2,25 +2,26 @@
 Imports Scheduler.core
 Imports System.ServiceModel.Description
 Imports System.ServiceModel.Channels
+Imports System
 
 Public Class SchedulerClient
     Inherits System.ServiceModel.ClientBase(Of iSchedulerService)
     Implements core.iSchedulerService
 
     Protected Sub New()
-        
+
     End Sub
     Protected Sub New(ByVal endpointConfigurationName As String)
         MyBase.New(endpointConfigurationName)
-        
+
     End Sub
     Protected Sub New(ByVal endpointConfigurationName As String, ByVal remoteAddress As String)
         MyBase.New(endpointConfigurationName, remoteAddress)
-        
+
     End Sub
     Protected Sub New(ByVal endpointConfigurationName As String, ByVal remoteAddress As EndpointAddress)
         MyBase.New(endpointConfigurationName, remoteAddress)
-        
+
     End Sub
     Public Sub New(ByVal binding As System.ServiceModel.Channels.Binding, ByVal remoteAddress As EndpointAddress)
         MyBase.New(binding, remoteAddress)
@@ -28,31 +29,31 @@ Public Class SchedulerClient
     End Sub
     Protected Sub New(ByVal endpoint As System.ServiceModel.Description.ServiceEndpoint)
         MyBase.New(endpoint)
-        
+
     End Sub
     Protected Sub New(ByVal callbackInstance As InstanceContext)
         MyBase.New(callbackInstance)
-        
+
     End Sub
     Protected Sub New(ByVal callbackInstance As InstanceContext, ByVal endpointConfigurationName As String)
         MyBase.New(callbackInstance, endpointConfigurationName)
-        
+
     End Sub
     Protected Sub New(ByVal callbackInstance As InstanceContext, ByVal endpointConfigurationName As String, ByVal remoteAddress As String)
         MyBase.New(callbackInstance, endpointConfigurationName, remoteAddress)
-        
+
     End Sub
     Protected Sub New(ByVal callbackInstance As InstanceContext, ByVal endpointConfigurationName As String, ByVal remoteAddress As EndpointAddress)
         MyBase.New(callbackInstance, endpointConfigurationName, remoteAddress)
-        
+
     End Sub
     Protected Sub New(ByVal callbackInstance As InstanceContext, ByVal binding As System.ServiceModel.Channels.Binding, ByVal remoteAddress As EndpointAddress)
         MyBase.New(callbackInstance, binding, remoteAddress)
-        
+
     End Sub
     Protected Sub New(ByVal callbackInstance As InstanceContext, ByVal endpoint As System.ServiceModel.Description.ServiceEndpoint)
         MyBase.New(callbackInstance, endpoint)
-        
+
     End Sub
 
     Public Function GetLine(Lineid As Integer) As GetLineResponse Implements iSchedulerService.GetLine
@@ -71,7 +72,7 @@ Public Class SchedulerClient
         Try
             Return MyBase.Channel.GetPlan(Sourcedata)
         Catch ex As Exception
-            Dim R = New GetPlanResponse
+            Dim R As New GetPlanResponse
             R.Result = -1
             R.ResultString = ex.Message
             Return R

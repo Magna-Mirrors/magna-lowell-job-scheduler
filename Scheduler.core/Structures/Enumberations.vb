@@ -1,4 +1,6 @@
-﻿Imports System.Runtime.Serialization
+﻿Imports System
+Imports System.Runtime.Serialization
+
 <DataContract(Name:="SchedulerMethods")>
 Public Enum SchedulerMethods
     <EnumMember> [None] = 0

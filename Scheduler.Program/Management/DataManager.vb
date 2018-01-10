@@ -1,8 +1,4 @@
-﻿Imports System.Threading
-Imports Scheduler.core
-Imports Scheduler.core.Classes
-Imports System.Drawing
-
+﻿Imports Scheduler.core
 Public Class DataManager
 
     Protected ReadOnly _LoggingService As iLoggingService
@@ -73,21 +69,25 @@ Public Class DataManager
 
 
     Public Function GetPlan(Sourcedata As GetPlanRequest) As GetPlanResponse
-        Dim nPr As New GetPlanResponse
-        Try
-            If Sourcedata.LineData.SchedulerMethod = SchedulerMethods.MsSql Then
+        Dim nPr As New GetPlanResponse With {.Result = -1}
+        If Sourcedata.LineData.SchedulerMethod = SchedulerMethods.MsSql Then
+            Try
                 nPr = _SqlAccess.GetActiveOrders(Sourcedata.LineData.Id)
                 nPr.Result = 1
-            ElseIf Sourcedata.LineData.SchedulerMethod = SchedulerMethods.MdbAndPlanFiles Then
-                Dim PlanTxt As New TextData(_Tools, _Cfg)
+            Catch ex As Exception
+                nPr.ResultString = "GetPlan -> MsSql Exception :::: " + ex.Message
+            End Try
+        ElseIf Sourcedata.LineData.SchedulerMethod = SchedulerMethods.MdbAndPlanFiles Then
+            Dim PlanTxt As New TextData(_Tools, _Cfg)
+            Try
                 nPr = PlanTxt.getPlanData(Sourcedata.LineData)
                 nPr.Result = 1
-            Else
-
-            End If
-        Catch ex As Exception
-
-        End Try
+            Catch ex As Exception
+                nPr.ResultString = "GetPlan -> MdbAndPlanFiles Exception :::: " + ex.Message
+            End Try
+        Else
+            nPr.ResultString = "SchedulerMethod must be MsSql OR MdbAndPlanFiles"
+        End If
         Return nPr
     End Function
 
@@ -107,7 +107,6 @@ Public Class DataManager
         If SourceData.LineData.SchedulerMethod = SchedulerMethods.MsSql Then
             Rslt = _SqlAccess.ValidateParts(SourceData)
         Else
-
             Rslt = _MdbAccess.ValidateParts(SourceData)
         End If
         Return Rslt
@@ -118,7 +117,6 @@ Public Class DataManager
         If SourceData.LineData.SchedulerMethod = SchedulerMethods.MsSql Then
             Rslt = _SqlAccess.GetParts(SourceData)
         Else
-
             Rslt = _MdbAccess.GetParts(SourceData)
         End If
         Return Rslt
@@ -126,10 +124,9 @@ Public Class DataManager
 
     Public Function GetNextOrder(SourceData As GetNextOrderRequest) As GetNextOrderResult
         Dim Rslt As New GetNextOrderResult
-        If SourceData.LineId Then
-            Dim Resp = _SqlAccess.GetActiveOrders(SourceData.LineId)
-            Dim Sd = From x In Resp.PlanData Where x.Status = PlanStatus.Scheduled
-            If Sd IsNot Nothing AndAlso Sd.Count > 0 Then
+        If SourceData.LineId > 0 Then
+            Dim Sd = GetPlannedOrders(SourceData.LineId)
+            If Sd IsNot Nothing AndAlso Sd.Any() Then
                 Rslt.Item = Sd(0)
                 Rslt.Result = 1
             Else
@@ -143,22 +140,19 @@ Public Class DataManager
     Public Function SkipThisorder(SourceData As SkipOrderRequest) As SkipOrderResult
         Dim Rslt As New SkipOrderResult
         'GetOrderId
-        If SourceData.Lineid Then
-            Dim Resp = _SqlAccess.GetActiveOrders(SourceData.Lineid)
-            Dim Sd = From x In Resp.PlanData Where x.Status = PlanStatus.Scheduled
-            If Sd IsNot Nothing AndAlso Sd.Count > 0 Then
-                Sd(0).Position = Sd.Count
+        If SourceData.Lineid > 0 Then
+            Dim Sd = GetPlannedOrders(SourceData.Lineid)       'get all orders that are scheduled
+            If Sd IsNot Nothing AndAlso Sd.Any() Then
+                Sd(0).Position = Sd.Count                                                           'set position to found plan list count
                 _SqlAccess.updateOrderPosition(Sd(0).OrderId, Sd(0).Position)
                 If Sd.Count = 1 Then
                     Rslt.Item = Sd(0)
                     Rslt.Result = 1
                 Else
+                    Rslt.Item = Sd(1)
+                    Rslt.Result = 1
                     For i = 1 To Sd.Count - 1
                         _SqlAccess.updateOrderPosition(Sd(i).OrderId, Sd(i).Position)
-                        If i = 1 Then
-                            Rslt.Item = Sd(i)
-                            Rslt.Result = 1
-                        End If
                     Next
                 End If
             Else
@@ -179,8 +173,8 @@ Public Class DataManager
     Public Function GetLineSchedule(SourceData As GetScheduleRequest) As GetScheduleResult
         Dim Rslt As New GetScheduleResult
         If SourceData.LineId > 0 Then
-            Dim Sd = From x In _SqlAccess.GetActiveOrders(SourceData.LineId).PlanData Where x.Status = PlanStatus.Scheduled
-            Rslt.Items = Sd
+            Dim Sd = GetPlannedOrders(SourceData.LineId)
+            Rslt.Items = Sd.ToList()
             Rslt.Result = 1
         Else
             Rslt.Result = 0
@@ -201,7 +195,7 @@ Public Class DataManager
             If rOrder.Result > 0 Then
                 For Each L In LinesRequest.Lines
                     'what is the sum of orderes you have now in minutes
-                    Dim LineOrders = From x In rOrder.PlanData Where x.TargetLineId = L.Id
+                    Dim LineOrders = (From x In rOrder.PlanData Where x.TargetLineId = L.Id).ToList()
                     If LineOrders IsNot Nothing AndAlso LineOrders.Count > 0 Then
                         Dim Ordered = LineOrders.Select(Function(x) x.Built).Sum
                         Dim Built = LineOrders.Select(Function(x) x.Built).Sum
@@ -210,17 +204,14 @@ Public Class DataManager
                         L.QueuedMinutes = ((Ordered - Built) * Resources) 'minutes worth of parts that have been ordered
                         If (L.QueuedMinutes / L.WorkBufferMinutes) < L.ReOrderPercentThreshold Then
                             Dim DeltaMin = (L.WorkBufferMinutes - L.QueuedMinutes) 'get hou many minutes that will be needed to fill the requirement
-                            Dim PartsToOrder As Integer = DeltaMin / Resources 'translate this to the number of parts that will be needed
+                            Dim PartsToOrder As Integer = CInt(DeltaMin / Resources) 'translate this to the number of parts that will be needed
                             If PartsToOrder > 0 Then
                                 Orderparts(PartsToOrder, LineOrders, L.WC)
                             End If
                         End If
-
                     End If
                 Next
             End If
-
-
         End If
     End Sub
 
@@ -272,5 +263,18 @@ Public Class DataManager
         Return 1
     End Function
 
+
+    Private Function GetPlannedOrders(lineid As Integer) As List(Of PlanItem)
+        If lineid <= 0 Then
+            Throw New ArgumentException("Line Id must be greater than zero.", NameOf(lineid))
+        End If
+
+        Dim Resp = _SqlAccess.GetActiveOrders(lineid)
+        If Resp.Result <> 1 Then
+            Dim plans = (From x In Resp.PlanData Where x.Status = PlanStatus.Scheduled).ToList()
+            Return plans
+        End If
+        Return Nothing
+    End Function
 
 End Class

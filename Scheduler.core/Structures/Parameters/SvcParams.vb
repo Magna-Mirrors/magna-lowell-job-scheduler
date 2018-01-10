@@ -4,7 +4,7 @@ Imports System.Xml.Serialization
 <DataContract()>
 Public Class SvcParams
     Public Shared ReadOnly ParamPath As String = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "MagnaSchedulerService", "Settings")
-    Public Shared ReadOnly ParamPathAndFile As String = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "MagnaSchedulerService", "Settings", "Config.xml")
+    Public Shared ReadOnly ParamPathAndFile As String = Path.Combine(ParamPath, "Config.xml")
 
     Private _ErpEncUserPw As String
 
@@ -47,15 +47,15 @@ Public Class SvcParams
     End Property
 
     Public Property TempPw As String
-        Get
-            Return ""
-        End Get
-        Set(value As String)
-            If value.Length > 0 Then
-                _encUserPw = clsCryptography.Encrypt(value)
-            End If
-        End Set
-    End Property
+    '    Get
+    '        Return ""
+    '    End Get
+    '    Set(value As String)
+    '        If value.Length > 0 Then
+    '            _encUserPw = clsCryptography.Encrypt(value)
+    '        End If
+    '    End Set
+    'End Property
 
 
     Public Property ErpSqlServername As String

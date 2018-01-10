@@ -1,4 +1,7 @@
-﻿<DataContract()>
+﻿Imports System.Collections.Generic
+Imports System.Runtime.Serialization
+
+<DataContract()>
 Public Class GetPlanResponse
     <DataMember()>
     Public Property PlanData As List(Of PlanItem)

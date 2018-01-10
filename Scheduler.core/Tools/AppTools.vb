@@ -9,8 +9,13 @@ Public Class AppTools
         End If
     End Sub
 
+    ''' <summary>
+    ''' Returns a time stamp with the 1s and 10s place set to zero for indexing
+    ''' </summary>
     Public Function GetUnitxTimeStamp() As Long
-        Return CLng((DateTime.Now - New DateTime(1970, 1, 1, 0, 0, 0, 0)).TotalSeconds * 10000) * 100
+        'using integer division "\" to knock off the 1s and 10s place
+        Return (DateTimeOffset.Now.ToUnixTimeMilliseconds() \ 100) * 100
+        'Return CLng((DateTime.Now - New DateTime(1970, 1, 1, 0, 0, 0, 0)).TotalSeconds * 10000) * 100
     End Function
 
     Public Function GetOrderPosition(BuildId As String, ByRef mmddyy As String, ByRef hhmm As String) As Integer
@@ -34,7 +39,13 @@ Public Class AppTools
             ConfigurationManager(Of SvcParams).Save(SvcParams.getDefaults)
         End If
 
-        Return ConfigurationManager(Of SvcParams).Load()
 
+        Dim cfg = ConfigurationManager(Of SvcParams).Load()
+        If Not String.IsNullOrWhiteSpace(cfg.TempPw) Then
+            cfg.SqlPw = cfg.TempPw
+            cfg.TempPw = Nothing
+            ConfigurationManager(Of SvcParams).Save(cfg)
+        End If
+        Return ConfigurationManager(Of SvcParams).Load()
     End Function
 End Class

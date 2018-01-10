@@ -29,7 +29,7 @@ Public Class MdbData
 
                 Using dRead As IDataReader = Cmd.ExecuteReader()
                     While dRead.Read
-                        RetParts.Add(New Part() With {.PN = dRead("PN"), .Desc = dRead("Desc")})
+                        RetParts.Add(New Part() With {.PN = CStr(dRead("PN")), .Desc = CStr(dRead("Desc"))})
                     End While
                 End Using
                 For Each Pr In PartReq.Parts
@@ -61,7 +61,7 @@ Public Class MdbData
                 Dim Cmd As New OleDb.OleDbCommand(PartReq.LineData.SelectCmd)
                 Using dRead As IDataReader = Cmd.ExecuteReader()
                     While dRead.Read
-                        Dim Pr As New Part() With {.PN = dRead("PN"), .Desc = dRead(1), .Id = Nothing, .Valid = True}
+                        Dim Pr As New Part() With {.PN = CStr(dRead("PN")), .Desc = CStr(dRead(1)), .Id = Nothing, .Valid = True}
                         Res.parts.Add(Pr)
                     End While
                 End Using
