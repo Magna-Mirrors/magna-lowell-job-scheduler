@@ -21,7 +21,7 @@ Public Class SqlData
                       ORDER BY Schedule_Order_History.TargetLineId, priority"
 
     'LineId,	CustomerId,	LineName,	LineDefinition,	MaxConcurrentLogins,	WcfFileName,	SelectCmd,	ScheduleFolder,	SchedulerMethod,	WorkBufferMinutes,	CustomerName,	ProgramId,	LH,	RH, ReOrderPercentThreshold, User_Count,Wc
-    Private Const LineQuery As String = "SELECT  eqp_Lines.Id AS LineId, eqp_Lines.CustomerId, eqp_Lines.LineName, eqp_Lines.LineDefinition, eqp_Lines.MaxConcurrentLogins, eqp_Lines.WcfFileName, 
+    Private Const LineQuery As String = "SELECT  eqp_Lines.Id AS LineId, eqp_Lines.CustomerId,Part_Programs.Customer_OrderId_Required, eqp_Lines.LineName, eqp_Lines.LineDefinition, eqp_Lines.MaxConcurrentLogins, eqp_Lines.WcfFileName, 
                       eqp_Lines.SelectCmd, eqp_Lines.ScheduleFolder, eqp_Lines.SchedulerMethod, eqp_Lines.WorkBufferMinutes, Part_Customers.Name AS CustomerName, 
                       Part_Program_Line_Map.ProgramId, Part_Program_Line_Map.LH, Part_Program_Line_Map.RH, eqp_Lines.ReOrderPercentThreshold, 
                       LineUserCount.user_count, eqp_Lines.Workcell as WC
@@ -177,17 +177,18 @@ Public Class SqlData
                     .Description = CStr(dRead("LineDefinition"))
                     .Id = CInt(dRead("LineId"))
                     .Name = CStr(dRead("LineName"))
-                    .SchedulerMethod = If(DBNull.Value.Equals(dRead("SchedulerMethod")), "", dRead("SchedulerMethod")) 'dRead("SchedulerMethod")
+                    .SchedulerMethod = CType(If(DBNull.Value.Equals(dRead("SchedulerMethod")), "", dRead("SchedulerMethod")), SchedulerMethods) 'dRead("SchedulerMethod")
                     .SelectCmd = CStr(dRead("SelectCmd"))
                     .WcfFileName = CStr(dRead("WcfFileName"))
-                    .ScheduleFolder = If(DBNull.Value.Equals(dRead("ScheduleFolder")), "", dRead("ScheduleFolder"))
-                    .CustomerName = If(DBNull.Value.Equals(dRead("CustomerName")), "", dRead("CustomerName"))
-                    .CustomerId = If(DBNull.Value.Equals(dRead("CustomerId")), 0, dRead("CustomerId"))
-                    .ProgramId = If(DBNull.Value.Equals(dRead("ProgramId")), 0, dRead("ProgramId"))
-                    .WorkBufferMinutes = If(DBNull.Value.Equals(dRead("WorkBufferMinutes")), 0, dRead("WorkBufferMinutes"))
-                    .ReOrderPercentThreshold = If(DBNull.Value.Equals(dRead("ReOrderPercentThreshold")), 0.8, dRead("ReOrderPercentThreshold"))
-                    .UserCount = If(DBNull.Value.Equals(dRead("user_count")), 1, dRead("user_count"))
-                    .WC = If(DBNull.Value.Equals(dRead("WC")), "", dRead("WC"))
+                    .ScheduleFolder = CType(If(DBNull.Value.Equals(dRead("ScheduleFolder")), "", dRead("ScheduleFolder")), String)
+                    .CustomerName = CType(If(DBNull.Value.Equals(dRead("CustomerName")), "", dRead("CustomerName")), String)
+                    .CustomerId = CInt(If(DBNull.Value.Equals(dRead("CustomerId")), 0, dRead("CustomerId")))
+                    .ProgramId = CInt(If(DBNull.Value.Equals(dRead("ProgramId")), 0, dRead("ProgramId")))
+                    .WorkBufferMinutes = CInt(If(DBNull.Value.Equals(dRead("WorkBufferMinutes")), 0, dRead("WorkBufferMinutes")))
+                    .ReOrderPercentThreshold = CSng(If(DBNull.Value.Equals(dRead("ReOrderPercentThreshold")), 0.8, dRead("ReOrderPercentThreshold")))
+                    .UserCount = CSng(If(DBNull.Value.Equals(dRead("user_count")), 1, dRead("user_count")))
+                    .WC = CType(If(DBNull.Value.Equals(dRead("WC")), "", dRead("WC")), String)
+                    .Customer_OrderId_Required = CBool(If(DBNull.Value.Equals(dRead("Customer_OrderId_Required")), False, dRead("Customer_OrderId_Required")))
                     .QueuedMinutes = 0
                 End With
                 lines.Add(Itm)

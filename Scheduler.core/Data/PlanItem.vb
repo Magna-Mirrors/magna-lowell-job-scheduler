@@ -6,7 +6,8 @@ Imports System.Runtime.Serialization
 Public Class PlanItem
     <DataMember>
     Public Property BuildID As String
-
+    <DataMember>
+    Public Property CustOrderId As String
     <DataMember>
     Public Property OrderId As Integer
     '    <DataMember>
@@ -39,7 +40,7 @@ Public Class PlanItem
     <DataMember>
     Public Property HHMM As String
     <DataMember>
-    Public Property Chk As String 'NOTE: Why is chk a string?
+    Public Property Chk As String 'NOTE: Why is chk a string? legacy text file support
     <DataMember>
     Public Property LastLoadTime As DateTime
     <DataMember>
@@ -63,7 +64,7 @@ Public Class PlanItem
                 Flags = Flags Or OrderFlags.Truck
             Else
                 If Flags.HasFlag(OrderFlags.Truck) Then
-                    Flags = Flags - OrderFlags.Truck
+                    Flags = CType(Flags - OrderFlags.Truck, OrderFlags)
                 End If
             End If
 
@@ -81,7 +82,7 @@ Public Class PlanItem
         Desc = ""
         Status = PlanStatus.Unknown
         Position = 0
-        Chk = False 'NOTE: Why is chk a string?
+        Chk = "" 'NOTE: Why is chk a string?
         Flags = 0
         Position = 0
         Shipdate = Date.Now

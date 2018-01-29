@@ -36,6 +36,9 @@ Public Class Line
     <DataMember>
     Public Property WC As String
 
+    <DataMember>
+    Public Property Customer_OrderId_Required As Boolean
+
     Public Sub New()
         Id = 0
         Name = ""
@@ -51,6 +54,7 @@ Public Class Line
         ReOrderPercentThreshold = 0.8
         UserCount = 1
         WC = ""
+        Customer_OrderId_Required = False
     End Sub
 
 End Class
