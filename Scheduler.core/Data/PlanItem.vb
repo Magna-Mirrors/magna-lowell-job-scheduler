@@ -76,6 +76,7 @@ Public Class PlanItem
     Public Sub New()
         OrderId = 0
         PartNumber = ""
+        CustOrderId = ""
         QTY = 0
         Built = 0
         Ordered = 0

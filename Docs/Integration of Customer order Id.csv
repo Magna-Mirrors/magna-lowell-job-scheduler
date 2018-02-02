@@ -1,0 +1,21 @@
+Addition of Customer order ID
+added Customer orderId Required into the Parts_Program
+added CustOrderId into Schedule_order_History string(32)
+
+
+added to plan object CustOrderId String property
+added to plan.flags as binary pos 16 CustomerOrderId required
+
+updated sqldata.ActiveOrderQuery  string to include CustOrderId
+
+
+Updated sqldata.GetPlanInsert 
+   added CustOrderId parameter
+
+updated sqldata.GetPlanUpdate 
+       added CustOrderId parameter
+
+added Customer_OrderId_Required to SqlData.LineQuery string	  
+
+added to sqldata.line the new field CustOrderIdRequired Bool 
+	   

@@ -39,11 +39,8 @@ Public Class AppTools
             ConfigurationManager(Of SvcParams).Save(SvcParams.getDefaults)
         End If
 
-
         Dim cfg = ConfigurationManager(Of SvcParams).Load()
-        If Not String.IsNullOrWhiteSpace(cfg.TempPw) Then
-            cfg.SqlPw = cfg.TempPw
-            cfg.TempPw = Nothing
+        If cfg.PasswordUpdate Then
             ConfigurationManager(Of SvcParams).Save(cfg)
         End If
         Return ConfigurationManager(Of SvcParams).Load()

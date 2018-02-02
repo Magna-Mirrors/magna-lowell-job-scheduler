@@ -47,44 +47,60 @@ Public NotInheritable Class LoggingService
 
     Private mEventArgs As LogEventArgs
     Public Sub SendAlert(Eventdata As LogEventArgs) Implements iLoggingService.SendAlert
-        Dim Logged As Boolean = False
+        'Dim Logged As Boolean = False
 
         mEventArgs = Eventdata
 
         Console.Write(String.Format("{0}, {1}, Facet = {2}, msg = {3}", Now, Eventdata.LogType, Eventdata.Facet, Eventdata.Message))
 
-        If Not Eventdata.LogType = LogType.plcevent Then
-            ActivityId += 1
+        'If Not Eventdata.LogType = LogType.plcevent Then
+        '    ActivityId += 1
 
-            If Eventdata.Ex IsNot Nothing Then
-                AddToActivityBuffer(New ActivityItem(ActivityId, Eventdata.Facet, Eventdata.Message, Eventdata.Ex))
-            Else
-                AddToActivityBuffer(New ActivityItem(ActivityId, Eventdata.Facet, Eventdata.Message, Eventdata.LogType))
-            End If
+        '    'If Eventdata.Ex IsNot Nothing Then
+        '    '    AddToActivityBuffer(New ActivityItem(ActivityId, Eventdata.Facet, Eventdata.Message, Eventdata.Ex))
+        '    'Else
+        '    '    AddToActivityBuffer(New ActivityItem(ActivityId, Eventdata.Facet, Eventdata.Message, Eventdata.LogType))
+        '    'End If
 
+        'End If
+
+
+
+        If Eventdata.Ex IsNot Nothing Then
+            Logger.Log(New LogEventInfo(LogLevel.Error, Eventdata.Facet, Nothing, Eventdata.Message, Nothing, Eventdata.Ex))
+        Else
+            Dim Lv As LogLevel
+            Select Case Eventdata.LogType
+                Case LogType.Error
+                    Lv = LogLevel.Error
+                Case LogType.info
+                    Lv = LogLevel.Info
+                Case LogType.Success
+                    Lv = LogLevel.Info
+                Case LogType.Warn
+                    Lv = LogLevel.Warn
+                Case Else
+                    Lv = LogLevel.Warn
+            End Select
+
+            Logger.Log({Eventdata.Facet, Eventdata.Message})
         End If
 
-        If Eventdata.Options.HasFlag(NotifyOptions.Log) Or mEventArgs.LogType = LogType.Error Or mEventArgs.LogType = LogType.Warn Then
-
-            If Eventdata.Ex IsNot Nothing Then
-                Logger.Log(New LogEventInfo(LogLevel.Error, Eventdata.Facet, Nothing, Eventdata.Ex.Message, Nothing, Eventdata.Ex.InnerException))
-            End If
-        End If
 
 
 
-        If Eventdata.Options.HasFlag(NotifyOptions.Email) Then
+        'If Eventdata.Options.HasFlag(NotifyOptions.Email) Then
 
 
 
-            'If SendEmail Then
-            '    If (mEventArgs.Facet.ToLower <> "email send error") Or (mEventArgs.Facet.ToLower <> "reportemailerror") Then
-            '        If Eventdata.Body.Length = 0 Then
-            '            Eventdata.Body = BuildBody("", Eventdata)
-            '        End If
-            '    End If
-            'End If
-        End If
+        '    'If SendEmail Then
+        '    '    If (mEventArgs.Facet.ToLower <> "email send error") Or (mEventArgs.Facet.ToLower <> "reportemailerror") Then
+        '    '        If Eventdata.Body.Length = 0 Then
+        '    '            Eventdata.Body = BuildBody("", Eventdata)
+        '    '        End If
+        '    '    End If
+        '    'End If
+        'End If
 
     End Sub
 

@@ -7,7 +7,7 @@ Public Class SvcParams
     Public Shared ReadOnly ParamPathAndFile As String = Path.Combine(ParamPath, "Config.xml")
 
     Private _ErpEncUserPw As String
-
+    Private _PwUpdate As Boolean
     Private _encUserPw As String
     <DataMember()>
     Public Property SqlSeverName As String
@@ -15,6 +15,14 @@ Public Class SvcParams
     Public Property SqlDbName As String
     <DataMember()>
     Public Property SqlUserName As String
+
+    <XmlIgnore()>
+    Public ReadOnly Property PasswordUpdate As Boolean
+        Get
+            Return _PwUpdate
+        End Get
+    End Property
+
 
     ''' <summary>
     ''' Decrypted Pw
@@ -27,6 +35,18 @@ Public Class SvcParams
         End Get
         Set(value As String)
             _encUserPw = clsCryptography.Encrypt(value)
+        End Set
+    End Property
+
+    Public Property NewSqlPw As String
+        Get
+            Return ""
+        End Get
+        Set(value As String)
+            If value.Length > 0 Then
+                _encUserPw = clsCryptography.Encrypt(value)
+                _PwUpdate = True
+            End If
         End Set
     End Property
 
@@ -46,16 +66,7 @@ Public Class SvcParams
         End Set
     End Property
 
-    Public Property TempPw As String
-    '    Get
-    '        Return ""
-    '    End Get
-    '    Set(value As String)
-    '        If value.Length > 0 Then
-    '            _encUserPw = clsCryptography.Encrypt(value)
-    '        End If
-    '    End Set
-    'End Property
+
 
 
     Public Property ErpSqlServername As String
@@ -91,6 +102,7 @@ Public Class SvcParams
         Set(value As String)
             If value.Length > 0 Then
                 _ErpEncUserPw = clsCryptography.Encrypt(value)
+                _PwUpdate = True
             End If
         End Set
     End Property
@@ -103,7 +115,7 @@ Public Class SvcParams
         Dim p As New SvcParams
         With p
             .SqlSeverName = "Localhost"
-            .SqlDbName = "Magna_Lowell"
+            .SqlDbName = "MagnaLowell"
             .SqlUserName = "sa"
             .SqlPw = "1234"
             .WcfRootPath = "E:\_Projects\M\Magna\Lowell\DainaWare\SupportFiles\WCF\"

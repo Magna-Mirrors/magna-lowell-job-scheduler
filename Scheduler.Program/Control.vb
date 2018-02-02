@@ -17,10 +17,12 @@ Public Class Control
 
     Public Sub StartController(Con As IContainer)
         StartServiceHost(Con)
+        StartOrderHandling()
     End Sub
 
 
     Public Sub StopController()
+        StopOrderHandling()
         StopServiceHost()
     End Sub
 
@@ -35,7 +37,7 @@ Public Class Control
             SvcHost.AddDependencyInjectionBehavior(Of core.iSchedulerService)(Cont)
             SvcHost.Description.Behaviors.Add(smb)
             SvcHost.Open()
-            LogService.SendAlert(New Scheduler.core.LogEventArgs(Scheduler.core.LogType.info, "Scheduler service was started"))
+            LogService.SendAlert(New Scheduler.core.LogEventArgs(Scheduler.core.LogType.info, "Scheduler service was started", "Service"))
         Catch ex As Exception
             LogService.SendAlert(New Scheduler.core.LogEventArgs("Service Host start", ex))
         End Try

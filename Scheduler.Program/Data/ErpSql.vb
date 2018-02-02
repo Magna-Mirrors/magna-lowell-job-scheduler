@@ -16,6 +16,7 @@ Public Class ErpSql
         Dim Tr As New TransactionResult
         Try
             Using Cn As New SqlClient.SqlConnection(GetConnectionString)
+                Cn.Open()
                 Dim Cmd = GetOrderCommitCommand(PrtOrder)
                 Cmd.Connection = Cn
                 Tr.Result = Cmd.ExecuteNonQuery()
@@ -34,7 +35,7 @@ Public Class ErpSql
         'ProdCounts_id   Workcell	ProdDate	ProdOrder	ProdItem	Qty_Passed	Qty_Failed	ProdCode	Operator	Posted
         Dim dCmd As New SqlClient.SqlCommand
         dCmd.Parameters.Add(New SqlClient.SqlParameter("@Workcell", PrtOrder.WC))
-        dCmd.Parameters.Add(New SqlClient.SqlParameter("@ProdDate", Format(Now, “MM/DD/YY HH:mm:SS”)))
+        dCmd.Parameters.Add(New SqlClient.SqlParameter("@ProdDate", SqlDbType.DateTimeOffset) With {.SqlValue = Now}) ' Format(Now, “MM/DD/YY HH:mm:SS”)
         dCmd.Parameters.Add(New SqlClient.SqlParameter("@ProdOrder", PrtOrder.Id))
         dCmd.Parameters.Add(New SqlClient.SqlParameter("@ProdItem", PrtOrder.partnumber))
         dCmd.Parameters.Add(New SqlClient.SqlParameter("@Qty_Passed", PrtOrder.Qty))

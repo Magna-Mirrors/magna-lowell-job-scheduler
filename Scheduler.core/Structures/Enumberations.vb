@@ -63,4 +63,5 @@ Public Enum OrderFlags
     <EnumMember> C = 2
     <EnumMember> Flag2 = 4
     <EnumMember> Flag3 = 8
+    <EnumMember> RequiresCustomerOrderId = 16
 End Enum

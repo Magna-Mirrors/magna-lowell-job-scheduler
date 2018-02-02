@@ -104,6 +104,7 @@
     <Import Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\WipOrder.vb" />
     <Compile Include="Interfaces\iSchedulerService.vb" />
     <Compile Include="Structures\ClientRequests\GetNextOrderRequest.vb" />
     <Compile Include="Structures\ClientRequests\GetScheduleRequest.vb" />

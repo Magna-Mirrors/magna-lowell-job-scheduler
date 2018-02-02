@@ -38,6 +38,8 @@ Public Class SchedulerService
         Return DataMgr.GetNextOrder(SourceData)
     End Function
 
+
+    'skip this order forces ia scheduled item to the back of the scheduled Queue
     Public Function SkipThisorder(SourceData As SkipOrderRequest) As SkipOrderResult Implements iSchedulerService.SkipThisorder
         Return DataMgr.SkipThisorder(SourceData)
     End Function

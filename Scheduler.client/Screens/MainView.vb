@@ -10,9 +10,12 @@ Public Class MainView
 
     Public Sub New()
         ' This call is required by the designer.
+        CurrentLine = New Line
         InitializeComponent()
+
         Utility = New core.AppTools
         Lines = New List(Of Line)
+
         ' Add any initialization after the InitializeComponent() call.
     End Sub
     Private Sub TreeView1_AfterSelect(sender As Object, e As TreeViewEventArgs) Handles LineTree.AfterSelect
@@ -21,6 +24,7 @@ Public Class MainView
         UpdateLineSelection()
         LineTree.Enabled = True
         cmdReadPlan.Enabled = True
+        setPlanView()
     End Sub
     Private Sub MainView_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         ConnectToService()
@@ -106,27 +110,29 @@ Public Class MainView
                         rowNew = Table.NewRow()
 
                         Dim Pn As String = ""
-                        Dim Qty As String = 0
+                        Dim Qty As String = "0"
                         Dim Desc As String = ""
-
+                        Dim CustOrderId As String = ""
 
                         For LoopCounter = 0 To SingleRowData.GetUpperBound(0)
                             rowNew(LoopCounter) = SingleRowData.GetValue(LoopCounter)
                             Select Case LoopCounter
-                                Case 0 : Pn = SingleRowData.GetValue(LoopCounter)
-                                Case 1 : Qty = SingleRowData.GetValue(LoopCounter)
-                                Case 2 : Desc = SingleRowData.GetValue(LoopCounter)
+                                Case 0 : Pn = CType(SingleRowData.GetValue(LoopCounter), String)
+                                Case 1 : Qty = CType(SingleRowData.GetValue(LoopCounter), String)
+                                Case 2 : Desc = CType(SingleRowData.GetValue(LoopCounter), String)
+                                Case 3 : CustOrderId = CType(SingleRowData.GetValue(LoopCounter), String)
                             End Select
                         Next
 
                         If IsNumeric(Qty) AndAlso Pn.Length > 4 Then
                             Dim P As New PlanItem()
                             P.PartNumber = Pn
-                            P.QTY = Qty
+                            P.QTY = CInt(Qty)
                             P.Desc = Desc
                             P.CreationDate = Now
                             P.DueDate = Now
                             P.Chk = "*"
+                            P.CustOrderId = CustOrderId
                             pARTS.Add(P)
                         End If
 
@@ -158,16 +164,21 @@ Public Class MainView
     End Sub
 
     Private Sub cmdSendPlan_Click(sender As Object, e As EventArgs) Handles cmdSendPlan.Click
-        If ValidatePlan() Then
-            SaveThePlan()
-        Else
-            Dim Litms As List(Of PlanItem) = DirectCast(PlandataSource.DataSource, List(Of PlanItem))
-            For Each I In Litms
-                If I.Chk <> "OK" Then
-                    I.Chk = "PN?"
-                End If
-            Next
-        End If
+        Try
+            If ValidatePlan() Then
+                SaveThePlan()
+            Else
+                Dim Litms As List(Of PlanItem) = DirectCast(PlandataSource.DataSource, List(Of PlanItem))
+                For Each I In Litms
+                    If I.Chk <> "OK" Then
+                        I.Chk = "PN?"
+                    End If
+                Next
+            End If
+        Catch ex As Exception
+
+        End Try
+
 
     End Sub
 
@@ -189,30 +200,51 @@ Public Class MainView
         If e.ColumnIndex > 3 Then Exit Sub
         If LoadingPlan Then Exit Sub
         Try
-            dgvEdit.Rows(e.RowIndex).Cells(4).Value = "*"
-            dgvEdit.Rows(e.RowIndex).Cells(4).Style.BackColor = System.Drawing.Color.Yellow
+            dgvEdit.Rows(e.RowIndex).Cells(5).Value = "*"
+            dgvEdit.Rows(e.RowIndex).Cells(5).Style.BackColor = System.Drawing.Color.Yellow
         Catch ex As Exception
 
         End Try
     End Sub
 
     Private Sub dgv_Resize(sender As Object, e As EventArgs) Handles dgv.Resize
-        dgv.Columns(0).Width = dgv.Width * 0.25
-        dgv.Columns(1).Width = dgv.Width * 0.25
-        dgv.Columns(2).Width = dgv.Width * 0.1
-        dgv.Columns(3).Width = dgv.Width * 0.1
-        dgv.Columns(4).Width = dgv.Width * 0.1
-        dgv.Columns(5).Width = dgv.Width * 0.15
-        dgv.Columns(6).Width = dgv.Width * 0.1
+        dgv.Columns(0).Width = CInt(dgv.Width * 0.25)
+        dgv.Columns(1).Width = CInt(dgv.Width * 0.25)
+        dgv.Columns(2).Width = CInt(dgv.Width * 0.1)
+        dgv.Columns(3).Width = CInt(dgv.Width * 0.1)
+        dgv.Columns(4).Width = CInt(dgv.Width * 0.1)
+        dgv.Columns(5).Width = CInt(dgv.Width * 0.15)
+        dgv.Columns(6).Width = CInt(dgv.Width * 0.1)
     End Sub
 
     Private Sub dgvEdit_Resize(sender As Object, e As EventArgs) Handles dgvEdit.Resize
-        dgvEdit.Columns(0).Width = dgvEdit.Width * 0.3
-        dgvEdit.Columns(1).Width = dgvEdit.Width * 0.1
-        dgvEdit.Columns(2).Width = dgvEdit.Width * 0.3
-        dgvEdit.Columns(3).Width = dgvEdit.Width * 0.1
-        dgvEdit.Columns(4).Width = dgvEdit.Width * 0.1
+
+        Call SetPlanView
+
     End Sub
+
+    Private Sub setPlanView()
+        If CurrentLine Is Nothing Then Exit Sub
+        If CurrentLine.CustomerOderIdRequired Then
+            dgvEdit.Columns(0).Width = CInt(dgvEdit.Width * 0.3) 'part Number
+            dgvEdit.Columns(1).Width = CInt(dgvEdit.Width * 0.07) 'Qty
+            dgvEdit.Columns(2).Width = CInt(dgvEdit.Width * 0.3) 'ShipDate
+            dgvEdit.Columns(3).Width = CInt(dgvEdit.Width * 0.07) 'Truck
+            dgvEdit.Columns(4).Width = CInt(dgvEdit.Width * 0.07) 'Chk
+            dgvEdit.Columns(5).Visible = True
+            dgvEdit.Columns(5).Width = CInt(dgvEdit.Width * 0.2) 'CustorderId
+
+        Else
+            dgvEdit.Columns(0).Width = CInt(dgvEdit.Width * 0.3) 'part Number
+            dgvEdit.Columns(1).Width = CInt(dgvEdit.Width * 0.07) 'Qty
+            dgvEdit.Columns(2).Width = CInt(dgvEdit.Width * 0.3) 'ShipDate
+            dgvEdit.Columns(3).Width = CInt(dgvEdit.Width * 0.1) 'Truck
+            dgvEdit.Columns(4).Width = CInt(dgvEdit.Width * 0.1) 'Chk
+            dgvEdit.Columns(5).Visible = False
+            dgvEdit.Columns(5).Width = CInt(dgvEdit.Width * 0.0) 'CustorderId
+        End If
+    End Sub
+
 
     Private Sub dgvEdit_SelectionChanged(sender As Object, e As EventArgs) Handles dgvEdit.SelectionChanged
         If Not LoadingPlan Then
@@ -255,7 +287,7 @@ Public Class MainView
             If S.Parent IsNot Nothing Then
                 lblLineName.Text = String.Format("({0} {1}) Selected For Edit", S.Parent.Text, S.Text)
                 Enabelnavigation = True
-                CurrentLine = (From x In Lines Where x.Id = S.Tag).FirstOrDefault
+                CurrentLine = (From x In Lines Where x.Id = CInt(S.Tag)).FirstOrDefault
             Else
                 lblLineName.Text = "Select Line For Schedule Edit"
                 CurrentLine = Nothing ' New Line()
@@ -274,7 +306,7 @@ Public Class MainView
 
     Private Sub LoadPlanData()
         LoadingPlan = True
-        If CurrentLine IsNot Nothing Then
+        If CurrentLine IsNot Nothing AndAlso CurrentLine.Id > 0 Then
             Dim GetPlanReq As New GetPlanRequest(CurrentLine)
             Dim R = ClientAccess.GetPlan(GetPlanReq)
             If R.Result > 0 Then
@@ -517,9 +549,13 @@ Public Class MainView
         Dim Failed As Boolean = False
         For Each P In Litms
             If P.Status <> PlanStatus.Removed Then
+                If CurrentLine.CustomerOderIdRequired Then
+                    If Not P.Flags.HasFlag(OrderFlags.RequiresCustomerOrderId) Then
+                        P.Flags = P.Flags Or OrderFlags.RequiresCustomerOrderId
+                    End If
+                End If
                 Vpr.Parts.Add(New Part() With {.PN = P.PartNumber, .Valid = False, .Desc = P.Desc})
             End If
-
         Next
 
         Vpr.LineData = CurrentLine
@@ -529,19 +565,33 @@ Public Class MainView
                 If p.Valid Then
                     Dim Prts = From x In Litms Where x.PartNumber = p.PN
                     If Prts IsNot Nothing AndAlso Prts.Count > 0 Then
-                        For Each i In Prts
+                        For Each i As PlanItem In Prts
+                            If i.OrderId = 0 Then
+                                i.Status = PlanStatus.Planed
+                            End If
+                            i.TargetLineId = CurrentLine.Id
                             i.Desc = p.Desc
                             If p.Id IsNot Nothing Then
-                                i.PartId = p.Id
+                                i.PartId = CInt(p.Id)
                             Else
                                 ' Stop
                             End If
-                            i.Chk = "OK"
+                            If i.Flags.HasFlag(OrderFlags.RequiresCustomerOrderId) Then
+                                If i.CustOrderId.Length > 2 Then
+                                    i.Chk = "OK"
+                                Else
+                                    i.Chk = "CID?"
+                                End If
+
+                            Else
+                                i.Chk = "OK"
+                            End If
+
                         Next
                     End If
                 Else
                     Dim Prts = From x In Litms Where x.PartNumber = p.PN
-                    For Each i In Prts
+                    For Each i As PlanItem In Prts
                         i.Chk = "PN?"
                     Next
                 End If

@@ -15,12 +15,11 @@ Public Class BaanOrderHandling
     '7: work into and convert the planed items into scheduled items
     Private ReadOnly _DataMgr As DataManager
     Private ReadOnly _Cfg As SvcParams
+    Private ReadOnly _Log As iLoggingService
     Private _IsRunning As Boolean
     Private _LastRan As Date
+    Private _Tools As AppTools
     Public Property RunNow As Boolean
-
-
-
 
     Private Sub Enque()
 
@@ -32,16 +31,22 @@ Public Class BaanOrderHandling
         End Get
     End Property
 
+    Public Async Function RunAsync(CT As CancellationToken) As Task
 
-
-    Public Function RunAsync(CT As CancellationToken) As Task
-        Return Task.Run(Async Function()
-                            _IsRunning = True
+        _IsRunning = True
                             While (Not CT.IsCancellationRequested)
-                                Await Task.Delay(100)
+                                Await Task.Delay(10000)
 
                                 If Now.Subtract(_LastRan).TotalMinutes >= _Cfg.UpdateOrdersIntervalMinutes Then
-                                    _DataMgr.ProcessOrders()
+                                    Try
+                                        _DataMgr.ProcessLineOrders()
+                                        Dim Cfg = _Tools.GetProgramParams
+                                        _Cfg.UpdateOrdersIntervalMinutes = Cfg.UpdateOrdersIntervalMinutes
+                                    Catch ex As Exception
+                                        _Log.SendAlert(New LogEventArgs("OrderHandling", ex))
+                                    End Try
+
+                                    _LastRan = Now
                                 End If
 
                                 If RunNow Then
@@ -49,32 +54,17 @@ Public Class BaanOrderHandling
                                 End If
 
                             End While
-                            'Timer Or task
-                            'tool for task
+
                             _IsRunning = False
-                        End Function)
+
     End Function
 
 
-
-
-
-
-    Public Sub New(Dm As DataManager, Atools As AppTools)
-        _Cfg = Atools.GetProgramParams
+    Public Sub New(Dm As DataManager, Atools As AppTools, MsgSvc As iLoggingService)
+        _Tools = Atools
+        _Cfg = _Tools.GetProgramParams
         _DataMgr = Dm
         _LastRan = DateTime.MinValue
     End Sub
-
-
-
-    Public Sub ProcessLineOrders()
-
-
-    End Sub
-
-
-
-
 
 End Class

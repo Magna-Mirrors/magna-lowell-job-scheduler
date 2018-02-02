@@ -7,14 +7,6 @@ Public Class DataManager
     Protected ReadOnly _Tools As AppTools
     Protected ReadOnly _ErpAccess As ErpSql
     Private _Cfg As SvcParams
-    'this is the goto spot got getting part information
-
-    '  Public Shared ReadOnly Property Instance() As DataManager
-    ' Get
-    '   Return m_Instance.Value
-    '  End Get
-    '   End Property
-
 
 
     Public Sub New(LgSvc As iLoggingService, Atool As AppTools, SqlSvc As SqlData, MdbAccess As MdbData, ErpAccess As ErpSql)
@@ -24,7 +16,7 @@ Public Class DataManager
         _MdbAccess = MdbAccess
         _LoggingService = LgSvc
         _SqlAccess = SqlSvc
-
+        _ErpAccess = ErpAccess
     End Sub
 
     Public Function GetLine(Lineid As Integer) As GetLineResponse
@@ -53,6 +45,9 @@ Public Class DataManager
         Return Rslt
     End Function
 
+    Public Function getLineUserCount(LineId As Integer) As Integer
+        Return _SqlAccess.GetUsersOnLine(LineId)
+    End Function
 
     Public Function GetSubscribingLines() As GetLinesResponse
         Dim Rslt As New GetLinesResponse
@@ -125,7 +120,7 @@ Public Class DataManager
     Public Function GetNextOrder(SourceData As GetNextOrderRequest) As GetNextOrderResult
         Dim Rslt As New GetNextOrderResult
         If SourceData.LineId > 0 Then
-            Dim Sd = GetPlannedOrders(SourceData.LineId)
+            Dim Sd = GetScheduledOrders(SourceData.LineId)
             If Sd IsNot Nothing AndAlso Sd.Any() Then
                 Rslt.Item = Sd(0)
                 Rslt.Result = 1
@@ -141,7 +136,7 @@ Public Class DataManager
         Dim Rslt As New SkipOrderResult
         'GetOrderId
         If SourceData.Lineid > 0 Then
-            Dim Sd = GetPlannedOrders(SourceData.Lineid)       'get all orders that are scheduled
+            Dim Sd = GetScheduledOrders(SourceData.Lineid)       'get all orders that are scheduled
             If Sd IsNot Nothing AndAlso Sd.Any() Then
                 Sd(0).Position = Sd.Count                                                           'set position to found plan list count
                 _SqlAccess.updateOrderPosition(Sd(0).OrderId, Sd(0).Position)
@@ -173,7 +168,7 @@ Public Class DataManager
     Public Function GetLineSchedule(SourceData As GetScheduleRequest) As GetScheduleResult
         Dim Rslt As New GetScheduleResult
         If SourceData.LineId > 0 Then
-            Dim Sd = GetPlannedOrders(SourceData.LineId)
+            Dim Sd = GetScheduledOrders(SourceData.LineId)
             Rslt.Items = Sd.ToList()
             Rslt.Result = 1
         Else
@@ -185,86 +180,110 @@ Public Class DataManager
 
 
 
+    Public Sub ProcessLineOrders()
+        Dim CurrentWip As List(Of WipOrder) = _SqlAccess.GetWipOrders
+        If CurrentWip IsNot Nothing AndAlso CurrentWip.Count > 0 Then
 
-    'Order Management
-    Public Sub ProcessOrders()
-        Dim LinesRequest = _SqlAccess.GetLinesData(True) 'get line information for lines with scheduled controlled in Sql
-        If LinesRequest.Result > 0 Then
-            'get listoflineid
-            Dim rOrder = _SqlAccess.GetActiveOrders(0)
-            If rOrder.Result > 0 Then
-                For Each L In LinesRequest.Lines
-                    'what is the sum of orderes you have now in minutes
-                    Dim LineOrders = (From x In rOrder.PlanData Where x.TargetLineId = L.Id).ToList()
-                    If LineOrders IsNot Nothing AndAlso LineOrders.Count > 0 Then
-                        Dim Ordered = LineOrders.Select(Function(x) x.Built).Sum
-                        Dim Built = LineOrders.Select(Function(x) x.Built).Sum
-                        Dim PPPHAvg = LineOrders.Select(Function(x) x.PPHPP).Average
-                        Dim Resources = ((L.UserCount * PPPHAvg) / 60)
-                        L.QueuedMinutes = ((Ordered - Built) * Resources) 'minutes worth of parts that have been ordered
-                        If (L.QueuedMinutes / L.WorkBufferMinutes) < L.ReOrderPercentThreshold Then
-                            Dim DeltaMin = (L.WorkBufferMinutes - L.QueuedMinutes) 'get hou many minutes that will be needed to fill the requirement
-                            Dim PartsToOrder As Integer = CInt(DeltaMin / Resources) 'translate this to the number of parts that will be needed
-                            If PartsToOrder > 0 Then
-                                Orderparts(PartsToOrder, LineOrders, L.WC)
-                            End If
-                        End If
+            Dim Lines = CurrentWip.Select(Function(x) x.LineId).Distinct.ToList
+            For Each L In Lines
+                Dim UserCnt As Integer = getLineUserCount(L)
+                Dim Witms = From x In CurrentWip Where x.LineId = L
+                If UserCnt <= 0 Then UserCnt = 1 'minimum user count needs to be 1 for patislpating line
+                If Witms IsNot Nothing AndAlso Witms.Count > 0 Then
+                    Dim PPPP As Double = Witms.Select(Function(x) x.PartsPerHourPerPerson).Average
+                    Dim PartHoursOnHand As Double = CType((((Witms.Select(Function(x) x.Ordered).Sum) - Witms.Select(Function(x) x.Built).Sum) / PPPP) / UserCnt, Double)
+                    Dim WipHours = Witms.Select(Function(x) x.WipHours).FirstOrDefault
+                    Dim Delta As Double = WipHours - PartHoursOnHand
+                    Dim PartsNeeded As Integer = CInt(Delta * (PPPP * UserCnt))
+                    Dim TriggerLevel = WipHours * Witms.Select(Function(x) x.ReOrderAtPercent).FirstOrDefault
+
+
+                    If (PartsNeeded > 0) AndAlso PartHoursOnHand <= TriggerLevel Then
+                        For Each W In Witms
+                            Try
+                                Dim MaxPosition As Long = 0
+                                Dim SItms = (From V In CurrentWip Where V.LineId = L And V.Status = PlanStatus.Scheduled)
+                                If SItms IsNot Nothing AndAlso SItms.Any Then
+                                    MaxPosition = SItms.Select(Function(x) x.Position).Max
+                                End If
+
+                                PartsNeeded -= OrderThisPart(W, PartsNeeded, MaxPosition)
+                                If PartsNeeded <= 0 Then Exit For
+                            Catch ex As Exception
+                                _LoggingService.SendAlert(New LogEventArgs("Processing Orders", ex))
+                            End Try
+
+                        Next
                     End If
-                Next
-            End If
+
+                End If
+                'move on to the next line
+            Next
         End If
+        'get all orders that are open and ordered Counts less than target Counts
+
     End Sub
 
 
-    Public Function Orderparts(QtyToOrder As Integer, ActiveOrders As List(Of PlanItem), Wc As String) As Integer
-        Dim Qh As Integer
-        Dim Exess = (From x In ActiveOrders Where x.Built < x.Ordered).ToArray
-        If Exess IsNot Nothing AndAlso Exess.Count > 0 Then
-            For Each E In Exess
-                If QtyToOrder <= 0 Then Exit For
-                Dim Remaining = E.Ordered - E.Built
-                If QtyToOrder >= Remaining Then
-                    'order remaining
-                    OrderThisPart(Remaining, E, Wc)
-                    If E.Status = PlanStatus.Planed Then
-                        _SqlAccess.UpdatePlanStatus(E.OrderId, PlanStatus.Scheduled)
+
+
+
+
+    Public Function OrderThisPart(Itm As WipOrder, Required As Integer, MaxPos As Long) As Integer
+        Try
+            Dim Porder As New PartOrder()
+            Dim Qty As Integer = 0
+            Dim D = Itm.TargetQty - (Itm.Ordered - Itm.Built)
+            If D >= Required Then
+                Qty = Required
+            ElseIf D > 0 Then
+                Qty = D
+            End If
+
+
+
+            If Qty > 0 Then
+                With Porder
+                    .Id = Itm.Ordered
+                    .partnumber = Itm.PartNumber
+                    .Qty = Qty
+                    .WC = Itm.WorkCell
+                    .PartRequestType = PartOrderType.Order
+                End With
+                Dim Result As TransactionResult = _ErpAccess.CommitpartOrder(Porder)
+
+                If Result.Result = 1 Then
+                    Itm.RequestOrderQty = Qty
+                    If _SqlAccess.LogPartOrder(Itm) > 0 Then
+                        Itm.Ordered = Itm.Ordered + Qty
+                        If Itm.Status = PlanStatus.Planed Then
+                            ' GetAllSettings max position from orderes that are scheduled add 1 for this one if there isnt on then leave the position
+
+                            If MaxPos = 0 Then
+                                MaxPos = Itm.Position
+                            Else
+                                MaxPos += 1
+                            End If
+
+                            If _SqlAccess.UpdateOrderstatus(Itm.OrderId, PlanStatus.Scheduled, MaxPos) > 0 Then
+                                Itm.Status = PlanStatus.Scheduled
+                            End If
+                        End If
+                        Return D
                     End If
-                    E.Ordered += Remaining
-                    QtyToOrder -= Remaining
-                    Qh += Remaining
-                Else
-                    ' Order this
-                    OrderThisPart(Remaining, E, Wc)
-                    If E.Status = PlanStatus.Planed Then
-                        _SqlAccess.UpdatePlanStatus(E.OrderId, PlanStatus.Scheduled)
-                    End If
-                    QtyToOrder -= Remaining
-                    E.Ordered += Remaining
-                    Qh += Remaining
                 End If
-            Next
-        End If
+            End If
+            Return 0
+        Catch ex As Exception
+            _LoggingService.SendAlert(New LogEventArgs("Ordering Part", ex))
+            Return 0
+        End Try
 
-        Return Qh
-    End Function
-
-    Public Function OrderThisPart(Qty As Integer, OrderItem As PlanItem, Wc As String) As Integer
-        Dim Porder As New PartOrder()
-        With Porder
-            .Id = OrderItem.OrderId
-            .partnumber = OrderItem.PartNumber
-            .Qty = Qty
-            .WC = Wc
-            .PartRequestType = PartOrderType.Order
-        End With
-
-        Dim Result = _ErpAccess.CommitpartOrder(Porder)
-
-        Return 1
     End Function
 
 
-    Private Function GetPlannedOrders(lineid As Integer) As List(Of PlanItem)
+
+    Private Function GetScheduledOrders(lineid As Integer) As List(Of PlanItem)
         If lineid <= 0 Then
             Throw New ArgumentException("Line Id must be greater than zero.", NameOf(lineid))
         End If
