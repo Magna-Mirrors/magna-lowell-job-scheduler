@@ -171,7 +171,7 @@ Public Class MainView
                 Dim Litms As List(Of PlanItem) = DirectCast(PlandataSource.DataSource, List(Of PlanItem))
                 For Each I In Litms
                     If I.Chk <> "OK" Then
-                        I.Chk = "PN?"
+                        '   I.Chk = "PN?"
                     End If
                 Next
             End If
@@ -200,8 +200,8 @@ Public Class MainView
         If e.ColumnIndex > 3 Then Exit Sub
         If LoadingPlan Then Exit Sub
         Try
-            dgvEdit.Rows(e.RowIndex).Cells(5).Value = "*"
-            dgvEdit.Rows(e.RowIndex).Cells(5).Style.BackColor = System.Drawing.Color.Yellow
+            dgvEdit.Rows(e.RowIndex).Cells(4).Value = "*"
+            dgvEdit.Rows(e.RowIndex).Cells(4).Style.BackColor = System.Drawing.Color.Yellow
         Catch ex As Exception
 
         End Try
@@ -228,9 +228,9 @@ Public Class MainView
         If CurrentLine.CustomerOderIdRequired Then
             dgvEdit.Columns(0).Width = CInt(dgvEdit.Width * 0.3) 'part Number
             dgvEdit.Columns(1).Width = CInt(dgvEdit.Width * 0.07) 'Qty
-            dgvEdit.Columns(2).Width = CInt(dgvEdit.Width * 0.3) 'ShipDate
+            dgvEdit.Columns(2).Width = CInt(dgvEdit.Width * 0.2) 'ShipDate
             dgvEdit.Columns(3).Width = CInt(dgvEdit.Width * 0.07) 'Truck
-            dgvEdit.Columns(4).Width = CInt(dgvEdit.Width * 0.07) 'Chk
+            dgvEdit.Columns(4).Width = CInt(dgvEdit.Width * 0.09) 'Chk
             dgvEdit.Columns(5).Visible = True
             dgvEdit.Columns(5).Width = CInt(dgvEdit.Width * 0.2) 'CustorderId
 
@@ -491,6 +491,7 @@ Public Class MainView
                     Case "Done" : R.Cells(4).Style.BackColor = System.Drawing.Color.Lime
                     Case "PN?" : R.Cells(4).Style.BackColor = System.Drawing.Color.Salmon
                     Case "*" : R.Cells(4).Style.BackColor = System.Drawing.Color.Yellow
+                    Case "CID?" : R.Cells(4).Style.BackColor = System.Drawing.Color.Salmon
                     Case "X" : R.Cells(4).Style.BackColor = System.Drawing.Color.Yellow
                     Case Else : R.Cells(4).Style.BackColor = System.Drawing.Color.Coral
                 End Select
@@ -602,7 +603,7 @@ Public Class MainView
         For Each j In Litms
             If Not j.Chk = "OK" Then
                 If j.Status <> PlanStatus.Removed Then
-                    j.Chk = "PN?"
+                    ' j.Chk = "PN?"
                     Failed = True
                 End If
 
@@ -633,6 +634,10 @@ Public Class MainView
                 cmdRun_Click()
             End If
         End If
+    End Sub
+
+    Private Sub dgvEdit_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles dgvEdit.CellContentClick
+
     End Sub
     'Private Sub dgvEdit_BackColorChanged(sender As Object, e As EventArgs) Handles dgvEdit.BackColorChanged
 

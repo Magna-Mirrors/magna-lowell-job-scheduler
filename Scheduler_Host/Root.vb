@@ -9,7 +9,7 @@ Module Root
     Dim Are As New AutoResetEvent(False)
     Dim Ccont As Control
     Dim Container As IContainer
-    'Dim d
+
 
 
     Sub Main()

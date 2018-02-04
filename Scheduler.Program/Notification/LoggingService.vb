@@ -82,8 +82,7 @@ Public NotInheritable Class LoggingService
                 Case Else
                     Lv = LogLevel.Warn
             End Select
-
-            Logger.Log({Eventdata.Facet, Eventdata.Message})
+            Logger.Log(New LogEventInfo(Lv, Eventdata.Facet, Nothing, Eventdata.Message, Nothing))
         End If
 
 

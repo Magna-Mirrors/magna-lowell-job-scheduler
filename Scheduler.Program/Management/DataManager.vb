@@ -45,6 +45,23 @@ Public Class DataManager
         Return Rslt
     End Function
 
+
+
+    Public Function GetSqlLines() As List(Of Line)
+        Dim Rslt As New GetLinesResponse
+        Try
+            Rslt = _SqlAccess.GetLinesData(True)
+            Rslt.Result = 1
+        Catch ex As Exception
+            Rslt.Result = -1
+            Rslt.ResultString = "GetLines Error " & ex.Message
+        End Try
+
+        Return Rslt.Lines
+    End Function
+
+
+
     Public Function getLineUserCount(LineId As Integer) As Integer
         Return _SqlAccess.GetUsersOnLine(LineId)
     End Function
@@ -183,7 +200,6 @@ Public Class DataManager
     Public Sub ProcessLineOrders()
         Dim CurrentWip As List(Of WipOrder) = _SqlAccess.GetWipOrders
         If CurrentWip IsNot Nothing AndAlso CurrentWip.Count > 0 Then
-
             Dim Lines = CurrentWip.Select(Function(x) x.LineId).Distinct.ToList
             For Each L In Lines
                 Dim UserCnt As Integer = getLineUserCount(L)

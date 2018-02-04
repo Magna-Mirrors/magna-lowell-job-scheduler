@@ -6,19 +6,12 @@ Public Class SqlData
     Private ReadOnly LgSvr As iLoggingService
 
     'TargetLineId,	priority,	PN,	OrderId,	Ordered,	Built,	Qty,	PartId,	Flags,	Desc,	Name,	Status,	PPHPP, DueDate
-    Private Const ActiveOrderQuery As String = "SELECT TOP (100) PERCENT Schedule_Order_History.TargetLineId, Schedule_Order_History.Position AS priority, Part_Info.PN, Part_Info.PartId, Schedule_Order_History.ID AS OrderId, 
-                      SUM(Schedule_Part_Order_History.Qty) AS Ordered, SUM(Schedule_Part_Production_History.Qty) AS Built, MAX(Schedule_Order_History.Quantity) AS Qty, 
-                      Schedule_Order_History.Flags, Part_Info.Desc1 AS [Desc], Part_Info.Name, Schedule_Order_History.Status, Part_Options.PartsPerHourPerPerson AS PPHPP, 
-                      Schedule_Order_History.ScheduleDate AS DueDate, Schedule_Order_History.CustOrderId
-                      FROM Schedule_Order_History INNER JOIN
-                      Part_Info ON Schedule_Order_History.PartId = Part_Info.PartId INNER JOIN
-                      Part_Options ON Part_Info.OptionId = Part_Options.OptionId LEFT OUTER JOIN
-                      Schedule_Part_Production_History ON Schedule_Order_History.ID = Schedule_Part_Production_History.OrderId LEFT OUTER JOIN
-                      Schedule_Part_Order_History ON Schedule_Order_History.ID = Schedule_Part_Order_History.OrderId
-                      WHERE (Schedule_Order_History.Status < 4) {0}
-                      GROUP BY Schedule_Order_History.Position, Schedule_Order_History.ID, Schedule_Order_History.TargetLineId, Part_Info.PN, Schedule_Order_History.Status, Part_Info.Desc1, 
-                      Part_Info.Name, Schedule_Order_History.Flags, Part_Options.PartsPerHourPerPerson, Schedule_Order_History.ScheduleDate, Part_Info.PartId, Schedule_Order_History.CustOrderId
-                      ORDER BY Schedule_Order_History.TargetLineId, priority"
+    Private Const ActiveOrderQuery As String = "SELECT [TargetLineId]
+                     ,[Priority],[PN],[PartId],[OrderId],[Ordered],[Built],[Qty],[Flags],[Desc],[Name],[Status],[PPHPP],[DueDate],[CustOrderId],
+                     [ReOrderPercentThreshold], [WorkBufferMinutes],[Workcell]
+                     FROM [View_ActiveOrders]
+                     {0}
+                     order by status, Priority"
 
     'LineId,	CustomerId,	LineName,	LineDefinition,	MaxConcurrentLogins,	WcfFileName,	SelectCmd,	ScheduleFolder,	SchedulerMethod,	WorkBufferMinutes,	CustomerName,	ProgramId,	LH,	RH, ReOrderPercentThreshold, User_Count,Wc
     Private Const LineQuery As String = "SELECT eqp_Lines.Id AS LineId, eqp_Lines.CustomerId, Part_Programs.Customer_OrderId_Required, eqp_Lines.LineName, eqp_Lines.LineDefinition, 
@@ -40,22 +33,6 @@ Public Class SqlData
                       dbo.Part_Program_Line_Map ON dbo.Part_Programs.ProgId = dbo.Part_Program_Line_Map.ProgramId
                       Where dbo.Part_Program_Line_Map.LineId = {0} and dbo.Part_Info.PN in({1}) "
 
-
-    Private LineOrderstatusQuery As String = "SELECT TOP (100) PERCENT dbo.Schedule_Order_History.TargetLineId AS LineId, dbo.Schedule_Order_History.Status, dbo.Schedule_Order_History.Position, 
-                      dbo.Schedule_Order_History.ID AS OrderId, dbo.Part_Info.PN AS PartNumber, MAX(dbo.Schedule_Order_History.Quantity) AS TargetQty, 
-                      SUM(dbo.Schedule_Part_Production_History.Qty) AS Built, SUM(dbo.Schedule_Part_Order_History.Qty) AS Ordered, AVG(dbo.Part_Options.PartsPerHourPerPerson) 
-                      AS PPPP, dbo.eqp_Lines.Workcell, MAX(dbo.eqp_Lines.WorkBufferMinutes) / 60 AS WipHours, MAX(dbo.eqp_Lines.ReOrderPercentThreshold) 
-                      AS ReOrderAtPercent
-                      FROM dbo.Schedule_Order_History INNER JOIN
-                      dbo.Part_Info ON dbo.Schedule_Order_History.PartId = dbo.Part_Info.PartId INNER JOIN
-                      dbo.Part_Options ON dbo.Part_Info.OptionId = dbo.Part_Options.OptionId INNER JOIN
-                      dbo.eqp_Lines ON dbo.Schedule_Order_History.TargetLineId = dbo.eqp_Lines.Id LEFT OUTER JOIN
-                      dbo.Schedule_Part_Order_History ON dbo.Schedule_Order_History.ID = dbo.Schedule_Part_Order_History.OrderId LEFT OUTER JOIN
-                      dbo.Schedule_Part_Production_History ON dbo.Schedule_Order_History.ID = dbo.Schedule_Part_Production_History.OrderId
-                      WHERE (dbo.Schedule_Order_History.Status BETWEEN 2 AND 3)
-                      GROUP BY dbo.Schedule_Order_History.TargetLineId, dbo.Schedule_Order_History.Status, dbo.Schedule_Order_History.Position, dbo.Schedule_Order_History.ID, 
-                      dbo.Part_Info.PN, dbo.eqp_Lines.Workcell
-                      ORDER BY dbo.Schedule_Order_History.Status DESC, dbo.Schedule_Order_History.Position"
 
 
     Public Sub New(LgSvr As iLoggingService, Atools As AppTools)
@@ -112,6 +89,7 @@ Public Class SqlData
         End Using
         Return Rslt
     End Function
+
 
 
 
@@ -240,7 +218,7 @@ Public Class SqlData
         Dim Items As New List(Of PlanItem)
         Using Cn = GetConnection()
             Cn.Open()
-            Dim WC = If(Lineid > 0, String.Format("AND (Schedule_Order_History.TargetLineId = {0})", Lineid), "")
+            Dim WC = If(Lineid > 0, String.Format("Where (TargetLineId = {0})", Lineid), "")
             Dim Cmd As New SqlClient.SqlCommand(String.Format(ActiveOrderQuery, WC), Cn)
             Using dRead As IDataReader = Cmd.ExecuteReader()
                 While dRead.Read
@@ -276,26 +254,28 @@ Public Class SqlData
         Dim Wip As New List(Of WipOrder)
         Using Cn = GetConnection()
             Cn.Open()
-            Dim Cmd As New SqlClient.SqlCommand(LineOrderstatusQuery, Cn)
+
+            Dim Cmd As New SqlClient.SqlCommand(String.Format(ActiveOrderQuery, ""), Cn)
             Using dRead As IDataReader = Cmd.ExecuteReader()
                 While dRead.Read
+                    'TargetLineId,	priority,	PN,	OrderId,	Ordered,	Built,	Qty,	PartId,	Flags,	Desc,	Name,	Status,	PPHPP, DueDate,ReOrderPercentThreshold,WorkBufferMinutes,Workcell
                     Dim W As New WipOrder
-                    W.LineId = CInt(dRead("LineId"))
+                    W.LineId = CInt(dRead("TargetLineId"))
                     W.Status = CType(dRead("Status"), PlanStatus)
-                    W.Position = CType(dRead("Position"), Long)
-                    W.OrderId = CType(dRead("OrderId"), Integer)
-                    W.PartNumber = CStr(dRead("PartNumber"))
-                    W.TargetQty = CType(dRead("TargetQty"), Integer)
-                    W.WipHours = CType(dRead("WipHours"), Double)
-                    W.ReOrderAtPercent = CType(dRead("ReOrderAtPercent"), Double)
+                    W.Position = CType(dRead("priority"), Long)
+                    W.OrderId = CType(dRead("OrderID"), Integer)
+                    W.PartNumber = CStr(dRead("PN"))
+                    W.TargetQty = CType(dRead("Qty"), Integer)
+                    W.WipHours = CType(dRead("WorkBufferMinutes"), Double) / 60
+                    W.ReOrderAtPercent = CType(dRead("ReOrderPercentThreshold"), Double)
                     If Not DBNull.Value.Equals(dRead("WorkCell")) Then W.WorkCell = dRead("WorkCell").ToString
-                    If Not DBNull.Value.Equals(dRead("PPPP")) Then W.PartsPerHourPerPerson = CInt(dRead("PPPP"))
-                    If Not DBNull.Value.Equals(dRead("Built")) Then W.Built = CType(dRead("Built"), Integer)
-                    If Not DBNull.Value.Equals(dRead("Ordered")) Then W.Ordered = CType(dRead("Ordered"), Integer)
-
+                    If Not DBNull.Value.Equals(dRead("PPHPP")) Then W.PartsPerHourPerPerson = CInt(dRead("PPHPP"))
+                    If Not DBNull.Value.Equals(dRead("Built")) Then W.PartsPerHourPerPerson = CInt(dRead("Built"))
+                    If Not DBNull.Value.Equals(dRead("Ordered")) Then W.PartsPerHourPerPerson = CInt(dRead("Ordered"))
                     Wip.Add(W)
                 End While
             End Using
+
         End Using
         Return Wip
     End Function
