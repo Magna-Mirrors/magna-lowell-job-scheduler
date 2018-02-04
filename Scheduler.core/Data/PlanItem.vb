@@ -53,6 +53,7 @@ Public Class PlanItem
     <DataMember>
     Public Property PPHPP As Single
 
+    Public Property WorkCell As String
 
     <DataMember>
     Public Property Truck As Boolean
@@ -92,6 +93,7 @@ Public Class PlanItem
         MMDDYY = CreationDate.ToString("MMddyy")
         LastLoadTime = Date.MinValue
         BuildID = String.Format("{0:MMddyy}-{1:hhmm}-{2:0ss}", CreationDate, CreationDate, CreationDate)
+        WorkCell = ""
     End Sub
 
 End Class

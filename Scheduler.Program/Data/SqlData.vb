@@ -34,7 +34,6 @@ Public Class SqlData
                       Where dbo.Part_Program_Line_Map.LineId = {0} and dbo.Part_Info.PN in({1}) "
 
 
-
     Public Sub New(LgSvr As iLoggingService, Atools As AppTools)
         _Cfg = Atools.GetProgramParams
         Me.LgSvr = LgSvr
@@ -91,8 +90,6 @@ Public Class SqlData
     End Function
 
 
-
-
     Public Function GetLinesData(SqlLinesOnly As Boolean) As GetLinesResponse
         Dim Rslt As New GetLinesResponse
 
@@ -112,10 +109,8 @@ Public Class SqlData
     Public Function GetLineData(LineId As Integer) As Line
         Using Cn = GetConnection()
             Cn.Open()
-
             Dim Cmd As New SqlClient.SqlCommand(String.Format(LineQuery, "Where Id = " & LineId), Cn)
             Return ParseOutLines(Cmd, True).FirstOrDefault()
-           
         End Using
         Return Nothing
     End Function
@@ -131,9 +126,7 @@ Public Class SqlData
                     .Id = CInt(dRead("LineId"))
                     .Name = CStr(dRead("LineName"))
                     .SchedulerMethod = CType(If(DBNull.Value.Equals(dRead("SchedulerMethod")), SchedulerMethods.None, dRead("SchedulerMethod")), SchedulerMethods) 'dRead("SchedulerMethod")
-
                     'SchedulerMethods
-
                     .SelectCmd = CStr(dRead("SelectCmd"))
                     .WcfFileName = CStr(dRead("WcfFileName"))
                     .ScheduleFolder = CType(If(DBNull.Value.Equals(dRead("ScheduleFolder")), "", dRead("ScheduleFolder")), String)
@@ -143,7 +136,7 @@ Public Class SqlData
                     .WorkBufferMinutes = CInt(If(DBNull.Value.Equals(dRead("WorkBufferMinutes")), 0, dRead("WorkBufferMinutes")))
                     .ReOrderPercentThreshold = CSng(If(DBNull.Value.Equals(dRead("ReOrderPercentThreshold")), 0.8, dRead("ReOrderPercentThreshold")))
                     .UserCount = CSng(If(DBNull.Value.Equals(dRead("user_count")), 1, dRead("user_count")))
-                    .WC = CType(If(DBNull.Value.Equals(dRead("WC")), "", dRead("WC")), String)
+                    .WC = CType(If(DBNull.Value.Equals(dRead("Wc")), "", dRead("Wc")), String)
                     .CustomerOderIdRequired = CBool(If(DBNull.Value.Equals(dRead("Customer_OrderId_Required")), False, dRead("Customer_OrderId_Required")))
                     .QueuedMinutes = 0
                 End With
@@ -213,6 +206,8 @@ Public Class SqlData
         Return RetV
     End Function
 
+
+
     Public Function GetActiveOrders(Lineid As Integer) As GetPlanResponse
         Dim Pr As New GetPlanResponse
         Dim Items As New List(Of PlanItem)
@@ -232,6 +227,7 @@ Public Class SqlData
                         .DueDate = CDate(If(DBNull.Value.Equals(dRead("DueDate")), Now, dRead("DueDate")))
                         .CustOrderId = dRead("CustOrderId").ToString
                         .Ordered = CInt(If(DBNull.Value.Equals(dRead("Ordered")), 0, dRead("Ordered")))
+                        .WorkCell = If(DBNull.Value.Equals(dRead("WorkCell")), "", dRead("WorkCell").ToString)
                         .OrderId = CInt(dRead("OrderId"))
                         .PartNumber = CType(dRead("PN"), String)
                         .QTY = CInt(dRead("Qty"))
@@ -250,12 +246,11 @@ Public Class SqlData
         Return Pr
     End Function
 
-    Public Function GetWipOrders() As List(Of WipOrder)
+    Public Function GetWipOrders(OrderId As Integer) As List(Of WipOrder)
         Dim Wip As New List(Of WipOrder)
         Using Cn = GetConnection()
             Cn.Open()
-
-            Dim Cmd As New SqlClient.SqlCommand(String.Format(ActiveOrderQuery, ""), Cn)
+            Dim Cmd As New SqlClient.SqlCommand(String.Format(ActiveOrderQuery, If(OrderId > 0, String.Format("Where OrderId = {0}", OrderId), "")), Cn)
             Using dRead As IDataReader = Cmd.ExecuteReader()
                 While dRead.Read
                     'TargetLineId,	priority,	PN,	OrderId,	Ordered,	Built,	Qty,	PartId,	Flags,	Desc,	Name,	Status,	PPHPP, DueDate,ReOrderPercentThreshold,WorkBufferMinutes,Workcell

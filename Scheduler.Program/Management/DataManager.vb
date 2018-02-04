@@ -176,9 +176,36 @@ Public Class DataManager
 
     Public Function RemoveThisorder(SourceData As RemoveOrderRequest) As RemoveOrderResult
         Dim Rslt = New RemoveOrderResult
-        Dim F_Rslt = _SqlAccess.updateJobStatus(SourceData.OrderId, PlanStatus.Removed)
-        Rslt.Result = F_Rslt.Result
-        Rslt.ResultString = F_Rslt.ResultString
+
+        Dim WipItem = _SqlAccess.GetWipOrders(SourceData.OrderId).FirstOrDefault
+        Try
+            If WipItem IsNot Nothing Then
+                Dim PrtOrder As New core.PartOrder
+                With PrtOrder
+                    .partnumber = WipItem.PartNumber
+                    .Qty = WipItem.Ordered * -1
+                    .WC = WipItem.WorkCell
+                End With
+
+                Dim ErpRslt = _ErpAccess.CommitpartOrder(PrtOrder)
+                If ErpRslt.Result > 0 Then
+                    WipItem.RequestOrderQty = (WipItem.Ordered * -1)
+                    If _SqlAccess.LogPartOrder(WipItem) > 0 Then
+
+                    End If
+                End If
+
+                Dim F_Rslt = _SqlAccess.updateJobStatus(SourceData.OrderId, PlanStatus.Removed)
+                Rslt.Result = F_Rslt.Result
+                Rslt.ResultString = F_Rslt.ResultString
+            End If
+
+        Catch ex As Exception
+            _LoggingService.SendAlert(New LogEventArgs("Ordering Part", ex))
+            Rslt.Result = -1
+            Rslt.ResultString = ex.Message
+        End Try
+
         Return Rslt
     End Function
 
@@ -198,7 +225,7 @@ Public Class DataManager
 
 
     Public Sub ProcessLineOrders()
-        Dim CurrentWip As List(Of WipOrder) = _SqlAccess.GetWipOrders
+        Dim CurrentWip As List(Of WipOrder) = _SqlAccess.GetWipOrders(0)
         If CurrentWip IsNot Nothing AndAlso CurrentWip.Count > 0 Then
             Dim Lines = CurrentWip.Select(Function(x) x.LineId).Distinct.ToList
             For Each L In Lines
