@@ -162,8 +162,9 @@ Public Class SqlData
                 Cn.Open()
                 Dim UpStr As String = "Update Schedule_Order_History Set Position = {0} where Id = {1}"
                 Dim Cmd As New SqlClient.SqlCommand(String.Format(UpStr, Position, OrderId_Id), Cn)
-                Cn.Close()
                 Rslt.Result = Cmd.ExecuteNonQuery
+                Cn.Close()
+
             End Using
         Catch ex As Exception
             LgSvr.SendAlert(New LogEventArgs("Update Job Position", ex))
@@ -179,9 +180,10 @@ Public Class SqlData
             Using Cn = GetConnection()
                 Cn.Open()
                 Dim UpStr As String = "Update Schedule_Order_History Set Status = {0} where Id = {1}"
-                Dim Cmd As New SqlClient.SqlCommand(String.Format(UpStr, Status, Order_Id), Cn)
-                Cn.Close()
+                Dim Cmd As New SqlClient.SqlCommand(String.Format(UpStr, CInt(Status), Order_Id), Cn)
                 Rslt.Result = Cmd.ExecuteNonQuery
+                Cn.Close()
+
             End Using
         Catch ex As Exception
             LgSvr.SendAlert(New LogEventArgs("Update Job Status", ex))
@@ -265,8 +267,8 @@ Public Class SqlData
                     W.ReOrderAtPercent = CType(dRead("ReOrderPercentThreshold"), Double)
                     If Not DBNull.Value.Equals(dRead("WorkCell")) Then W.WorkCell = dRead("WorkCell").ToString
                     If Not DBNull.Value.Equals(dRead("PPHPP")) Then W.PartsPerHourPerPerson = CInt(dRead("PPHPP"))
-                    If Not DBNull.Value.Equals(dRead("Built")) Then W.PartsPerHourPerPerson = CInt(dRead("Built"))
-                    If Not DBNull.Value.Equals(dRead("Ordered")) Then W.PartsPerHourPerPerson = CInt(dRead("Ordered"))
+                    If Not DBNull.Value.Equals(dRead("Built")) Then W.Built = CInt(dRead("Built"))
+                    If Not DBNull.Value.Equals(dRead("Ordered")) Then W.Ordered = CInt(dRead("Ordered"))
                     Wip.Add(W)
                 End While
             End Using

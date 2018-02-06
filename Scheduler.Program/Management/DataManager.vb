@@ -154,8 +154,11 @@ Public Class DataManager
         'GetOrderId
         If SourceData.Lineid > 0 Then
             Dim Sd = GetScheduledOrders(SourceData.Lineid)       'get all orders that are scheduled
+
+            Dim Mx = (From x In Sd.Select(Function(x) x.Position)).Max
+
             If Sd IsNot Nothing AndAlso Sd.Any() Then
-                Sd(0).Position = Sd.Count                                                           'set position to found plan list count
+                Sd(0).Position = Mx + 1                                                          'set position to found plan list count
                 _SqlAccess.updateOrderPosition(Sd(0).OrderId, Sd(0).Position)
                 If Sd.Count = 1 Then
                     Rslt.Item = Sd(0)
@@ -187,13 +190,18 @@ Public Class DataManager
                     .WC = WipItem.WorkCell
                 End With
 
-                Dim ErpRslt = _ErpAccess.CommitpartOrder(PrtOrder)
-                If ErpRslt.Result > 0 Then
-                    WipItem.RequestOrderQty = (WipItem.Ordered * -1)
-                    If _SqlAccess.LogPartOrder(WipItem) > 0 Then
+                If PrtOrder.Qty <> 0 Then
+                    Dim ErpRslt As Integer = _ErpAccess.CommitpartOrder(PrtOrder).Result
+                    If ErpRslt > 0 Then
+                        WipItem.RequestOrderQty = (WipItem.Ordered * -1)
+                        If _SqlAccess.LogPartOrder(WipItem) > 0 Then
 
+                        End If
                     End If
                 End If
+
+
+
 
                 Dim F_Rslt = _SqlAccess.updateJobStatus(SourceData.OrderId, PlanStatus.Removed)
                 Rslt.Result = F_Rslt.Result
@@ -239,9 +247,7 @@ Public Class DataManager
                     Dim Delta As Double = WipHours - PartHoursOnHand
                     Dim PartsNeeded As Integer = CInt(Delta * (PPPP * UserCnt))
                     Dim TriggerLevel = WipHours * Witms.Select(Function(x) x.ReOrderAtPercent).FirstOrDefault
-
-
-                    If (PartsNeeded > 0) AndAlso PartHoursOnHand <= TriggerLevel Then
+                    If (PartsNeeded > 0) AndAlso PartHoursOnHand <= TriggerLevel AndAlso PartHoursOnHand >= 0 Then
                         For Each W In Witms
                             Try
                                 Dim MaxPosition As Long = 0
@@ -298,7 +304,8 @@ Public Class DataManager
                 If Result.Result = 1 Then
                     Itm.RequestOrderQty = Qty
                     If _SqlAccess.LogPartOrder(Itm) > 0 Then
-                        Itm.Ordered = Itm.Ordered + Qty
+                        Itm.Ordered = Itm.Ordered + Itm.RequestOrderQty
+                        Itm.RequestOrderQty = 0
                         If Itm.Status = PlanStatus.Planed Then
                             ' GetAllSettings max position from orderes that are scheduled add 1 for this one if there isnt on then leave the position
 

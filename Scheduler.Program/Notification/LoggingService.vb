@@ -68,6 +68,8 @@ Public NotInheritable Class LoggingService
 
         If Eventdata.Ex IsNot Nothing Then
             Logger.Log(New LogEventInfo(LogLevel.Error, Eventdata.Facet, Nothing, Eventdata.Message, Nothing, Eventdata.Ex))
+
+
         Else
             Dim Lv As LogLevel
             Select Case Eventdata.LogType
