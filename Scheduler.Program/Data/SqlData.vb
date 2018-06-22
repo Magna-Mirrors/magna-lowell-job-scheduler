@@ -11,7 +11,7 @@ Public Class SqlData
                      [ReOrderPercentThreshold], [WorkBufferMinutes],[Workcell]
                      FROM [View_ActiveOrders]
                      {0}
-                     order by status, Priority"
+                     order by status desc, Priority"
 
     'LineId,	CustomerId,	LineName,	LineDefinition,	MaxConcurrentLogins,	WcfFileName,	SelectCmd,	ScheduleFolder,	SchedulerMethod,	WorkBufferMinutes,	CustomerName,	ProgramId,	LH,	RH, ReOrderPercentThreshold, User_Count,Wc
     Private Const LineQuery As String = "SELECT eqp_Lines.Id AS LineId, eqp_Lines.CustomerId, Part_Programs.Customer_OrderId_Required, eqp_Lines.LineName, eqp_Lines.LineDefinition, 
@@ -59,7 +59,7 @@ Public Class SqlData
                         For Each Itm In Pr
                             Itm.Id = CInt(dRead("PartId"))
                             Itm.Valid = True
-                            Itm.Desc = CStr(dRead("Desc"))
+                            ' Itm.Desc = CStr(dRead("Desc"))
                             Rslt.Result += 1
                         Next
 
@@ -80,7 +80,7 @@ Public Class SqlData
                 While dRead.Read
                     Dim P As New Part
                     P.PN = CStr(dRead("PN"))
-                    P.Desc = CStr(dRead("Desc"))
+                    ' P.Desc = CStr(dRead("Desc"))
                     P.Id = CType(dRead("PartId"), Integer?)
                     Rslt.parts.Add(P)
                 End While
@@ -377,10 +377,11 @@ Public Class SqlData
         dCmd.Parameters.Add(New SqlClient.SqlParameter("@Status", Pi.Status))
         dCmd.Parameters.Add(New SqlClient.SqlParameter("@LastUpdate", Now))
         dCmd.Parameters.Add(New SqlClient.SqlParameter("@Flags", Pi.Flags))
+        dCmd.Parameters.Add(New SqlClient.SqlParameter("@PartDesc", Pi.Desc))
         dCmd.Parameters.Add(New SqlClient.SqlParameter("@CustOrderId", Pi.CustOrderId))
 
-        dCmd.CommandText = String.Format("Insert into Schedule_Order_History (CreationDate,ShipDate,ScheduleDate,PartId,Quantity,TargetLineId,Position,LastUpdate,Flags,Status,CustOrderId) 
-         Values(@CreationDate,@ShipDate,@ScheduleDate,@PartId,@Quantity,@TargetLineId,@Position,@LastUpdate,@Flags,@Status,@CustOrderId)")
+        dCmd.CommandText = String.Format("Insert into Schedule_Order_History (CreationDate,ShipDate,ScheduleDate,PartId,PartDesc,Quantity,TargetLineId,Position,LastUpdate,Flags,Status,CustOrderId) 
+         Values(@CreationDate,@ShipDate,@ScheduleDate,@PartId,@PartDesc,@Quantity,@TargetLineId,@Position,@LastUpdate,@Flags,@Status,@CustOrderId)")
         Return dCmd
     End Function
 
@@ -398,6 +399,7 @@ Public Class SqlData
         dCmd.Parameters.Add(New SqlClient.SqlParameter("@Status", Pi.Status))
         dCmd.Parameters.Add(New SqlClient.SqlParameter("@LastUpdate", Now))
         dCmd.Parameters.Add(New SqlClient.SqlParameter("@Flags", Pi.Flags))
+        dCmd.Parameters.Add(New SqlClient.SqlParameter("@PartDesc", Pi.Desc))
         dCmd.Parameters.Add(New SqlClient.SqlParameter("@CustOrderId", Pi.CustOrderId))
 
         dCmd.CommandText = String.Format("Update Schedule_Order_History 
@@ -405,10 +407,12 @@ Public Class SqlData
             Quantity = @Quantity,
             Position = @Position,
             Partid = @PartId,
+            PartDesc = @PartDesc,
+            {0} 
             LastUpdate = @LastUpdate,
             Flags = @Flags,
             CustOrderId = @CustOrderId
-             where Id = @ID and Status = 2")
+            where Id = @ID and Status = 2", If(Pi.Status = PlanStatus.Removed, "Status = @Status,", ""))
         Return dCmd
     End Function
     Private Function GetConnection() As SqlConnection

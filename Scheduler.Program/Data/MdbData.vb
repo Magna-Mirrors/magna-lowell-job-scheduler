@@ -13,7 +13,10 @@ Public Class MdbData
 
     Public Function ValidateParts(PartReq As ValidatePartsRequest) As ValidatePartsResponse
         Dim Res As New ValidatePartsResponse
+        Res.Result = 1
+
         Try
+
             Dim FilePath = Path.Combine(Me.Prms.WcfRootPath, PartReq.LineData.WcfFileName)
             Using Cn As New OleDb.OleDbConnection(String.Format(ConString, FilePath))
                 Cn.Open()
@@ -23,23 +26,38 @@ Public Class MdbData
                 Dim SrchItms As String = String.Format("'{0}'", Join(Pry, "','"))
                 Dim Cmd As New OleDb.OleDbCommand(PartReq.LineData.SelectCmd.Replace("@partNumbers", SrchItms), Cn)
 
-                '  Cmd.Parameters.AddWithValue("@partNumbers", SrchItms)
-
-                Dim RetParts As New List(Of Part)
-
                 Using dRead As IDataReader = Cmd.ExecuteReader()
                     While dRead.Read
-                        RetParts.Add(New Part() With {.PN = CStr(dRead("PN")), .Desc = CStr(dRead("Desc"))})
+                        Dim PN = dRead("PN").ToString
+                        ' Dim Desc = dRead("Desc").ToString
+
+                        Dim Prts = From P In PartReq.Parts Where P.PN = PN
+                        If Prts IsNot Nothing Then
+                            For Each pt In Prts
+                                pt.Valid = True
+                                '  pt.Desc = Desc
+                            Next
+                        Else
+                            Res.Result = 0
+                            Res.ResultString = String.Format("Part number {0} was not found in Target Mdb file {1}", SrchItms, PartReq.LineData.WcfFileName)
+                        End If
                     End While
                 End Using
-                For Each Pr In PartReq.Parts
-                    If Not Pr.Valid Then
-                        Pr.Valid = RetParts.Any(Function(x) x.PN = Pr.PN)
-                    End If
-                Next
+                If Res.Result = 1 Then
+                    For Each Pr In PartReq.Parts
+                        If Not Pr.Valid Then
+                            Res.Result = 0
+                            Res.ResultString = String.Format("Part number {0} was not found in Target Mdb file {1}", Pr.PN, PartReq.LineData.WcfFileName)
+                        End If
+                    Next
+                End If
+
 
             End Using
-            Res.ResultString = ""
+            If Res.Result = 1 Then
+                Res.ResultString = ""
+            End If
+
         Catch ex As Exception
             Res.Result = -1
             Res.ResultString = "MdbValidateParts Err " & ex.Message

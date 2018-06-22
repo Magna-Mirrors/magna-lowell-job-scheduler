@@ -42,8 +42,8 @@ Public Class MainView
         getThePlan()
     End Sub
 
-    Private Sub btn_Click(sender As Object, e As EventArgs) Handles btn.Click
-        PasetDataToGrid()
+    Private Sub btn_Click(sender As Object, e As EventArgs)
+        PasteDataToGrid()
     End Sub
 
     Private Sub cmdCopyRowToClipboard_Click()
@@ -74,14 +74,14 @@ Public Class MainView
     End Sub
 
     Private Sub cmdRun_Click()
-        Dim pARTS As New List(Of PlanItem)
+        'Dim pARTS As New List(Of PlanItem)
 
         'ByVal sender As System.Object,
         'ByVal e As System.EventArgs) Handles cmdRun.Click
         '  dgvEdit.DataSource = Nothing
         Try
             Dim ClipboardData As IDataObject = Clipboard.GetDataObject()
-
+            Dim Litms As List(Of PlanItem) = DirectCast(PlandataSource.DataSource, List(Of PlanItem))
             If Not ClipboardData Is Nothing Then
                 If (ClipboardData.GetDataPresent(DataFormats.CommaSeparatedValue)) Then
 
@@ -133,12 +133,12 @@ Public Class MainView
                             P.DueDate = Now
                             P.Chk = "*"
                             P.CustOrderId = CustOrderId
-                            pARTS.Add(P)
+                            Litms.Add(P)
                         End If
 
                         LoopCounter = 0
 
-                        Table.Rows.Add(rowNew)
+                        ' Table.Rows.Add(rowNew)
 
                         rowNew = Nothing
                     End While
@@ -155,11 +155,11 @@ Public Class MainView
             MessageBox.Show(exp.Message)
         End Try
 
-        If pARTS.Count > 0 Then
-            Dim Litms As List(Of PlanItem) = DirectCast(PlandataSource.DataSource, List(Of PlanItem))
-            Litms.AddRange(pARTS)
-            PlandataSource.ResetBindings(False)
-        End If
+        'If pARTS.Count > 0 Then
+        '    Dim Litms As List(Of PlanItem) = DirectCast(PlandataSource.DataSource, List(Of PlanItem))
+        '    Litms.AddRange(pARTS)
+        PlandataSource.ResetBindings(False)
+        'End If
 
     End Sub
 
@@ -214,7 +214,7 @@ Public Class MainView
         dgv.Columns(3).Width = CInt(dgv.Width * 0.1)
         dgv.Columns(4).Width = CInt(dgv.Width * 0.1)
         dgv.Columns(5).Width = CInt(dgv.Width * 0.15)
-        dgv.Columns(6).Width = CInt(dgv.Width * 0.1)
+
     End Sub
 
     Private Sub dgvEdit_Resize(sender As Object, e As EventArgs) Handles dgvEdit.Resize
@@ -233,7 +233,6 @@ Public Class MainView
             dgvEdit.Columns(4).Width = CInt(dgvEdit.Width * 0.09) 'Chk
             dgvEdit.Columns(5).Visible = True
             dgvEdit.Columns(5).Width = CInt(dgvEdit.Width * 0.2) 'CustorderId
-
         Else
             dgvEdit.Columns(0).Width = CInt(dgvEdit.Width * 0.3) 'part Number
             dgvEdit.Columns(1).Width = CInt(dgvEdit.Width * 0.07) 'Qty
@@ -257,16 +256,18 @@ Public Class MainView
             Dim Itm = DirectCast(dgvEdit.SelectedRows(0).DataBoundItem, PlanItem)
             If Itm.OrderId > 0 Then
                 Itm.Status = PlanStatus.Removed
-                If Itm.OrderId = 0 Then
-                    Dim Lst As List(Of PlanItem) = DirectCast(PlandataSource.DataSource, List(Of PlanItem))
-                    Lst.Remove(Itm)
-                    PlandataSource.ResetBindings(False)
-                End If
-                RefreshRowColors()
                 e.Row.Cells(4).Value = "X"
                 e.Row.Cells(4).Style.BackColor = System.Drawing.Color.Yellow
                 e.Cancel = True
+            ElseIf Itm.OrderId = 0 Then
+                ' Dim Lst As List(Of PlanItem) = DirectCast(PlandataSource.DataSource, List(Of PlanItem))
+                'dgvEdit.SelectedRows(0).de
+
+
+                'PlandataSource.Remove(Itm)
+                '       PlandataSource.ResetBindings(False)
             End If
+            RefreshRowColors()
         End If
     End Sub
 #End Region
@@ -474,16 +475,16 @@ Public Class MainView
                 Select Case Itm.Status
                     Case PlanStatus.Unknown
                         ' R.DefaultCellStyle.BackColor = System.Drawing.Color.Yellow
-                        dgvEdit.Item(0, R.Index).ToolTipText = "New Order"
+                        dgvEdit.Item(0, R.Index).ToolTipText = "New Order " & Itm.Desc
                     Case PlanStatus.Planed
                         R.DefaultCellStyle.BackColor = System.Drawing.Color.White
-                        dgvEdit.Item(0, R.Index).ToolTipText = "Planned"
+                        dgvEdit.Item(0, R.Index).ToolTipText = "DueDate " & Itm.DueDate
                     Case PlanStatus.Removed
                         '  R.DefaultCellStyle.BackColor = System.Drawing.Color.Salmon
                         dgvEdit.Item(0, R.Index).ToolTipText = "This Item Is set to be Deleted"
                     Case Else
                         ' R.DefaultCellStyle.BackColor = System.Drawing.Color.White
-                        dgvEdit.Item(0, R.Index).ToolTipText = Itm.Status.ToString
+                        dgvEdit.Item(0, R.Index).ToolTipText = "DueDate " & Itm.DueDate
                 End Select
 
                 Select Case Itm.Chk
@@ -620,12 +621,7 @@ Public Class MainView
         Return True
     End Function
 
-
-
-
-
-
-    Private Sub PasetDataToGrid()
+    Private Sub PasteDataToGrid()
         ' dgvEdit.AllowUserToAddRows = False
         Dim ClipboardData As IDataObject = Clipboard.GetDataObject()
         ' cmdRun.Enabled = False
@@ -639,21 +635,32 @@ Public Class MainView
     Private Sub dgvEdit_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles dgvEdit.CellContentClick
 
     End Sub
-    'Private Sub dgvEdit_BackColorChanged(sender As Object, e As EventArgs) Handles dgvEdit.BackColorChanged
 
-    'End Sub
-    'Private Sub dgv_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles dgv.CellContentClick
+    Private Sub dgvEdit_KeyPress(sender As Object, e As KeyPressEventArgs) Handles dgvEdit.KeyPress
+        If e.KeyChar = "" Then 'ctrlV
+            PasteDataToGrid()
+        End If
+    End Sub
 
-    'End Sub
-    'Private Sub dgvEdit_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles dgvEdit.CellContentClick
+    Private Sub dgvEdit_Click(sender As Object, e As EventArgs) Handles dgvEdit.Click
 
-    'End Sub
-    'Private Sub lblLineName_Click(sender As Object, e As EventArgs) Handles lblLineName.Click
+    End Sub
 
-    'End Sub
-    'Private Sub BtnApproveEdits_Click(sender As Object, e As EventArgs) Handles BtnApproveEdits.Click
+    Private Sub dgvEdit_MouseClick(sender As Object, e As MouseEventArgs) Handles dgvEdit.MouseClick
+        If e.Button = MouseButtons.Right Then
 
-    'End Sub
+        End If
+    End Sub
+
+
+
+    Private Sub mnuEdit_ItemClicked(sender As Object, e As ToolStripItemClickedEventArgs) Handles mnuEdit.ItemClicked
+        If e.ClickedItem.AccessibilityObject.Name.Contains("Paste") Then
+            PasteDataToGrid()
+        End If
+        mnuEdit.Close()
+    End Sub
+
 End Class
 
 

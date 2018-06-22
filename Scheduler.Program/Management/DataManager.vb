@@ -274,10 +274,6 @@ Public Class DataManager
     End Sub
 
 
-
-
-
-
     Public Function OrderThisPart(Itm As WipOrder, Required As Integer, MaxPos As Long) As Integer
         Try
             Dim Porder As New PartOrder()
@@ -293,7 +289,7 @@ Public Class DataManager
 
             If Qty > 0 Then
                 With Porder
-                    .Id = Itm.Ordered
+                    .Id = Itm.OrderId
                     .partnumber = Itm.PartNumber
                     .Qty = Qty
                     .WC = Itm.WorkCell
