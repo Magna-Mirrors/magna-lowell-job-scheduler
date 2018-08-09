@@ -26,16 +26,19 @@ Partial Class MainView
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(MainView))
         Dim DataGridViewCellStyle1 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle4 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle5 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle8 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle2 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle3 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle5 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle8 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle6 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle7 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Me.LineTree = New System.Windows.Forms.TreeView()
         Me.ilCustomers = New System.Windows.Forms.ImageList(Me.components)
         Me.lblLineName = New System.Windows.Forms.Label()
         Me.dgvEdit = New System.Windows.Forms.DataGridView()
+        Me.PartNumberDataGridViewTextBoxColumn = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.QTYDataGridViewTextBoxColumn = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.ShipdateDataGridViewTextBoxColumn = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.Truck = New System.Windows.Forms.DataGridViewCheckBoxColumn()
         Me.Chk = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.CustOrderId = New System.Windows.Forms.DataGridViewTextBoxColumn()
@@ -43,8 +46,15 @@ Partial Class MainView
         Me.AppendPasteToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.OverwritePasteToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.InsertPasteToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.PlandataSource = New System.Windows.Forms.BindingSource(Me.components)
         Me.dgv = New System.Windows.Forms.DataGridView()
+        Me.PartNumberDataGridViewTextBoxColumn1 = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.ShipdateDataGridViewTextBoxColumn1 = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.QTYDataGridViewTextBoxColumn1 = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.BuiltDataGridViewTextBoxColumn1 = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.OrderedDataGridViewTextBoxColumn1 = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.DataGridViewCheckBoxColumn1 = New System.Windows.Forms.DataGridViewCheckBoxColumn()
+        Me.ScheduleDataSource = New System.Windows.Forms.BindingSource(Me.components)
         Me.lblNew = New System.Windows.Forms.Label()
         Me.cmdDown = New System.Windows.Forms.Button()
         Me.cmdUp = New System.Windows.Forms.Button()
@@ -53,25 +63,43 @@ Partial Class MainView
         Me.BtnApproveEdits = New System.Windows.Forms.Button()
         Me.btnRefresh = New System.Windows.Forms.Button()
         Me.TableLayoutPanel1 = New System.Windows.Forms.TableLayoutPanel()
-        Me.Label2 = New System.Windows.Forms.Label()
         Me.Label1 = New System.Windows.Forms.Label()
         Me.lblMsg = New System.Windows.Forms.Label()
-        Me.PartNumberDataGridViewTextBoxColumn = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.QTYDataGridViewTextBoxColumn = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.ShipdateDataGridViewTextBoxColumn = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.PlandataSource = New System.Windows.Forms.BindingSource(Me.components)
-        Me.PartNumberDataGridViewTextBoxColumn1 = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.ShipdateDataGridViewTextBoxColumn1 = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.QTYDataGridViewTextBoxColumn1 = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.BuiltDataGridViewTextBoxColumn1 = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.OrderedDataGridViewTextBoxColumn1 = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.ScheduleDataSource = New System.Windows.Forms.BindingSource(Me.components)
+        Me.DataGridView1 = New System.Windows.Forms.DataGridView()
+        Me.BindingSourceHistory = New System.Windows.Forms.BindingSource(Me.components)
+        Me.BuildIDDataGridViewTextBoxColumn = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.CustOrderIdDataGridViewTextBoxColumn = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.OrderIdDataGridViewTextBoxColumn = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.PartNumberDataGridViewTextBoxColumn2 = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.ShipdateDataGridViewTextBoxColumn2 = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.QTYDataGridViewTextBoxColumn2 = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.BuiltDataGridViewTextBoxColumn = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.OrderedDataGridViewTextBoxColumn = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.DescDataGridViewTextBoxColumn = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.FlagsDataGridViewTextBoxColumn = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.DueDateDataGridViewTextBoxColumn = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.ScheduleDateDataGridViewTextBoxColumn = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.StatusDataGridViewTextBoxColumn = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.PositionDataGridViewTextBoxColumn = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.MMDDYYDataGridViewTextBoxColumn = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.HHMMDataGridViewTextBoxColumn = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.ChkDataGridViewTextBoxColumn = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.LastLoadTimeDataGridViewTextBoxColumn = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.CreationDateDataGridViewTextBoxColumn = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.PartIdDataGridViewTextBoxColumn = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.TargetLineIdDataGridViewTextBoxColumn = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.PPHPPDataGridViewTextBoxColumn = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.WorkCellDataGridViewTextBoxColumn = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.TruckDataGridViewCheckBoxColumn = New System.Windows.Forms.DataGridViewCheckBoxColumn()
+        Me.Label2 = New System.Windows.Forms.Label()
         CType(Me.dgvEdit, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.mnuEdit.SuspendLayout()
-        CType(Me.dgv, System.ComponentModel.ISupportInitialize).BeginInit()
-        Me.TableLayoutPanel1.SuspendLayout()
         CType(Me.PlandataSource, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.dgv, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.ScheduleDataSource, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.TableLayoutPanel1.SuspendLayout()
+        CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.BindingSourceHistory, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'LineTree
@@ -156,6 +184,36 @@ Partial Class MainView
         Me.dgvEdit.Size = New System.Drawing.Size(494, 572)
         Me.dgvEdit.TabIndex = 3
         '
+        'PartNumberDataGridViewTextBoxColumn
+        '
+        Me.PartNumberDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill
+        Me.PartNumberDataGridViewTextBoxColumn.DataPropertyName = "PartNumber"
+        Me.PartNumberDataGridViewTextBoxColumn.HeaderText = "PartNumber"
+        Me.PartNumberDataGridViewTextBoxColumn.MaxInputLength = 82
+        Me.PartNumberDataGridViewTextBoxColumn.Name = "PartNumberDataGridViewTextBoxColumn"
+        Me.PartNumberDataGridViewTextBoxColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable
+        '
+        'QTYDataGridViewTextBoxColumn
+        '
+        Me.QTYDataGridViewTextBoxColumn.DataPropertyName = "QTY"
+        DataGridViewCellStyle2.Format = "N0"
+        DataGridViewCellStyle2.NullValue = Nothing
+        Me.QTYDataGridViewTextBoxColumn.DefaultCellStyle = DataGridViewCellStyle2
+        Me.QTYDataGridViewTextBoxColumn.HeaderText = "QTY"
+        Me.QTYDataGridViewTextBoxColumn.Name = "QTYDataGridViewTextBoxColumn"
+        Me.QTYDataGridViewTextBoxColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable
+        '
+        'ShipdateDataGridViewTextBoxColumn
+        '
+        Me.ShipdateDataGridViewTextBoxColumn.DataPropertyName = "Desc"
+        DataGridViewCellStyle3.Format = "g"
+        DataGridViewCellStyle3.NullValue = Nothing
+        Me.ShipdateDataGridViewTextBoxColumn.DefaultCellStyle = DataGridViewCellStyle3
+        Me.ShipdateDataGridViewTextBoxColumn.HeaderText = "Description"
+        Me.ShipdateDataGridViewTextBoxColumn.MaxInputLength = 48
+        Me.ShipdateDataGridViewTextBoxColumn.Name = "ShipdateDataGridViewTextBoxColumn"
+        Me.ShipdateDataGridViewTextBoxColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable
+        '
         'Truck
         '
         Me.Truck.DataPropertyName = "Truck"
@@ -204,6 +262,10 @@ Partial Class MainView
         Me.InsertPasteToolStripMenuItem.Size = New System.Drawing.Size(152, 22)
         Me.InsertPasteToolStripMenuItem.Text = "Insert Paste"
         '
+        'PlandataSource
+        '
+        Me.PlandataSource.DataSource = GetType(Scheduler.core.PlanItem)
+        '
         'dgv
         '
         Me.dgv.AllowUserToAddRows = False
@@ -239,13 +301,54 @@ Partial Class MainView
         Me.dgv.ReadOnly = True
         Me.dgv.RowHeadersVisible = False
         Me.dgv.RowHeadersWidth = 20
-        Me.TableLayoutPanel1.SetRowSpan(Me.dgv, 10)
+        Me.TableLayoutPanel1.SetRowSpan(Me.dgv, 4)
         Me.dgv.RowTemplate.DefaultCellStyle.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.dgv.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
         Me.dgv.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect
         Me.dgv.ShowEditingIcon = False
-        Me.dgv.Size = New System.Drawing.Size(494, 572)
+        Me.dgv.Size = New System.Drawing.Size(494, 241)
         Me.dgv.TabIndex = 5
+        '
+        'PartNumberDataGridViewTextBoxColumn1
+        '
+        Me.PartNumberDataGridViewTextBoxColumn1.DataPropertyName = "PartNumber"
+        Me.PartNumberDataGridViewTextBoxColumn1.HeaderText = "PartNumber"
+        Me.PartNumberDataGridViewTextBoxColumn1.Name = "PartNumberDataGridViewTextBoxColumn1"
+        Me.PartNumberDataGridViewTextBoxColumn1.ReadOnly = True
+        '
+        'ShipdateDataGridViewTextBoxColumn1
+        '
+        Me.ShipdateDataGridViewTextBoxColumn1.DataPropertyName = "Shipdate"
+        DataGridViewCellStyle6.Format = "g"
+        DataGridViewCellStyle6.NullValue = Nothing
+        Me.ShipdateDataGridViewTextBoxColumn1.DefaultCellStyle = DataGridViewCellStyle6
+        Me.ShipdateDataGridViewTextBoxColumn1.HeaderText = "Shipdate"
+        Me.ShipdateDataGridViewTextBoxColumn1.Name = "ShipdateDataGridViewTextBoxColumn1"
+        Me.ShipdateDataGridViewTextBoxColumn1.ReadOnly = True
+        '
+        'QTYDataGridViewTextBoxColumn1
+        '
+        Me.QTYDataGridViewTextBoxColumn1.DataPropertyName = "QTY"
+        DataGridViewCellStyle7.Format = "N0"
+        DataGridViewCellStyle7.NullValue = Nothing
+        Me.QTYDataGridViewTextBoxColumn1.DefaultCellStyle = DataGridViewCellStyle7
+        Me.QTYDataGridViewTextBoxColumn1.HeaderText = "QTY"
+        Me.QTYDataGridViewTextBoxColumn1.Name = "QTYDataGridViewTextBoxColumn1"
+        Me.QTYDataGridViewTextBoxColumn1.ReadOnly = True
+        '
+        'BuiltDataGridViewTextBoxColumn1
+        '
+        Me.BuiltDataGridViewTextBoxColumn1.DataPropertyName = "Built"
+        Me.BuiltDataGridViewTextBoxColumn1.HeaderText = "Built"
+        Me.BuiltDataGridViewTextBoxColumn1.Name = "BuiltDataGridViewTextBoxColumn1"
+        Me.BuiltDataGridViewTextBoxColumn1.ReadOnly = True
+        '
+        'OrderedDataGridViewTextBoxColumn1
+        '
+        Me.OrderedDataGridViewTextBoxColumn1.DataPropertyName = "Ordered"
+        Me.OrderedDataGridViewTextBoxColumn1.HeaderText = "Ordered"
+        Me.OrderedDataGridViewTextBoxColumn1.Name = "OrderedDataGridViewTextBoxColumn1"
+        Me.OrderedDataGridViewTextBoxColumn1.ReadOnly = True
         '
         'DataGridViewCheckBoxColumn1
         '
@@ -253,6 +356,10 @@ Partial Class MainView
         Me.DataGridViewCheckBoxColumn1.HeaderText = "Truck"
         Me.DataGridViewCheckBoxColumn1.Name = "DataGridViewCheckBoxColumn1"
         Me.DataGridViewCheckBoxColumn1.ReadOnly = True
+        '
+        'ScheduleDataSource
+        '
+        Me.ScheduleDataSource.DataSource = GetType(Scheduler.core.PlanItem)
         '
         'lblNew
         '
@@ -365,7 +472,6 @@ Partial Class MainView
         Me.TableLayoutPanel1.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100.0!))
         Me.TableLayoutPanel1.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
         Me.TableLayoutPanel1.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 18.0!))
-        Me.TableLayoutPanel1.Controls.Add(Me.Label2, 0, 10)
         Me.TableLayoutPanel1.Controls.Add(Me.btnRefresh, 1, 0)
         Me.TableLayoutPanel1.Controls.Add(Me.LineTree, 1, 1)
         Me.TableLayoutPanel1.Controls.Add(Me.dgvEdit, 2, 1)
@@ -378,6 +484,8 @@ Partial Class MainView
         Me.TableLayoutPanel1.Controls.Add(Me.dgv, 4, 1)
         Me.TableLayoutPanel1.Controls.Add(Me.cmdDown, 3, 4)
         Me.TableLayoutPanel1.Controls.Add(Me.lblMsg, 1, 11)
+        Me.TableLayoutPanel1.Controls.Add(Me.DataGridView1, 4, 6)
+        Me.TableLayoutPanel1.Controls.Add(Me.Label2, 4, 5)
         Me.TableLayoutPanel1.Location = New System.Drawing.Point(2, 39)
         Me.TableLayoutPanel1.Name = "TableLayoutPanel1"
         Me.TableLayoutPanel1.RowCount = 13
@@ -396,17 +504,6 @@ Partial Class MainView
         Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 4.0!))
         Me.TableLayoutPanel1.Size = New System.Drawing.Size(1328, 631)
         Me.TableLayoutPanel1.TabIndex = 18
-        '
-        'Label2
-        '
-        Me.Label2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.Label2.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label2.Location = New System.Drawing.Point(3, 552)
-        Me.Label2.Name = "Label2"
-        Me.Label2.Size = New System.Drawing.Size(4, 26)
-        Me.Label2.TabIndex = 18
-        Me.Label2.Text = "Plan Edit"
-        Me.Label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
         'Label1
         '
@@ -434,84 +531,204 @@ Partial Class MainView
         Me.lblMsg.Size = New System.Drawing.Size(1312, 20)
         Me.lblMsg.TabIndex = 19
         '
-        'PartNumberDataGridViewTextBoxColumn
+        'DataGridView1
         '
-        Me.PartNumberDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill
-        Me.PartNumberDataGridViewTextBoxColumn.DataPropertyName = "PartNumber"
-        Me.PartNumberDataGridViewTextBoxColumn.HeaderText = "PartNumber"
-        Me.PartNumberDataGridViewTextBoxColumn.MaxInputLength = 82
-        Me.PartNumberDataGridViewTextBoxColumn.Name = "PartNumberDataGridViewTextBoxColumn"
-        Me.PartNumberDataGridViewTextBoxColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable
+        Me.DataGridView1.AllowUserToAddRows = False
+        Me.DataGridView1.AllowUserToDeleteRows = False
+        Me.DataGridView1.AutoGenerateColumns = False
+        Me.DataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
+        Me.DataGridView1.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.BuildIDDataGridViewTextBoxColumn, Me.CustOrderIdDataGridViewTextBoxColumn, Me.OrderIdDataGridViewTextBoxColumn, Me.PartNumberDataGridViewTextBoxColumn2, Me.ShipdateDataGridViewTextBoxColumn2, Me.QTYDataGridViewTextBoxColumn2, Me.BuiltDataGridViewTextBoxColumn, Me.OrderedDataGridViewTextBoxColumn, Me.DescDataGridViewTextBoxColumn, Me.FlagsDataGridViewTextBoxColumn, Me.DueDateDataGridViewTextBoxColumn, Me.ScheduleDateDataGridViewTextBoxColumn, Me.StatusDataGridViewTextBoxColumn, Me.PositionDataGridViewTextBoxColumn, Me.MMDDYYDataGridViewTextBoxColumn, Me.HHMMDataGridViewTextBoxColumn, Me.ChkDataGridViewTextBoxColumn, Me.LastLoadTimeDataGridViewTextBoxColumn, Me.CreationDateDataGridViewTextBoxColumn, Me.PartIdDataGridViewTextBoxColumn, Me.TargetLineIdDataGridViewTextBoxColumn, Me.PPHPPDataGridViewTextBoxColumn, Me.WorkCellDataGridViewTextBoxColumn, Me.TruckDataGridViewCheckBoxColumn})
+        Me.DataGridView1.DataSource = Me.BindingSourceHistory
+        Me.DataGridView1.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.DataGridView1.Location = New System.Drawing.Point(813, 331)
+        Me.DataGridView1.Name = "DataGridView1"
+        Me.DataGridView1.ReadOnly = True
+        Me.DataGridView1.RowHeadersVisible = False
+        Me.TableLayoutPanel1.SetRowSpan(Me.DataGridView1, 5)
+        Me.DataGridView1.Size = New System.Drawing.Size(494, 269)
+        Me.DataGridView1.TabIndex = 20
         '
-        'QTYDataGridViewTextBoxColumn
+        'BindingSourceHistory
         '
-        Me.QTYDataGridViewTextBoxColumn.DataPropertyName = "QTY"
-        DataGridViewCellStyle2.Format = "N0"
-        DataGridViewCellStyle2.NullValue = Nothing
-        Me.QTYDataGridViewTextBoxColumn.DefaultCellStyle = DataGridViewCellStyle2
-        Me.QTYDataGridViewTextBoxColumn.HeaderText = "QTY"
-        Me.QTYDataGridViewTextBoxColumn.Name = "QTYDataGridViewTextBoxColumn"
-        Me.QTYDataGridViewTextBoxColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable
+        Me.BindingSourceHistory.DataSource = GetType(Scheduler.core.PlanItem)
         '
-        'ShipdateDataGridViewTextBoxColumn
+        'BuildIDDataGridViewTextBoxColumn
         '
-        Me.ShipdateDataGridViewTextBoxColumn.DataPropertyName = "Desc"
-        DataGridViewCellStyle3.Format = "g"
-        DataGridViewCellStyle3.NullValue = Nothing
-        Me.ShipdateDataGridViewTextBoxColumn.DefaultCellStyle = DataGridViewCellStyle3
-        Me.ShipdateDataGridViewTextBoxColumn.HeaderText = "Description"
-        Me.ShipdateDataGridViewTextBoxColumn.MaxInputLength = 48
-        Me.ShipdateDataGridViewTextBoxColumn.Name = "ShipdateDataGridViewTextBoxColumn"
-        Me.ShipdateDataGridViewTextBoxColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable
+        Me.BuildIDDataGridViewTextBoxColumn.DataPropertyName = "BuildID"
+        Me.BuildIDDataGridViewTextBoxColumn.HeaderText = "BuildID"
+        Me.BuildIDDataGridViewTextBoxColumn.Name = "BuildIDDataGridViewTextBoxColumn"
+        Me.BuildIDDataGridViewTextBoxColumn.ReadOnly = True
         '
-        'PlandataSource
+        'CustOrderIdDataGridViewTextBoxColumn
         '
-        Me.PlandataSource.DataSource = GetType(Scheduler.core.PlanItem)
+        Me.CustOrderIdDataGridViewTextBoxColumn.DataPropertyName = "CustOrderId"
+        Me.CustOrderIdDataGridViewTextBoxColumn.HeaderText = "CustOrderId"
+        Me.CustOrderIdDataGridViewTextBoxColumn.Name = "CustOrderIdDataGridViewTextBoxColumn"
+        Me.CustOrderIdDataGridViewTextBoxColumn.ReadOnly = True
         '
-        'PartNumberDataGridViewTextBoxColumn1
+        'OrderIdDataGridViewTextBoxColumn
         '
-        Me.PartNumberDataGridViewTextBoxColumn1.DataPropertyName = "PartNumber"
-        Me.PartNumberDataGridViewTextBoxColumn1.HeaderText = "PartNumber"
-        Me.PartNumberDataGridViewTextBoxColumn1.Name = "PartNumberDataGridViewTextBoxColumn1"
-        Me.PartNumberDataGridViewTextBoxColumn1.ReadOnly = True
+        Me.OrderIdDataGridViewTextBoxColumn.DataPropertyName = "OrderId"
+        Me.OrderIdDataGridViewTextBoxColumn.HeaderText = "OrderId"
+        Me.OrderIdDataGridViewTextBoxColumn.Name = "OrderIdDataGridViewTextBoxColumn"
+        Me.OrderIdDataGridViewTextBoxColumn.ReadOnly = True
         '
-        'ShipdateDataGridViewTextBoxColumn1
+        'PartNumberDataGridViewTextBoxColumn2
         '
-        Me.ShipdateDataGridViewTextBoxColumn1.DataPropertyName = "Shipdate"
-        DataGridViewCellStyle6.Format = "g"
-        DataGridViewCellStyle6.NullValue = Nothing
-        Me.ShipdateDataGridViewTextBoxColumn1.DefaultCellStyle = DataGridViewCellStyle6
-        Me.ShipdateDataGridViewTextBoxColumn1.HeaderText = "Shipdate"
-        Me.ShipdateDataGridViewTextBoxColumn1.Name = "ShipdateDataGridViewTextBoxColumn1"
-        Me.ShipdateDataGridViewTextBoxColumn1.ReadOnly = True
+        Me.PartNumberDataGridViewTextBoxColumn2.DataPropertyName = "PartNumber"
+        Me.PartNumberDataGridViewTextBoxColumn2.HeaderText = "PartNumber"
+        Me.PartNumberDataGridViewTextBoxColumn2.Name = "PartNumberDataGridViewTextBoxColumn2"
+        Me.PartNumberDataGridViewTextBoxColumn2.ReadOnly = True
         '
-        'QTYDataGridViewTextBoxColumn1
+        'ShipdateDataGridViewTextBoxColumn2
         '
-        Me.QTYDataGridViewTextBoxColumn1.DataPropertyName = "QTY"
-        DataGridViewCellStyle7.Format = "N0"
-        DataGridViewCellStyle7.NullValue = Nothing
-        Me.QTYDataGridViewTextBoxColumn1.DefaultCellStyle = DataGridViewCellStyle7
-        Me.QTYDataGridViewTextBoxColumn1.HeaderText = "QTY"
-        Me.QTYDataGridViewTextBoxColumn1.Name = "QTYDataGridViewTextBoxColumn1"
-        Me.QTYDataGridViewTextBoxColumn1.ReadOnly = True
+        Me.ShipdateDataGridViewTextBoxColumn2.DataPropertyName = "Shipdate"
+        Me.ShipdateDataGridViewTextBoxColumn2.HeaderText = "Shipdate"
+        Me.ShipdateDataGridViewTextBoxColumn2.Name = "ShipdateDataGridViewTextBoxColumn2"
+        Me.ShipdateDataGridViewTextBoxColumn2.ReadOnly = True
         '
-        'BuiltDataGridViewTextBoxColumn1
+        'QTYDataGridViewTextBoxColumn2
         '
-        Me.BuiltDataGridViewTextBoxColumn1.DataPropertyName = "Built"
-        Me.BuiltDataGridViewTextBoxColumn1.HeaderText = "Built"
-        Me.BuiltDataGridViewTextBoxColumn1.Name = "BuiltDataGridViewTextBoxColumn1"
-        Me.BuiltDataGridViewTextBoxColumn1.ReadOnly = True
+        Me.QTYDataGridViewTextBoxColumn2.DataPropertyName = "QTY"
+        Me.QTYDataGridViewTextBoxColumn2.HeaderText = "QTY"
+        Me.QTYDataGridViewTextBoxColumn2.Name = "QTYDataGridViewTextBoxColumn2"
+        Me.QTYDataGridViewTextBoxColumn2.ReadOnly = True
         '
-        'OrderedDataGridViewTextBoxColumn1
+        'BuiltDataGridViewTextBoxColumn
         '
-        Me.OrderedDataGridViewTextBoxColumn1.DataPropertyName = "Ordered"
-        Me.OrderedDataGridViewTextBoxColumn1.HeaderText = "Ordered"
-        Me.OrderedDataGridViewTextBoxColumn1.Name = "OrderedDataGridViewTextBoxColumn1"
-        Me.OrderedDataGridViewTextBoxColumn1.ReadOnly = True
+        Me.BuiltDataGridViewTextBoxColumn.DataPropertyName = "Built"
+        Me.BuiltDataGridViewTextBoxColumn.HeaderText = "Built"
+        Me.BuiltDataGridViewTextBoxColumn.Name = "BuiltDataGridViewTextBoxColumn"
+        Me.BuiltDataGridViewTextBoxColumn.ReadOnly = True
         '
-        'ScheduleDataSource
+        'OrderedDataGridViewTextBoxColumn
         '
-        Me.ScheduleDataSource.DataSource = GetType(Scheduler.core.PlanItem)
+        Me.OrderedDataGridViewTextBoxColumn.DataPropertyName = "Ordered"
+        Me.OrderedDataGridViewTextBoxColumn.HeaderText = "Ordered"
+        Me.OrderedDataGridViewTextBoxColumn.Name = "OrderedDataGridViewTextBoxColumn"
+        Me.OrderedDataGridViewTextBoxColumn.ReadOnly = True
+        '
+        'DescDataGridViewTextBoxColumn
+        '
+        Me.DescDataGridViewTextBoxColumn.DataPropertyName = "Desc"
+        Me.DescDataGridViewTextBoxColumn.HeaderText = "Desc"
+        Me.DescDataGridViewTextBoxColumn.Name = "DescDataGridViewTextBoxColumn"
+        Me.DescDataGridViewTextBoxColumn.ReadOnly = True
+        '
+        'FlagsDataGridViewTextBoxColumn
+        '
+        Me.FlagsDataGridViewTextBoxColumn.DataPropertyName = "Flags"
+        Me.FlagsDataGridViewTextBoxColumn.HeaderText = "Flags"
+        Me.FlagsDataGridViewTextBoxColumn.Name = "FlagsDataGridViewTextBoxColumn"
+        Me.FlagsDataGridViewTextBoxColumn.ReadOnly = True
+        '
+        'DueDateDataGridViewTextBoxColumn
+        '
+        Me.DueDateDataGridViewTextBoxColumn.DataPropertyName = "DueDate"
+        Me.DueDateDataGridViewTextBoxColumn.HeaderText = "DueDate"
+        Me.DueDateDataGridViewTextBoxColumn.Name = "DueDateDataGridViewTextBoxColumn"
+        Me.DueDateDataGridViewTextBoxColumn.ReadOnly = True
+        '
+        'ScheduleDateDataGridViewTextBoxColumn
+        '
+        Me.ScheduleDateDataGridViewTextBoxColumn.DataPropertyName = "ScheduleDate"
+        Me.ScheduleDateDataGridViewTextBoxColumn.HeaderText = "ScheduleDate"
+        Me.ScheduleDateDataGridViewTextBoxColumn.Name = "ScheduleDateDataGridViewTextBoxColumn"
+        Me.ScheduleDateDataGridViewTextBoxColumn.ReadOnly = True
+        '
+        'StatusDataGridViewTextBoxColumn
+        '
+        Me.StatusDataGridViewTextBoxColumn.DataPropertyName = "Status"
+        Me.StatusDataGridViewTextBoxColumn.HeaderText = "Status"
+        Me.StatusDataGridViewTextBoxColumn.Name = "StatusDataGridViewTextBoxColumn"
+        Me.StatusDataGridViewTextBoxColumn.ReadOnly = True
+        '
+        'PositionDataGridViewTextBoxColumn
+        '
+        Me.PositionDataGridViewTextBoxColumn.DataPropertyName = "Position"
+        Me.PositionDataGridViewTextBoxColumn.HeaderText = "Position"
+        Me.PositionDataGridViewTextBoxColumn.Name = "PositionDataGridViewTextBoxColumn"
+        Me.PositionDataGridViewTextBoxColumn.ReadOnly = True
+        '
+        'MMDDYYDataGridViewTextBoxColumn
+        '
+        Me.MMDDYYDataGridViewTextBoxColumn.DataPropertyName = "MMDDYY"
+        Me.MMDDYYDataGridViewTextBoxColumn.HeaderText = "MMDDYY"
+        Me.MMDDYYDataGridViewTextBoxColumn.Name = "MMDDYYDataGridViewTextBoxColumn"
+        Me.MMDDYYDataGridViewTextBoxColumn.ReadOnly = True
+        '
+        'HHMMDataGridViewTextBoxColumn
+        '
+        Me.HHMMDataGridViewTextBoxColumn.DataPropertyName = "HHMM"
+        Me.HHMMDataGridViewTextBoxColumn.HeaderText = "HHMM"
+        Me.HHMMDataGridViewTextBoxColumn.Name = "HHMMDataGridViewTextBoxColumn"
+        Me.HHMMDataGridViewTextBoxColumn.ReadOnly = True
+        '
+        'ChkDataGridViewTextBoxColumn
+        '
+        Me.ChkDataGridViewTextBoxColumn.DataPropertyName = "Chk"
+        Me.ChkDataGridViewTextBoxColumn.HeaderText = "Chk"
+        Me.ChkDataGridViewTextBoxColumn.Name = "ChkDataGridViewTextBoxColumn"
+        Me.ChkDataGridViewTextBoxColumn.ReadOnly = True
+        '
+        'LastLoadTimeDataGridViewTextBoxColumn
+        '
+        Me.LastLoadTimeDataGridViewTextBoxColumn.DataPropertyName = "LastLoadTime"
+        Me.LastLoadTimeDataGridViewTextBoxColumn.HeaderText = "LastLoadTime"
+        Me.LastLoadTimeDataGridViewTextBoxColumn.Name = "LastLoadTimeDataGridViewTextBoxColumn"
+        Me.LastLoadTimeDataGridViewTextBoxColumn.ReadOnly = True
+        '
+        'CreationDateDataGridViewTextBoxColumn
+        '
+        Me.CreationDateDataGridViewTextBoxColumn.DataPropertyName = "CreationDate"
+        Me.CreationDateDataGridViewTextBoxColumn.HeaderText = "CreationDate"
+        Me.CreationDateDataGridViewTextBoxColumn.Name = "CreationDateDataGridViewTextBoxColumn"
+        Me.CreationDateDataGridViewTextBoxColumn.ReadOnly = True
+        '
+        'PartIdDataGridViewTextBoxColumn
+        '
+        Me.PartIdDataGridViewTextBoxColumn.DataPropertyName = "PartId"
+        Me.PartIdDataGridViewTextBoxColumn.HeaderText = "PartId"
+        Me.PartIdDataGridViewTextBoxColumn.Name = "PartIdDataGridViewTextBoxColumn"
+        Me.PartIdDataGridViewTextBoxColumn.ReadOnly = True
+        '
+        'TargetLineIdDataGridViewTextBoxColumn
+        '
+        Me.TargetLineIdDataGridViewTextBoxColumn.DataPropertyName = "TargetLineId"
+        Me.TargetLineIdDataGridViewTextBoxColumn.HeaderText = "TargetLineId"
+        Me.TargetLineIdDataGridViewTextBoxColumn.Name = "TargetLineIdDataGridViewTextBoxColumn"
+        Me.TargetLineIdDataGridViewTextBoxColumn.ReadOnly = True
+        '
+        'PPHPPDataGridViewTextBoxColumn
+        '
+        Me.PPHPPDataGridViewTextBoxColumn.DataPropertyName = "PPHPP"
+        Me.PPHPPDataGridViewTextBoxColumn.HeaderText = "PPHPP"
+        Me.PPHPPDataGridViewTextBoxColumn.Name = "PPHPPDataGridViewTextBoxColumn"
+        Me.PPHPPDataGridViewTextBoxColumn.ReadOnly = True
+        '
+        'WorkCellDataGridViewTextBoxColumn
+        '
+        Me.WorkCellDataGridViewTextBoxColumn.DataPropertyName = "WorkCell"
+        Me.WorkCellDataGridViewTextBoxColumn.HeaderText = "WorkCell"
+        Me.WorkCellDataGridViewTextBoxColumn.Name = "WorkCellDataGridViewTextBoxColumn"
+        Me.WorkCellDataGridViewTextBoxColumn.ReadOnly = True
+        '
+        'TruckDataGridViewCheckBoxColumn
+        '
+        Me.TruckDataGridViewCheckBoxColumn.DataPropertyName = "Truck"
+        Me.TruckDataGridViewCheckBoxColumn.HeaderText = "Truck"
+        Me.TruckDataGridViewCheckBoxColumn.Name = "TruckDataGridViewCheckBoxColumn"
+        Me.TruckDataGridViewCheckBoxColumn.ReadOnly = True
+        '
+        'Label2
+        '
+        Me.Label2.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.Label2.Font = New System.Drawing.Font("Microsoft Sans Serif", 14.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label2.Location = New System.Drawing.Point(813, 305)
+        Me.Label2.Name = "Label2"
+        Me.Label2.Size = New System.Drawing.Size(494, 23)
+        Me.Label2.TabIndex = 21
+        Me.Label2.Text = "Order History View"
         '
         'MainView
         '
@@ -526,10 +743,12 @@ Partial Class MainView
         Me.Text = "Magna Mirrors Schedule"
         CType(Me.dgvEdit, System.ComponentModel.ISupportInitialize).EndInit()
         Me.mnuEdit.ResumeLayout(False)
-        CType(Me.dgv, System.ComponentModel.ISupportInitialize).EndInit()
-        Me.TableLayoutPanel1.ResumeLayout(False)
         CType(Me.PlandataSource, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.dgv, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.ScheduleDataSource, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.TableLayoutPanel1.ResumeLayout(False)
+        CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.BindingSourceHistory, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
 
     End Sub
@@ -552,7 +771,6 @@ Partial Class MainView
     Private WithEvents TableLayoutPanel1 As TableLayoutPanel
     Private WithEvents ScheduleDataSource As BindingSource
     Private WithEvents PlandataSource As BindingSource
-    Friend WithEvents Label2 As Label
     Friend WithEvents Label1 As Label
     Private WithEvents lblMsg As Label
     Friend WithEvents PartNumberDataGridViewTextBoxColumn1 As DataGridViewTextBoxColumn
@@ -567,4 +785,31 @@ Partial Class MainView
     Friend WithEvents Truck As DataGridViewCheckBoxColumn
     Friend WithEvents Chk As DataGridViewTextBoxColumn
     Friend WithEvents CustOrderId As DataGridViewTextBoxColumn
+    Friend WithEvents DataGridView1 As DataGridView
+    Friend WithEvents BuildIDDataGridViewTextBoxColumn As DataGridViewTextBoxColumn
+    Friend WithEvents CustOrderIdDataGridViewTextBoxColumn As DataGridViewTextBoxColumn
+    Friend WithEvents OrderIdDataGridViewTextBoxColumn As DataGridViewTextBoxColumn
+    Friend WithEvents PartNumberDataGridViewTextBoxColumn2 As DataGridViewTextBoxColumn
+    Friend WithEvents ShipdateDataGridViewTextBoxColumn2 As DataGridViewTextBoxColumn
+    Friend WithEvents QTYDataGridViewTextBoxColumn2 As DataGridViewTextBoxColumn
+    Friend WithEvents BuiltDataGridViewTextBoxColumn As DataGridViewTextBoxColumn
+    Friend WithEvents OrderedDataGridViewTextBoxColumn As DataGridViewTextBoxColumn
+    Friend WithEvents DescDataGridViewTextBoxColumn As DataGridViewTextBoxColumn
+    Friend WithEvents FlagsDataGridViewTextBoxColumn As DataGridViewTextBoxColumn
+    Friend WithEvents DueDateDataGridViewTextBoxColumn As DataGridViewTextBoxColumn
+    Friend WithEvents ScheduleDateDataGridViewTextBoxColumn As DataGridViewTextBoxColumn
+    Friend WithEvents StatusDataGridViewTextBoxColumn As DataGridViewTextBoxColumn
+    Friend WithEvents PositionDataGridViewTextBoxColumn As DataGridViewTextBoxColumn
+    Friend WithEvents MMDDYYDataGridViewTextBoxColumn As DataGridViewTextBoxColumn
+    Friend WithEvents HHMMDataGridViewTextBoxColumn As DataGridViewTextBoxColumn
+    Friend WithEvents ChkDataGridViewTextBoxColumn As DataGridViewTextBoxColumn
+    Friend WithEvents LastLoadTimeDataGridViewTextBoxColumn As DataGridViewTextBoxColumn
+    Friend WithEvents CreationDateDataGridViewTextBoxColumn As DataGridViewTextBoxColumn
+    Friend WithEvents PartIdDataGridViewTextBoxColumn As DataGridViewTextBoxColumn
+    Friend WithEvents TargetLineIdDataGridViewTextBoxColumn As DataGridViewTextBoxColumn
+    Friend WithEvents PPHPPDataGridViewTextBoxColumn As DataGridViewTextBoxColumn
+    Friend WithEvents WorkCellDataGridViewTextBoxColumn As DataGridViewTextBoxColumn
+    Friend WithEvents TruckDataGridViewCheckBoxColumn As DataGridViewCheckBoxColumn
+    Private WithEvents BindingSourceHistory As BindingSource
+    Friend WithEvents Label2 As Label
 End Class
