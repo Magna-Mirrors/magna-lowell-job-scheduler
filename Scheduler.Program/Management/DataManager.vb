@@ -84,7 +84,7 @@ Public Class DataManager
         Dim nPr As New GetPlanResponse With {.Result = -1}
         If Sourcedata.LineData.SchedulerMethod = SchedulerMethods.MsSql Then
             Try
-                nPr = _SqlAccess.GetActiveOrders(Sourcedata.LineData.Id)
+                nPr = _SqlAccess.GetActiveOrders(Sourcedata)
                 nPr.Result = 1
             Catch ex As Exception
                 nPr.ResultString = "GetPlan -> MsSql Exception :::: " + ex.Message
@@ -149,6 +149,16 @@ Public Class DataManager
         Return Rslt
     End Function
 
+    Public Function CommitBuildToProdOrders() As Integer
+        Dim BuiltItems = _SqlAccess.GetActiveOrders
+        Dim Rslt = _ErpAccess.Commit_Built_Items_To_ProdCounts(BuiltItems)
+        If Rslt.Result > 0 Then
+            Return _SqlAccess.Update_PartBuilt_Postings(BuiltItems.Min(Function(x) x.BuiltId), BuiltItems.Max(Function(x) x.BuiltId))
+        End If
+        Return 0
+    End Function
+
+
     Public Function SkipThisorder(SourceData As SkipOrderRequest) As SkipOrderResult
         Dim Rslt As New SkipOrderResult
         'GetOrderId
@@ -191,7 +201,7 @@ Public Class DataManager
                 End With
 
                 If PrtOrder.Qty <> 0 Then
-                    Dim ErpRslt As Integer = _ErpAccess.CommitpartOrder(PrtOrder).Result
+                    Dim ErpRslt As Integer = _ErpAccess.Commit_To_PartCounts_Table(PrtOrder).Result
                     If ErpRslt > 0 Then
                         WipItem.RequestOrderQty = (WipItem.Ordered * -1)
                         If _SqlAccess.LogPartOrder(WipItem) > 0 Then
@@ -217,6 +227,7 @@ Public Class DataManager
         Return Rslt
     End Function
 
+
     Public Function GetLineSchedule(SourceData As GetScheduleRequest) As GetScheduleResult
         Dim Rslt As New GetScheduleResult
         If SourceData.LineId > 0 Then
@@ -239,29 +250,31 @@ Public Class DataManager
             For Each L In Lines
                 Dim UserCnt As Integer = getLineUserCount(L)
                 Dim Witms = From x In CurrentWip Where x.LineId = L
+                Dim OrdersWithUnOrderedparts = From x In CurrentWip Where x.LineId = L AndAlso (x.Ordered < x.TargetQty)
                 If UserCnt <= 0 Then UserCnt = 1 'minimum user count needs to be 1 for patislpating line
                 If Witms IsNot Nothing AndAlso Witms.Count > 0 Then
                     Dim PPPP As Double = Witms.Select(Function(x) x.PartsPerHourPerPerson).Average
                     Dim PartHoursOnHand As Double = CType((((Witms.Select(Function(x) x.Ordered).Sum) - Witms.Select(Function(x) x.Built).Sum) / PPPP) / UserCnt, Double)
+                    If PartHoursOnHand < 0 Then
+                        PartHoursOnHand = 0
+                    End If
                     Dim WipHours = Witms.Select(Function(x) x.WipHours).FirstOrDefault
                     Dim Delta As Double = WipHours - PartHoursOnHand
                     Dim PartsNeeded As Integer = CInt(Delta * (PPPP * UserCnt))
                     Dim TriggerLevel = WipHours * Witms.Select(Function(x) x.ReOrderAtPercent).FirstOrDefault
-                    If (PartsNeeded > 0) AndAlso PartHoursOnHand <= TriggerLevel AndAlso PartHoursOnHand >= 0 Then
-                        For Each W In Witms
+                    If (PartsNeeded > 0) AndAlso (PartHoursOnHand <= TriggerLevel) Then 'andalso (PartHoursOnHand >= 0) 
+                        For Each W In OrdersWithUnOrderedparts
                             Try
                                 Dim MaxPosition As Long = 0
-                                Dim SItms = (From V In CurrentWip Where V.LineId = L And V.Status = PlanStatus.Scheduled)
+                                Dim SItms = (From V In CurrentWip Where V.LineId = L AndAlso V.Status = PlanStatus.Scheduled)
                                 If SItms IsNot Nothing AndAlso SItms.Any Then
                                     MaxPosition = SItms.Select(Function(x) x.Position).Max
                                 End If
-
                                 PartsNeeded -= OrderThisPart(W, PartsNeeded, MaxPosition)
                                 If PartsNeeded <= 0 Then Exit For
                             Catch ex As Exception
                                 _LoggingService.SendAlert(New LogEventArgs("Processing Orders", ex))
                             End Try
-
                         Next
                     End If
 
@@ -278,7 +291,7 @@ Public Class DataManager
         Try
             Dim Porder As New PartOrder()
             Dim Qty As Integer = 0
-            Dim D = Itm.TargetQty - (Itm.Ordered - Itm.Built)
+            Dim D = Itm.TargetQty - If(Itm.Ordered >= Itm.Built, Itm.Ordered, Itm.Built)
             If D >= Required Then
                 Qty = Required
             ElseIf D > 0 Then
@@ -295,7 +308,7 @@ Public Class DataManager
                     .WC = Itm.WorkCell
                     .PartRequestType = PartOrderType.Order
                 End With
-                Dim Result As TransactionResult = _ErpAccess.CommitpartOrder(Porder)
+                Dim Result As TransactionResult = _ErpAccess.Commit_To_PartCounts_Table(Porder)
 
                 If Result.Result = 1 Then
                     Itm.RequestOrderQty = Qty
@@ -315,7 +328,7 @@ Public Class DataManager
                                 Itm.Status = PlanStatus.Scheduled
                             End If
                         End If
-                        Return D
+                        Return Qty
                     End If
                 End If
             End If
@@ -327,14 +340,17 @@ Public Class DataManager
 
     End Function
 
-
-
+    'TODO: test this
     Private Function GetScheduledOrders(lineid As Integer) As List(Of PlanItem)
         If lineid <= 0 Then
             Throw New ArgumentException("Line Id must be greater than zero.", NameOf(lineid))
         End If
 
-        Dim Resp = _SqlAccess.GetActiveOrders(lineid)
+        Dim Ln As New Line With {.Id = lineid}
+        Dim L As New GetPlanRequest(Ln)
+
+        Dim Resp = _SqlAccess.GetActiveOrders(L)
+
         If Resp.Result <> 1 Then
             Dim plans = (From x In Resp.PlanData Where x.Status = PlanStatus.Scheduled).ToList()
             Return plans

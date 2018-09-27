@@ -104,6 +104,7 @@
     <Import Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\BuildItem.vb" />
     <Compile Include="Data\ProductData.vb" />
     <Compile Include="Data\WipOrder.vb" />
     <Compile Include="Interfaces\iSchedulerService.vb" />

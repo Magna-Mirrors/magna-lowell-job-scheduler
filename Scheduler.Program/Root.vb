@@ -1,5 +1,5 @@
 ﻿Imports System.ServiceModel
-Imports Ninject
+
 
 Module Root
     Public Controller As Control

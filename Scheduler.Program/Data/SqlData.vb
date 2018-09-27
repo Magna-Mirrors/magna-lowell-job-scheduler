@@ -33,6 +33,50 @@ Public Class SqlData
                       dbo.Part_Program_Line_Map ON dbo.Part_Programs.ProgId = dbo.Part_Program_Line_Map.ProgramId
                       Where dbo.Part_Program_Line_Map.LineId = {0} and dbo.Part_Info.PN in({1}) "
 
+    Private Const GetpartsForLineQuery = "SELECT Part_Info.PN, Part_Info.Desc1 AS [Desc], Part_Program_Line_Map.LineId, Part_Info.PartID AS partId, Part_Info.RH, Part_Info.LH, Part_Colors.Name AS colorName, 
+                      Part_Colors.ProgId
+                      FROM  Part_Program_Line_Map INNER JOIN
+                      Part_Programs ON Part_Program_Line_Map.ProgramId = Part_Programs.ProgId INNER JOIN
+                      Part_Info ON Part_Program_Line_Map.LH = Part_Info.LH or Part_Program_Line_Map.RH = Part_Info.RH INNER JOIN
+                      Part_Colors ON Part_Info.ColorId = Part_Colors.ColorId AND Part_Programs.ProgId = Part_Colors.ProgId
+                      Where (dbo.Part_Program_Line_Map.LineId = {0})"
+
+    'PN,	Desc,	LineId,	PartId
+    Private Const GetFiletedpartsQuery = "SELECT Part_Info.PN, Part_Info.Desc1 AS [Desc], Part_Program_Line_Map.LineId, Part_Info.PartId AS partId, Part_Info.RH, Part_Info.LH, Part_Colors.Name AS colorName, 
+                      Part_Colors.ProgId
+					  FROM Part_Program_Line_Map INNER JOIN
+					   Part_Programs ON Part_Program_Line_Map.ProgramId = Part_Programs.ProgId INNER JOIN
+					  Part_Info ON Part_Program_Line_Map.LH = Part_Info.LH or Part_Program_Line_Map.RH = Part_Info.RH INNER JOIN
+					   Part_Colors ON Part_Info.ColorId = Part_Colors.ColorId AND Part_Programs.ProgId = Part_Colors.ProgId
+                       Where (dbo.Part_Program_Line_Map.LineId = {0}) and (dbo.Part_Info.PN in({1}))"
+
+
+    Private Const GetUnPostedProduction = "SELECT TOP 1000 dbo.Schedule_Part_Production_History.LogDateTime AS ProdDate, 
+                                          dbo.Schedule_Part_Production_History.OrderId AS ProdOrder, dbo.eqp_Lines.Workcell, dbo.Part_Info.PN AS ProdItem, 
+                                          dbo.Schedule_Part_Production_History.Userid AS Operator,dbo.Schedule_Part_Production_History.Qty AS Qty_Passed, 
+                                          dbo.Schedule_Part_Production_History.Id AS BuiltId
+                                          FROM dbo.Schedule_Part_Production_History INNER JOIN
+                                          dbo.Schedule_Order_History ON dbo.Schedule_Part_Production_History.OrderId = dbo.Schedule_Order_History.ID INNER JOIN
+                                          dbo.Part_Info ON dbo.Schedule_Order_History.PartId = dbo.Part_Info.PartId INNER JOIN
+                                          dbo.eqp_Lines ON dbo.Schedule_Part_Production_History.LineId = dbo.eqp_Lines.Id
+                                          WHERE (dbo.Schedule_Part_Production_History.Posted = 0)
+                                          order by dbo.Schedule_Part_Production_History.LogDateTime"
+
+
+
+
+    'SELECT TOP 500 DATEADD(dd, 0, DATEDIFF(dd, 0, dbo.Schedule_Part_Production_History.LogDateTime)) AS ProdDate, 
+    '  dbo.Schedule_Part_Production_History.OrderId AS ProdOrder, dbo.eqp_Lines.Workcell, dbo.Part_Info.PN AS ProdItem, 
+    '  dbo.Schedule_Part_Production_History.Userid AS Operator, SUM(dbo.Schedule_Part_Production_History.Qty) AS Qty_Passed, 
+    '  MAX(dbo.Schedule_Part_Production_History.Id) AS MaxBuiltId,Min(dbo.Schedule_Part_Production_History.Id) AS MinBuiltId
+    '  FROM dbo.Schedule_Part_Production_History INNER JOIN
+    '  dbo.Schedule_Order_History ON dbo.Schedule_Part_Production_History.OrderId = dbo.Schedule_Order_History.ID INNER JOIN
+    '  dbo.Part_Info ON dbo.Schedule_Order_History.PartId = dbo.Part_Info.PartId INNER JOIN
+    '  dbo.eqp_Lines ON dbo.Schedule_Part_Production_History.LineId = dbo.eqp_Lines.Id
+    '  WHERE (dbo.Schedule_Part_Production_History.Posted = 0)
+    '  GROUP BY dbo.Schedule_Part_Production_History.Userid, dbo.Part_Info.PN, dbo.Schedule_Part_Production_History.OrderId, dbo.eqp_Lines.Workcell, DATEADD(dd, 0, 
+    '  DATEDIFF(dd, 0, dbo.Schedule_Part_Production_History.LogDateTime))
+    '  ORDER BY ProdDate, ProdOrder, dbo.eqp_Lines.Workcell, ProdItem, Operator"
 
     Public Sub New(LgSvr As iLoggingService, Atools As AppTools)
         _Cfg = Atools.GetProgramParams
@@ -49,24 +93,30 @@ Public Class SqlData
         Rslt.ResultString = ""
         Using Cn = GetConnection()
             Cn.Open()
-            Dim Cmd As New SqlClient.SqlCommand(String.Format(GetpartsQuery, PartReq.LineData.Id, Jn), Cn)
+            Dim Cmd As New SqlClient.SqlCommand(String.Format(GetFiletedpartsQuery, PartReq.LineData.Id, Jn), Cn)
             Using dRead As IDataReader = Cmd.ExecuteReader()
-                While dRead.Read
-                    Dim Pn = CStr(dRead("PN"))
-                    Dim Pr = (From x In PartReq.Parts Where x.PN = Pn)
-                    If Pr IsNot Nothing Then
-                        'update all like parts in PartReq
-                        For Each Itm In Pr
-                            Itm.Id = CInt(dRead("PartId"))
-                            Itm.Valid = True
-                            ' Itm.Desc = CStr(dRead("Desc"))
-                            Rslt.Result += 1
-                        Next
+                Try
+                    While dRead.Read
+                        Dim Pn = CStr(dRead("PN"))
+                        Dim Pr = (From x In PartReq.Parts Where x.PN = Pn)
+                        If Pr IsNot Nothing Then
+                            'update all like parts in PartReq
+                            For Each Itm In Pr
+                                Itm.Id = CInt(dRead("PartId"))
+                                Itm.Valid = True
+                                ' Itm.Desc = CStr(dRead("Desc"))
+                                Rslt.Result += 1
+                            Next
 
-                    End If
-                End While
+                        End If
+                    End While
+                Catch ex As Exception
+                    Rslt.ResultString = ex.Message
+                End Try
+
             End Using
         End Using
+        If Rslt.Result = 0 Then Rslt.ResultString = "these parts did not validate for this Line"
         Rslt.parts = PartReq.Parts
         Return Rslt
     End Function
@@ -75,7 +125,7 @@ Public Class SqlData
         Dim Rslt As New getPartsforLineResponse
         Using Cn = GetConnection()
             Cn.Open()
-            Dim Cmd As New SqlClient.SqlCommand(String.Format("{0} Where Lineid = {1}", GetpartsQuery, PartReq.LineData.Id), Cn)
+            Dim Cmd As New SqlClient.SqlCommand(String.Format("{0} Where Lineid = {1}", GetpartsForLineQuery, PartReq.LineData.Id), Cn)
             Using dRead As IDataReader = Cmd.ExecuteReader()
                 While dRead.Read
                     Dim P As New Part
@@ -95,7 +145,7 @@ Public Class SqlData
 
         Using Cn = GetConnection()
             Cn.Open()
-            Dim Wc = If(SqlLinesOnly, "Where (eqp_Lines.SchedulerMethod =2)", "Where (eqp_Lines.SchedulerMethod > 0)")
+            Dim Wc = "Where (eqp_Lines.SchedulerMethod > 0)" 'If(SqlLinesOnly, "Where (eqp_Lines.SchedulerMethod =2)", "Where (eqp_Lines.SchedulerMethod > 0)")
             Dim Cmd As New SqlClient.SqlCommand(String.Format(LineQuery, Wc), Cn)
             Rslt.Lines.AddRange(ParseOutLines(Cmd))
 
@@ -210,14 +260,23 @@ Public Class SqlData
 
 
     'TODO: Update this FUNCTON
-
-    Public Function GetActiveOrders(Lineid As Integer) As GetPlanResponse
+    Public Function GetActiveOrders(Req As GetPlanRequest) As GetPlanResponse
         Dim Pr As New GetPlanResponse
         Dim Items As New List(Of PlanItem)
+        Dim Lineid As Integer = Req.LineData.Id
+        Dim Last24 As Boolean = Req.IncludeHistory
         Using Cn = GetConnection()
             Cn.Open()
-            Dim WC = If(Lineid > 0, String.Format("Where (TargetLineId = {0})", Lineid), "")
+            Dim WC As String = ""
+
+            If Last24 Then
+                WC = String.Format("WHERE (TargetLineId = {0}) and ((Status BETWEEN 2 AND 3) or (LastUpdate >= (GetDate()-1)))", Req.LineData.Id)
+            Else
+                WC = String.Format("WHERE (Status BETWEEN 2 AND 3) and (TargetLineId = {0})", Req.LineData.Id)
+            End If
+
             Dim Cmd As New SqlClient.SqlCommand(String.Format(ActiveOrderQuery, WC), Cn)
+
             Using dRead As IDataReader = Cmd.ExecuteReader()
                 While dRead.Read
                     Dim Itm As New PlanItem
@@ -230,6 +289,7 @@ Public Class SqlData
                         .DueDate = CDate(If(DBNull.Value.Equals(dRead("DueDate")), Now, dRead("DueDate")))
                         .CustOrderId = dRead("CustOrderId").ToString
                         .Ordered = CInt(If(DBNull.Value.Equals(dRead("Ordered")), 0, dRead("Ordered")))
+                        .ScheduleDate = CDate(If(DBNull.Value.Equals(dRead("DueDate")), Now, dRead("DueDate")))
                         .WorkCell = If(DBNull.Value.Equals(dRead("WorkCell")), "", dRead("WorkCell").ToString)
                         .OrderId = CInt(dRead("OrderId"))
                         .PartNumber = CType(dRead("PN"), String)
@@ -245,15 +305,42 @@ Public Class SqlData
                 End While
             End Using
         End Using
-        Pr.PlanData.AddRange(From x In Items Where x.Status = PlanStatus.Scheduled OrElse x.Status = PlanStatus.Suspended OrElse x.Status = PlanStatus.Planed)
+        Pr.PlanData.AddRange(Items.ToList) 'From x In Items Where x.Status = PlanStatus.Scheduled OrElse x.Status = PlanStatus.Suspended OrElse x.Status = PlanStatus.Planed
         Return Pr
+    End Function
+    Public Function GetActiveOrders() As List(Of BuildItem)
+        Dim Items As New List(Of BuildItem)
+        Using Cn = GetConnection()
+            Cn.Open()
+            Dim Cmd As New SqlClient.SqlCommand(GetUnPostedProduction, Cn)
+            Using dRead As IDataReader = Cmd.ExecuteReader()
+                While dRead.Read
+                    Dim Itm As New BuildItem
+                    With Itm
+                        Itm.Workcell = dRead("Workcell")
+                        Itm.ProdDate = dRead("ProdDate")
+                        Itm.ProdItem = dRead("ProdItem")
+                        Itm.Qty_Passed = dRead("Qty_Passed")
+                        Itm.ProdOrder = dRead("ProdOrder")
+                        Itm.Operator = dRead("Operator")
+                        Itm.BuiltId = dRead("BuiltId")
+                    End With
+                    Items.Add(Itm)
+                End While
+            End Using
+        End Using
+        Return Items
     End Function
 
     Public Function GetWipOrders(OrderId As Integer) As List(Of WipOrder)
         Dim Wip As New List(Of WipOrder)
         Using Cn = GetConnection()
             Cn.Open()
-            Dim Cmd As New SqlClient.SqlCommand(String.Format(ActiveOrderQuery, If(OrderId > 0, String.Format("Where OrderId = {0}", OrderId), "")), Cn)
+            'Dim Cmd As New SqlClient.SqlCommand(String.Format(ActiveOrderQuery, If(OrderId > 0, String.Format("Where OrderId = {0}", OrderId), "")), Cn)
+            Dim WC As String = ""
+            If OrderId > 0 Then WC = String.Format("Where OrderId = {0}", OrderId)
+            Dim Cmd As New SqlClient.SqlCommand(String.Format(ActiveOrderQuery, WC), Cn)
+
             Using dRead As IDataReader = Cmd.ExecuteReader()
                 While dRead.Read
                     'TargetLineId,	priority,	PN,	OrderId,	Ordered,	Built,	Qty,	PartId,	Flags,	Desc,	Name,	Status,	PPHPP, DueDate,ReOrderPercentThreshold,WorkBufferMinutes,Workcell
@@ -293,7 +380,22 @@ Public Class SqlData
         Return 0
     End Function
 
+    Public Function Update_PartBuilt_Postings(MinId As Integer, MxId As Integer) As Integer
+        Try
+            Using Cn = GetConnection()
+                Cn.Open()
+                Dim Cmd As New SqlClient.SqlCommand(String.Format("Update Schedule_Part_Production_History Set Posted = 1 where (posted = 0) and (id >= {0}) and (id <= {1})", MinId, MxId), Cn)
+                Return Cmd.ExecuteNonQuery
+            End Using
+        Catch ex As Exception
 
+            LgSvr.SendAlert(New LogEventArgs("Update_PartBuilt_Postings", ex))
+            Return 0
+        End Try
+
+        Return 0
+
+    End Function
 
 
     Public Function LogPartOrder(W As WipOrder) As Integer
