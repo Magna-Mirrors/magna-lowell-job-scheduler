@@ -20,7 +20,11 @@ Public Interface iSchedulerService
     Function SkipThisorder(SourceData As SkipOrderRequest) As SkipOrderResult
     <OperationContract()>
     Function RemoveThisorder(SourceData As RemoveOrderRequest) As RemoveOrderResult
-    <OperationContract()>
-    Function GetLineSchedule(SourceData As GetScheduleRequest) As GetScheduleResult
+	<OperationContract()>
+	Function GetLineSchedule(SourceData As GetScheduleRequest) As GetScheduleResult
+	<OperationContract()>
+	Function SuspendOrder(SourceData As SuspendOrderRequest) As SuspendOrderResult
+	<OperationContract()>
+	Function UnSuspendOrder(SourceData As SuspendOrderRequest) As SuspendOrderResult
 
 End Interface

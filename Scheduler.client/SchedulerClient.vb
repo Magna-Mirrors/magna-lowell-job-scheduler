@@ -103,4 +103,12 @@ Public Class SchedulerClient
     Public Function GetLineSchedule(SourceData As GetScheduleRequest) As GetScheduleResult Implements iSchedulerService.GetLineSchedule
         Return MyBase.Channel.GetLineSchedule(SourceData)
     End Function
+
+	Public Function SuspendOrder(SourceData As SuspendOrderRequest) As SuspendOrderResult Implements iSchedulerService.SuspendOrder
+		Return MyBase.Channel.SuspendOrder(SourceData)
+	End Function
+
+	Public Function UnSuspendOrder(SourceData As SuspendOrderRequest) As SuspendOrderResult Implements iSchedulerService.UnSuspendOrder
+		Return MyBase.Channel.UnSuspendOrder(SourceData)
+	End Function
 End Class

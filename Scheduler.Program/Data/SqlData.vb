@@ -7,8 +7,8 @@ Public Class SqlData
 
     'TargetLineId,	priority,	PN,	OrderId,	Ordered,	Built,	Qty,	PartId,	Flags,	Desc,	Name,	Status,	PPHPP, DueDate
     Private Const ActiveOrderQuery As String = "SELECT [TargetLineId]
-                     ,[Priority],[PN],[PartId],[OrderId],[Ordered],[Built],[Qty],[Flags],[Desc],[Name],[Status],[PPHPP],[DueDate],[CustOrderId],
-                     [ReOrderPercentThreshold], [WorkBufferMinutes],[Workcell]
+                     ,[Priority],[PN],[PartId],[OrderId],[Ordered],[Built],[Qty],[Flags],[Desc],[Name],[Status],[PPHPP],[DueDate],[CustOrderId],LastUpdate
+                     ,[ReOrderPercentThreshold], [WorkBufferMinutes],[Workcell]
                      FROM [View_ActiveOrders]
                      {0}
                      order by status desc, Priority"
@@ -229,9 +229,9 @@ Public Class SqlData
         Try
             Using Cn = GetConnection()
                 Cn.Open()
-                Dim UpStr As String = "Update Schedule_Order_History Set Status = {0} where Id = {1}"
-                Dim Cmd As New SqlClient.SqlCommand(String.Format(UpStr, CInt(Status), Order_Id), Cn)
-                Rslt.Result = Cmd.ExecuteNonQuery
+				Dim UpStr As String = "Update Schedule_Order_History Set Status = {0},LastUpdate = '{1}' where Id = {2}"
+				Dim Cmd As New SqlClient.SqlCommand(String.Format(UpStr, CInt(Status), Now(), Order_Id), Cn)
+				Rslt.Result = Cmd.ExecuteNonQuery
                 Cn.Close()
 
             End Using
@@ -270,10 +270,10 @@ Public Class SqlData
             Dim WC As String = ""
 
             If Last24 Then
-                WC = String.Format("WHERE (TargetLineId = {0}) and ((Status BETWEEN 2 AND 3) or (LastUpdate >= (GetDate()-1)))", Req.LineData.Id)
-            Else
-                WC = String.Format("WHERE (Status BETWEEN 2 AND 3) and (TargetLineId = {0})", Req.LineData.Id)
-            End If
+				WC = String.Format("WHERE (TargetLineId = {0}) and (((Status BETWEEN 1 AND 3)) or ((Status BETWEEN 4 AND 5) and (LastUpdate >= (GetDate()-1))))", Req.LineData.Id)
+			Else
+				WC = String.Format("WHERE (Status BETWEEN 1 AND 3) and (TargetLineId = {0})", Req.LineData.Id)
+			End If
 
             Dim Cmd As New SqlClient.SqlCommand(String.Format(ActiveOrderQuery, WC), Cn)
 
@@ -287,14 +287,15 @@ Public Class SqlData
                         .Built = CInt(If(DBNull.Value.Equals(dRead("Built")), 0, dRead("Built")))
                         .Desc = CType(If(DBNull.Value.Equals(dRead("Desc")), "", dRead("Desc")), String)
                         .DueDate = CDate(If(DBNull.Value.Equals(dRead("DueDate")), Now, dRead("DueDate")))
-                        .CustOrderId = dRead("CustOrderId").ToString
-                        .Ordered = CInt(If(DBNull.Value.Equals(dRead("Ordered")), 0, dRead("Ordered")))
+						.CustOrderId = dRead("CustOrderId").ToString
+						.Ordered = CInt(If(DBNull.Value.Equals(dRead("Ordered")), 0, dRead("Ordered")))
                         .ScheduleDate = CDate(If(DBNull.Value.Equals(dRead("DueDate")), Now, dRead("DueDate")))
                         .WorkCell = If(DBNull.Value.Equals(dRead("WorkCell")), "", dRead("WorkCell").ToString)
                         .OrderId = CInt(dRead("OrderId"))
-                        .PartNumber = CType(dRead("PN"), String)
-                        .QTY = CInt(dRead("Qty"))
-                        .PartId = CInt(If(DBNull.Value.Equals(dRead("PartId")), 0, dRead("PartId")))
+						.PartNumber = CType(dRead("PN"), String)
+						.LastUpdate = CDate(If(DBNull.Value.Equals(dRead("Lastupdate")), Now, dRead("LastUpdate")))
+						.QTY = CInt(dRead("Qty"))
+						.PartId = CInt(If(DBNull.Value.Equals(dRead("PartId")), 0, dRead("PartId")))
                         .Status = CType(dRead("Status"), PlanStatus)
                         .Flags = CType(dRead("Flags"), OrderFlags)
                         .Position = CLng(dRead("Priority"))
@@ -338,10 +339,14 @@ Public Class SqlData
             Cn.Open()
             'Dim Cmd As New SqlClient.SqlCommand(String.Format(ActiveOrderQuery, If(OrderId > 0, String.Format("Where OrderId = {0}", OrderId), "")), Cn)
             Dim WC As String = ""
-            If OrderId > 0 Then WC = String.Format("Where OrderId = {0}", OrderId)
-            Dim Cmd As New SqlClient.SqlCommand(String.Format(ActiveOrderQuery, WC), Cn)
+			If OrderId > 0 Then
+				WC = String.Format("Where OrderId = {0}", OrderId)
+			Else
+				WC = String.Format("Where Status in (2,3)")
+			End If
+			Dim Cmd As New SqlClient.SqlCommand(String.Format(ActiveOrderQuery, WC), Cn)
 
-            Using dRead As IDataReader = Cmd.ExecuteReader()
+			Using dRead As IDataReader = Cmd.ExecuteReader()
                 While dRead.Read
                     'TargetLineId,	priority,	PN,	OrderId,	Ordered,	Built,	Qty,	PartId,	Flags,	Desc,	Name,	Status,	PPHPP, DueDate,ReOrderPercentThreshold,WorkBufferMinutes,Workcell
                     Dim W As New WipOrder
@@ -503,9 +508,10 @@ Public Class SqlData
         dCmd.Parameters.Add(New SqlClient.SqlParameter("@LastUpdate", Now))
         dCmd.Parameters.Add(New SqlClient.SqlParameter("@Flags", Pi.Flags))
         dCmd.Parameters.Add(New SqlClient.SqlParameter("@PartDesc", Pi.Desc))
-        dCmd.Parameters.Add(New SqlClient.SqlParameter("@CustOrderId", Pi.CustOrderId))
+		dCmd.Parameters.Add(New SqlClient.SqlParameter("@CustOrderId", Pi.CustOrderId))
 
-        dCmd.CommandText = String.Format("Update Schedule_Order_History 
+
+		dCmd.CommandText = String.Format("Update Schedule_Order_History 
             set ShipDate = @ShipDate,
             Quantity = @Quantity,
             Position = @Position,

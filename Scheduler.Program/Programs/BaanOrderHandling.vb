@@ -19,52 +19,56 @@ Public Class BaanOrderHandling
     Private _IsRunning As Boolean
     Private _LastRan As Date
     Private _Tools As AppTools
-    Public Property RunNow As Boolean
-    Dim Busy As Boolean
-    Private Sub Enque()
+	Public Property RunNow As Boolean
 
-    End Sub
+	Dim Busy As Boolean
+	Private Sub Enque()
 
-    Public ReadOnly Property IsRunning As Boolean
-        Get
-            Return _IsRunning
-        End Get
-    End Property
-
-    Public Async Function RunAsync(CT As CancellationToken) As Task
-
-        _IsRunning = True
-                            While (Not CT.IsCancellationRequested)
-                                Await Task.Delay(10000)
-
-            If Now.Subtract(_LastRan).TotalMinutes >= _Cfg.UpdateOrdersIntervalMinutes And Not Busy Then
-                Try
-                    Busy = True
-                    _DataMgr.ProcessLineOrders()
-                    _DataMgr.CommitBuildToProdOrders()
-                    Dim Cfg = _Tools.GetProgramParams
-                    _Cfg.UpdateOrdersIntervalMinutes = Cfg.UpdateOrdersIntervalMinutes
-                Catch ex As Exception
-                    _Log.SendAlert(New LogEventArgs("OrderHandling", ex))
-                Finally
-                    Busy = False
-                End Try
-
-                _LastRan = Now
-            End If
-
-            If RunNow Then
-                                    RunNow = False
-                                End If
-
-                            End While
-
-                            _IsRunning = False
-
-    End Function
+	End Sub
 
 
-    Public Sub New(Dm As DataManager, Atools As AppTools, MsgSvc As iLoggingService)
+	Public ReadOnly Property IsRunning As Boolean
+		Get
+			Return _IsRunning
+		End Get
+	End Property
+
+
+	Public Async Function RunAsync(CT As CancellationToken) As Task
+		_IsRunning = True
+		While (Not CT.IsCancellationRequested)
+			Await Task.Delay(1000)
+
+			If ((Now.Subtract(_LastRan).TotalMinutes >= _Cfg.UpdateOrdersIntervalMinutes) OrElse (_DataMgr.RequestingUpdateNow)) And Not Busy Then
+				Try
+					Busy = True
+					_DataMgr.ResetRequestingUpdateNow
+					_DataMgr.ProcessLineOrders()
+					_DataMgr.CommitBuildToProdOrders()
+					Dim Cfg = _Tools.GetProgramParams
+					_Cfg.UpdateOrdersIntervalMinutes = Cfg.UpdateOrdersIntervalMinutes
+				Catch ex As Exception
+					_Log.SendAlert(New LogEventArgs("OrderHandling", ex))
+				Finally
+					Busy = False
+				End Try
+
+				_LastRan = Now
+
+			End If
+
+			If RunNow Then
+				RunNow = False
+			End If
+
+		End While
+
+		_IsRunning = False
+
+	End Function
+
+
+	Public Sub New(Dm As DataManager, Atools As AppTools, MsgSvc As iLoggingService)
         _Tools = Atools
         _Cfg = _Tools.GetProgramParams
         _DataMgr = Dm

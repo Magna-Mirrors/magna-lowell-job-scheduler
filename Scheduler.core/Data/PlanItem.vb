@@ -10,9 +10,8 @@ Public Class PlanItem
     Public Property CustOrderId As String
     <DataMember>
     Public Property OrderId As Integer
-    '    <DataMember>
-    '    Public Property Id As Integer
-    <DataMember>
+
+	<DataMember>
     Public Property PartNumber As String
     <DataMember>
     Public Property Shipdate As DateTime
@@ -28,9 +27,11 @@ Public Class PlanItem
     Public Property Flags As OrderFlags
     <DataMember>
     Public Property DueDate As Date
-    <DataMember>
-    Public Property ScheduleDate As Date
-    <DataMember>
+	<DataMember>
+	Public Property ScheduleDate As Date
+	<DataMember>
+	Public Property LastUpdate As Date
+	<DataMember>
     Public Property Status As PlanStatus
 
     <DataMember>

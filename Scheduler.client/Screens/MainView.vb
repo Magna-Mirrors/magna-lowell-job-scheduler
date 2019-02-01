@@ -207,15 +207,27 @@ Public Class MainView
         End Try
     End Sub
 
-    Private Sub dgv_Resize(sender As Object, e As EventArgs) Handles dgv.Resize
-        dgv.Columns(0).Width = CInt(dgv.Width * 0.25)
-        dgv.Columns(1).Width = CInt(dgv.Width * 0.25)
-        dgv.Columns(2).Width = CInt(dgv.Width * 0.1)
-        dgv.Columns(3).Width = CInt(dgv.Width * 0.1)
-        dgv.Columns(4).Width = CInt(dgv.Width * 0.1)
-        dgv.Columns(5).Width = CInt(dgv.Width * 0.15)
+	Private Sub DgvHistory_Resize(sender As Object, e As EventArgs) Handles DgvHistory.Resize
+		DgvHistory.Columns(0).Width = CInt(DgvHistory.Width * 0.17)
+		DgvHistory.Columns(1).Width = CInt(DgvHistory.Width * 0.2)
+		DgvHistory.Columns(2).Width = CInt(DgvHistory.Width * 0.15)
+		DgvHistory.Columns(3).Width = CInt(DgvHistory.Width * 0.1)
+		DgvHistory.Columns(4).Width = CInt(DgvHistory.Width * 0.1)
+		DgvHistory.Columns(5).Width = CInt(DgvHistory.Width * 0.1)
+		DgvHistory.Columns(6).Width = CInt(DgvHistory.Width * 0.17)
 
-    End Sub
+	End Sub
+
+	Private Sub dgv_Resize(sender As Object, e As EventArgs) Handles dgv.Resize
+		dgv.Columns(0).Width = CInt(dgv.Width * 0.2)
+		dgv.Columns(1).Width = CInt(dgv.Width * 0.2)
+		dgv.Columns(2).Width = CInt(dgv.Width * 0.08)
+		dgv.Columns(3).Width = CInt(dgv.Width * 0.08)
+		dgv.Columns(4).Width = CInt(dgv.Width * 0.1)
+		dgv.Columns(5).Width = CInt(dgv.Width * 0.1)
+		dgv.Columns(6).Width = CInt(dgv.Width * 0.2)
+
+	End Sub
 
     Private Sub dgvEdit_Resize(sender As Object, e As EventArgs) Handles dgvEdit.Resize
 
@@ -308,14 +320,16 @@ Public Class MainView
     Private Sub LoadPlanData()
         LoadingPlan = True
         If CurrentLine IsNot Nothing AndAlso CurrentLine.Id > 0 Then
-            Dim GetPlanReq As New GetPlanRequest(CurrentLine)
-            Dim R = ClientAccess.GetPlan(GetPlanReq)
+			Dim GetPlanReq As New GetPlanRequest(CurrentLine)
+			GetPlanReq.IncludeHistory = True
+			Dim R = ClientAccess.GetPlan(GetPlanReq)
             If R.Result > 0 Then
                 Dim PlanList = R.PlanData.OrderBy(Function(x) x.Position).ToList()
                 PlandataSource.DataSource = (From x In PlanList Where x.Status = PlanStatus.Planed).ToList
-                ScheduleDataSource.DataSource = (From x In PlanList Where x.Status = PlanStatus.Scheduled).ToList
-                RefreshRowColors()
-            Else
+				ScheduleDataSource.DataSource = (From x In PlanList Where x.Status = PlanStatus.Scheduled OrElse x.Status = PlanStatus.Suspended).ToList
+				CompleteAndRemovedDataSource.DataSource = (From x In PlanList Where x.Status = PlanStatus.Removed OrElse x.Status = PlanStatus.Complete).ToList
+				RefreshRowColors()
+			Else
                 MessageBox.Show(Me, R.ResultString, "Service ERROR", buttons:=MessageBoxButtons.OK, icon:=MessageBoxIcon.Error)
             End If
 
@@ -368,66 +382,83 @@ Public Class MainView
     End Sub
 
     Private Sub MovePlanItem(Up As Boolean)
-        Dim Itm As PlanItem = GetSelectedRowItem()
+		Dim Itm As PlanItem = GetSelectedPlannedRowItem()
 
-        If Itm IsNot Nothing Then
+		If Itm IsNot Nothing Then
 
-            Dim Litms As List(Of PlanItem) = DirectCast(PlandataSource.DataSource, List(Of PlanItem))
-            Dim ReIndex As Boolean = False
-            If Up Then
-                Dim Idx = dgvEdit.SelectedRows(0).Index
+			Dim Litms As List(Of PlanItem) = DirectCast(PlandataSource.DataSource, List(Of PlanItem))
+			Dim ReIndex As Boolean = False
+			If Up Then
+				Dim Idx = dgvEdit.SelectedRows(0).Index
 
-                If Idx > 0 Then
-                    Litms.Insert(Idx - 1, Itm)
-                    Litms.RemoveAt(Idx + 1)
-                    dgvEdit.Rows(Idx - 1).Selected = True
-                    ReIndex = True
-                End If
-            Else
-                Dim Idx = dgvEdit.SelectedRows(0).Index
-                If Idx < Litms.Count - 1 Then
-                    If Idx + 1 = Litms.Count - 1 Then
-                        Litms.Add(Itm)
-                        Litms.RemoveAt(Idx)
-                        dgvEdit.Rows(Idx + 1).Selected = True
-                    Else
-                        Litms.Insert(Idx + 1, Itm)
-                        dgvEdit.Rows(Idx + 1).Selected = True
-                        Litms.RemoveAt(Idx)
-                    End If
-                    ReIndex = True
-                End If
-            End If
+				If Idx > 0 Then
+					Litms.Insert(Idx - 1, Itm)
+					Litms.RemoveAt(Idx + 1)
+					dgvEdit.Rows(Idx - 1).Selected = True
+					ReIndex = True
+				End If
+			Else
+				Dim Idx = dgvEdit.SelectedRows(0).Index
+				If Idx < Litms.Count - 1 Then
+					If Idx + 1 = Litms.Count - 1 Then
+						Litms.Add(Itm)
+						Litms.RemoveAt(Idx)
+						dgvEdit.Rows(Idx + 1).Selected = True
+					Else
+						Litms.Insert(Idx + 1, Itm)
+						dgvEdit.Rows(Idx + 1).Selected = True
+						Litms.RemoveAt(Idx)
+					End If
+					ReIndex = True
+				End If
+			End If
 
-            If ReIndex Then
-                Dim Ts As Long = Utility.GetUnitxTimeStamp
-                For I = 0 To Litms.Count - 1
-                    Litms(I).Position = Ts + I
-                    Litms(I).Chk = "*"
-                Next
-            End If
+			If ReIndex Then
+				Dim Ts As Long = Utility.GetUnitxTimeStamp
+				For I = 0 To Litms.Count - 1
+					Litms(I).Position = Ts + I
+					Litms(I).Chk = "*"
+				Next
+			End If
 
-        End If
-        RefreshRowColors()
-    End Sub
+		End If
+		RefreshRowColors()
+	End Sub
 
 
-    Private Function GetSelectedRowItem() As PlanItem
-        If dgvEdit.SelectedRows IsNot Nothing AndAlso dgvEdit.SelectedRows.Count = 1 Then
-            If dgvEdit.SelectedRows(0).DataBoundItem IsNot Nothing AndAlso dgvEdit.SelectedRows(0).DataBoundItem.GetType.Name = "PlanItem" Then
-                Return DirectCast(dgvEdit.SelectedRows(0).DataBoundItem, PlanItem)
-            End If
-        End If
-        Return Nothing
-    End Function
+	Private Function GetSelectedPlannedRowItem() As PlanItem
+		If dgvEdit.SelectedRows IsNot Nothing AndAlso dgvEdit.SelectedRows.Count = 1 Then
+			If dgvEdit.SelectedRows(0).DataBoundItem IsNot Nothing AndAlso dgvEdit.SelectedRows(0).DataBoundItem.GetType.Name = "PlanItem" Then
+				Return DirectCast(dgvEdit.SelectedRows(0).DataBoundItem, PlanItem)
+			End If
+		End If
+		Return Nothing
+	End Function
 
-    Private Function GetPlanAtRow(R As Integer) As PlanItem
-        If dgvEdit.Rows(R).DataBoundItem IsNot Nothing AndAlso dgvEdit.Rows(R).DataBoundItem.GetType.Name = "PlanItem" Then
-            Return DirectCast(dgvEdit.Rows(R).DataBoundItem, PlanItem)
-        End If
-        Return Nothing
-    End Function
-    Private Sub SaveThePlan()
+	Private Function GetSelectedScheduledRowItem() As PlanItem
+		If dgv.SelectedRows IsNot Nothing AndAlso dgv.SelectedRows.Count = 1 Then
+			If dgv.SelectedRows(0).DataBoundItem IsNot Nothing AndAlso dgv.SelectedRows(0).DataBoundItem.GetType.Name = "PlanItem" Then
+				Return DirectCast(dgv.SelectedRows(0).DataBoundItem, PlanItem)
+			End If
+		End If
+		Return Nothing
+	End Function
+
+	Private Function GetPlanAtRow(R As Integer) As PlanItem
+		If dgvEdit.Rows(R).DataBoundItem IsNot Nothing AndAlso dgvEdit.Rows(R).DataBoundItem.GetType.Name = "PlanItem" Then
+			Return DirectCast(dgvEdit.Rows(R).DataBoundItem, PlanItem)
+		End If
+		Return Nothing
+	End Function
+
+	Private Function GetScheduledAtRow(R As Integer) As PlanItem
+		If dgv.Rows(R).DataBoundItem IsNot Nothing AndAlso dgv.Rows(R).DataBoundItem.GetType.Name = "PlanItem" Then
+			Return DirectCast(dgv.Rows(R).DataBoundItem, PlanItem)
+		End If
+		Return Nothing
+	End Function
+
+	Private Sub SaveThePlan()
         If CurrentLine Is Nothing Then
             MessageBox.Show(Me, "No line selected cannot save plan.", "User ERROR", buttons:=MessageBoxButtons.OK, icon:=MessageBoxIcon.Error)
             Return
@@ -497,13 +528,31 @@ Public Class MainView
                     Case Else : R.Cells(4).Style.BackColor = System.Drawing.Color.Coral
                 End Select
 
+			Next
 
-                'If Itm.Chk = "PN?" Then
-                '    ValidPns = False
-                'End If
-            Next
 
-        Catch ex As Exception
+			For Each R As DataGridViewRow In dgv.Rows
+				If R.Cells(6).Value = PlanStatus.Suspended Then
+					R.Cells(6).Style.BackColor = System.Drawing.Color.Pink
+				Else
+					R.Cells(6).Style.BackColor = System.Drawing.Color.White
+				End If
+
+			Next
+
+
+			For Each R As DataGridViewRow In DgvHistory.Rows
+				If R.Cells(6).Value = PlanStatus.Removed Then
+					R.Cells(6).Style.BackColor = System.Drawing.Color.Salmon
+
+				ElseIf R.Cells(6).Value = PlanStatus.Complete Then
+					R.Cells(6).Style.BackColor = System.Drawing.Color.Lime
+				Else
+					R.Cells(6).Style.BackColor = System.Drawing.Color.White
+				End If
+			Next
+
+		Catch ex As Exception
 
         End Try
         ' cmdSendPlan.Enabled = True
@@ -661,9 +710,53 @@ Public Class MainView
         mnuEdit.Close()
     End Sub
 
-    Private Sub DataGridView1_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles DataGridView1.CellContentClick
+	Private Sub DataGridView1_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles DgvHistory.CellContentClick
 
-    End Sub
+	End Sub
+
+	Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+		'Call Skip order
+
+		Dim Sor As New SkipOrderRequest
+		If CurrentLine IsNot Nothing Then
+			Sor.Lineid = CurrentLine.Id
+			ClientAccess.SkipThisorder(Sor)
+		End If
+
+
+	End Sub
+
+	Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
+		'call suspend order
+		Dim Odr = GetSelectedScheduledRowItem()
+		If Odr IsNot Nothing Then
+			Dim Req = New SuspendOrderRequest
+			Req.OrderId = Odr.OrderId
+			ClientAccess.SuspendOrder(Req)
+		End If
+	End Sub
+
+	Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Button3.Click
+		'Call unsuspend order
+		Dim Odr = GetSelectedScheduledRowItem()
+		If Odr IsNot Nothing Then
+			Dim Req = New SuspendOrderRequest
+			Req.OrderId = Odr.OrderId
+			ClientAccess.UnSuspendOrder(Req)
+		End If
+	End Sub
+
+	Private Sub Button4_Click_1(sender As Object, e As EventArgs) Handles Button4.Click
+		Dim Odr = GetSelectedScheduledRowItem()
+		If Odr IsNot Nothing Then
+			Dim Req = New RemoveOrderRequest
+			Req.OrderId = Odr.OrderId
+			ClientAccess.RemoveThisorder(Req)
+		End If
+	End Sub
+
+
+
 End Class
 
 

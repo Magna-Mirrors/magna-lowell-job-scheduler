@@ -51,4 +51,12 @@ Public Class SchedulerService
     Public Function GetLineSchedule(SourceData As GetScheduleRequest) As GetScheduleResult Implements iSchedulerService.GetLineSchedule
         Return DataMgr.GetLineSchedule(SourceData)
     End Function
+
+	Public Function SuspendOrder(SourceData As SuspendOrderRequest) As SuspendOrderResult Implements iSchedulerService.SuspendOrder
+		Return DataMgr.SuspendThisorder(SourceData)
+	End Function
+
+	Public Function UnSuspendOrder(SourceData As SuspendOrderRequest) As SuspendOrderResult Implements iSchedulerService.UnSuspendOrder
+		Return DataMgr.UnSuspendThisorder(SourceData)
+	End Function
 End Class

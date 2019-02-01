@@ -112,10 +112,12 @@
     <Compile Include="Structures\ClientRequests\GetScheduleRequest.vb" />
     <Compile Include="Structures\ClientRequests\RemoveOrderRequest.vb" />
     <Compile Include="Structures\ClientRequests\SkipOrderRequest.vb" />
+    <Compile Include="Structures\ClientRequests\SuspendOrderRequest.vb" />
     <Compile Include="Structures\ClientResponces\GetNextOrderResult.vb" />
     <Compile Include="Structures\ClientResponces\GetScheduleResult.vb" />
     <Compile Include="Structures\ClientResponces\RemoveOrderResult.vb" />
     <Compile Include="Structures\ClientResponces\SkipOrderResult.vb" />
+    <Compile Include="Structures\ClientResponces\SuspendOrderResult.vb" />
     <Compile Include="Structures\Orderdata\PartOrder.vb" />
     <Compile Include="Structures\Orderdata\ErpEnums.vb" />
     <Compile Include="Structures\Parameters\ActivityItem.vb" />
