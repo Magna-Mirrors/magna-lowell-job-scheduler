@@ -502,6 +502,7 @@ Partial Class MainView
 		Me.Button4.TabIndex = 3
 		Me.Button4.Text = "Remove"
 		Me.Button4.UseVisualStyleBackColor = True
+		Me.Button4.Visible = False
 		'
 		'Button3
 		'
@@ -509,8 +510,9 @@ Partial Class MainView
 		Me.Button3.Name = "Button3"
 		Me.Button3.Size = New System.Drawing.Size(115, 44)
 		Me.Button3.TabIndex = 2
-		Me.Button3.Text = "UnSuspend"
+		Me.Button3.Text = "Resume Order"
 		Me.Button3.UseVisualStyleBackColor = True
+		Me.Button3.Visible = False
 		'
 		'Button2
 		'
@@ -518,8 +520,9 @@ Partial Class MainView
 		Me.Button2.Name = "Button2"
 		Me.Button2.Size = New System.Drawing.Size(115, 44)
 		Me.Button2.TabIndex = 1
-		Me.Button2.Text = "Suspend"
+		Me.Button2.Text = "Suspend Order"
 		Me.Button2.UseVisualStyleBackColor = True
+		Me.Button2.Visible = False
 		'
 		'Button1
 		'
@@ -529,6 +532,7 @@ Partial Class MainView
 		Me.Button1.TabIndex = 0
 		Me.Button1.Text = "Skip"
 		Me.Button1.UseVisualStyleBackColor = True
+		Me.Button1.Visible = False
 		'
 		'DataGridViewTextBoxColumn1
 		'
@@ -543,6 +547,7 @@ Partial Class MainView
 		Me.DataGridViewTextBoxColumn2.HeaderText = "CustOrderId"
 		Me.DataGridViewTextBoxColumn2.Name = "DataGridViewTextBoxColumn2"
 		Me.DataGridViewTextBoxColumn2.ReadOnly = True
+		Me.DataGridViewTextBoxColumn2.Width = 105
 		'
 		'PartNumberDataGridViewTextBoxColumn
 		'
@@ -652,7 +657,7 @@ Partial Class MainView
 		Me.QTYDataGridViewTextBoxColumn2.HeaderText = "QTY"
 		Me.QTYDataGridViewTextBoxColumn2.Name = "QTYDataGridViewTextBoxColumn2"
 		Me.QTYDataGridViewTextBoxColumn2.ReadOnly = True
-		Me.QTYDataGridViewTextBoxColumn2.Width = 54
+		Me.QTYDataGridViewTextBoxColumn2.Width = 35
 		'
 		'BuiltDataGridViewTextBoxColumn
 		'
@@ -660,7 +665,7 @@ Partial Class MainView
 		Me.BuiltDataGridViewTextBoxColumn.HeaderText = "Built"
 		Me.BuiltDataGridViewTextBoxColumn.Name = "BuiltDataGridViewTextBoxColumn"
 		Me.BuiltDataGridViewTextBoxColumn.ReadOnly = True
-		Me.BuiltDataGridViewTextBoxColumn.Width = 52
+		Me.BuiltDataGridViewTextBoxColumn.Width = 35
 		'
 		'OrderedDataGridViewTextBoxColumn
 		'
@@ -668,7 +673,7 @@ Partial Class MainView
 		Me.OrderedDataGridViewTextBoxColumn.HeaderText = "Ordered"
 		Me.OrderedDataGridViewTextBoxColumn.Name = "OrderedDataGridViewTextBoxColumn"
 		Me.OrderedDataGridViewTextBoxColumn.ReadOnly = True
-		Me.OrderedDataGridViewTextBoxColumn.Width = 70
+		Me.OrderedDataGridViewTextBoxColumn.Width = 35
 		'
 		'StatusDataGridViewTextBoxColumn
 		'
@@ -676,7 +681,7 @@ Partial Class MainView
 		Me.StatusDataGridViewTextBoxColumn.HeaderText = "Status"
 		Me.StatusDataGridViewTextBoxColumn.Name = "StatusDataGridViewTextBoxColumn"
 		Me.StatusDataGridViewTextBoxColumn.ReadOnly = True
-		Me.StatusDataGridViewTextBoxColumn.Width = 95
+		Me.StatusDataGridViewTextBoxColumn.Width = 92
 		'
 		'CompleteAndRemovedDataSource
 		'

@@ -28,8 +28,14 @@ Public Class MainView
     End Sub
     Private Sub MainView_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         ConnectToService()
-        RetreshLineData()
-    End Sub
+		RetreshLineData()
+#If DEBUG Then
+		Button1.visible = true
+		Button2.visible = true
+		Button3.visible = true
+		Button4.visible = true
+#End If
+	End Sub
 
 #Region "Clicks"
     'Private EditList As List(Of PlanItem)
@@ -209,12 +215,12 @@ Public Class MainView
 
 	Private Sub DgvHistory_Resize(sender As Object, e As EventArgs) Handles DgvHistory.Resize
 		DgvHistory.Columns(0).Width = CInt(DgvHistory.Width * 0.17)
-		DgvHistory.Columns(1).Width = CInt(DgvHistory.Width * 0.2)
-		DgvHistory.Columns(2).Width = CInt(DgvHistory.Width * 0.15)
-		DgvHistory.Columns(3).Width = CInt(DgvHistory.Width * 0.1)
-		DgvHistory.Columns(4).Width = CInt(DgvHistory.Width * 0.1)
-		DgvHistory.Columns(5).Width = CInt(DgvHistory.Width * 0.1)
-		DgvHistory.Columns(6).Width = CInt(DgvHistory.Width * 0.17)
+		DgvHistory.Columns(1).Width = CInt(DgvHistory.Width * 0.17)
+		DgvHistory.Columns(2).Width = CInt(DgvHistory.Width * 0.12)
+		DgvHistory.Columns(3).Width = CInt(DgvHistory.Width * 0.13)
+		DgvHistory.Columns(4).Width = CInt(DgvHistory.Width * 0.07)
+		DgvHistory.Columns(5).Width = CInt(DgvHistory.Width * 0.07)
+		DgvHistory.Columns(6).Width = CInt(DgvHistory.Width * 0.13)
 
 	End Sub
 
@@ -721,6 +727,7 @@ Public Class MainView
 		If CurrentLine IsNot Nothing Then
 			Sor.Lineid = CurrentLine.Id
 			ClientAccess.SkipThisorder(Sor)
+			LoadPlanData()
 		End If
 
 
@@ -733,6 +740,7 @@ Public Class MainView
 			Dim Req = New SuspendOrderRequest
 			Req.OrderId = Odr.OrderId
 			ClientAccess.SuspendOrder(Req)
+			LoadPlanData()
 		End If
 	End Sub
 
@@ -743,6 +751,7 @@ Public Class MainView
 			Dim Req = New SuspendOrderRequest
 			Req.OrderId = Odr.OrderId
 			ClientAccess.UnSuspendOrder(Req)
+			LoadPlanData()
 		End If
 	End Sub
 
@@ -752,6 +761,7 @@ Public Class MainView
 			Dim Req = New RemoveOrderRequest
 			Req.OrderId = Odr.OrderId
 			ClientAccess.RemoveThisorder(Req)
+			LoadPlanData()
 		End If
 	End Sub
 

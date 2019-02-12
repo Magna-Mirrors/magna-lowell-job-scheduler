@@ -259,118 +259,136 @@ Public Class SqlData
     End Function
 
 
-    'TODO: Update this FUNCTON
-    Public Function GetActiveOrders(Req As GetPlanRequest) As GetPlanResponse
-        Dim Pr As New GetPlanResponse
-        Dim Items As New List(Of PlanItem)
-        Dim Lineid As Integer = Req.LineData.Id
-        Dim Last24 As Boolean = Req.IncludeHistory
-        Using Cn = GetConnection()
-            Cn.Open()
-            Dim WC As String = ""
+	'TODO: Update this FUNCTON
+	Public Function GetActiveOrders(Req As GetPlanRequest) As GetPlanResponse
+		Dim Pr As New GetPlanResponse
+		Dim Items As New List(Of PlanItem)
+		Dim Lineid As Integer = Req.LineData.Id
+		Dim Last24 As Boolean = Req.IncludeHistory
+		Try
+			Using Cn = GetConnection()
+				Cn.Open()
+				Dim WC As String = ""
 
-            If Last24 Then
-				WC = String.Format("WHERE (TargetLineId = {0}) and (((Status BETWEEN 1 AND 3)) or ((Status BETWEEN 4 AND 5) and (LastUpdate >= (GetDate()-1))))", Req.LineData.Id)
-			Else
-				WC = String.Format("WHERE (Status BETWEEN 1 AND 3) and (TargetLineId = {0})", Req.LineData.Id)
-			End If
+				If Last24 Then
+					WC = String.Format("WHERE (TargetLineId = {0}) and (((Status BETWEEN 1 AND 3)) or ((Status BETWEEN 4 AND 5) and (LastUpdate >= (GetDate()-1))))", Req.LineData.Id)
+				Else
+					WC = String.Format("WHERE (Status BETWEEN 1 AND 3) and (TargetLineId = {0})", Req.LineData.Id)
+				End If
 
-            Dim Cmd As New SqlClient.SqlCommand(String.Format(ActiveOrderQuery, WC), Cn)
+				Dim Cmd As New SqlClient.SqlCommand(String.Format(ActiveOrderQuery, WC), Cn)
 
-            Using dRead As IDataReader = Cmd.ExecuteReader()
-                While dRead.Read
-                    Dim Itm As New PlanItem
-                    With Itm
-                        'TargetLineId, priority, PN, OrderID, Ordered, Built, Qty, PartId, Flags, Desc,	Name, Status, PPHPP, DueDate
-                        .OrderId = CInt(dRead("OrderID")) 'Orderid
-                        .TargetLineId = CInt(dRead("TargetLineId"))
-                        .Built = CInt(If(DBNull.Value.Equals(dRead("Built")), 0, dRead("Built")))
-                        .Desc = CType(If(DBNull.Value.Equals(dRead("Desc")), "", dRead("Desc")), String)
-                        .DueDate = CDate(If(DBNull.Value.Equals(dRead("DueDate")), Now, dRead("DueDate")))
-						.CustOrderId = dRead("CustOrderId").ToString
-						.Ordered = CInt(If(DBNull.Value.Equals(dRead("Ordered")), 0, dRead("Ordered")))
-                        .ScheduleDate = CDate(If(DBNull.Value.Equals(dRead("DueDate")), Now, dRead("DueDate")))
-                        .WorkCell = If(DBNull.Value.Equals(dRead("WorkCell")), "", dRead("WorkCell").ToString)
-                        .OrderId = CInt(dRead("OrderId"))
-						.PartNumber = CType(dRead("PN"), String)
-						.LastUpdate = CDate(If(DBNull.Value.Equals(dRead("Lastupdate")), Now, dRead("LastUpdate")))
-						.QTY = CInt(dRead("Qty"))
-						.PartId = CInt(If(DBNull.Value.Equals(dRead("PartId")), 0, dRead("PartId")))
-                        .Status = CType(dRead("Status"), PlanStatus)
-                        .Flags = CType(dRead("Flags"), OrderFlags)
-                        .Position = CLng(dRead("Priority"))
-                        .PPHPP = CSng(dRead("PPHPP"))
-                        .Chk = If(DBNull.Value.Equals(dRead("PartId")) OrElse CInt(dRead("PartId")) = 0, "ID?", "OK")
-                    End With
-                    Items.Add(Itm)
-                End While
-            End Using
-        End Using
-        Pr.PlanData.AddRange(Items.ToList) 'From x In Items Where x.Status = PlanStatus.Scheduled OrElse x.Status = PlanStatus.Suspended OrElse x.Status = PlanStatus.Planed
-        Return Pr
-    End Function
-    Public Function GetActiveOrders() As List(Of BuildItem)
-        Dim Items As New List(Of BuildItem)
-        Using Cn = GetConnection()
-            Cn.Open()
-            Dim Cmd As New SqlClient.SqlCommand(GetUnPostedProduction, Cn)
-            Using dRead As IDataReader = Cmd.ExecuteReader()
-                While dRead.Read
-                    Dim Itm As New BuildItem
-                    With Itm
-                        Itm.Workcell = dRead("Workcell")
-                        Itm.ProdDate = dRead("ProdDate")
-                        Itm.ProdItem = dRead("ProdItem")
-                        Itm.Qty_Passed = dRead("Qty_Passed")
-                        Itm.ProdOrder = dRead("ProdOrder")
-                        Itm.Operator = dRead("Operator")
-                        Itm.BuiltId = dRead("BuiltId")
-                    End With
-                    Items.Add(Itm)
-                End While
-            End Using
-        End Using
-        Return Items
-    End Function
+				Using dRead As IDataReader = Cmd.ExecuteReader()
+					While dRead.Read
+						Dim Itm As New PlanItem
+						With Itm
+							'TargetLineId, priority, PN, OrderID, Ordered, Built, Qty, PartId, Flags, Desc,	Name, Status, PPHPP, DueDate
+							.OrderId = CInt(dRead("OrderID")) 'Orderid
+							.TargetLineId = CInt(dRead("TargetLineId"))
+							.Built = CInt(If(DBNull.Value.Equals(dRead("Built")), 0, dRead("Built")))
+							.Desc = CType(If(DBNull.Value.Equals(dRead("Desc")), "", dRead("Desc")), String)
+							.DueDate = CDate(If(DBNull.Value.Equals(dRead("DueDate")), Now, dRead("DueDate")))
+							.CustOrderId = dRead("CustOrderId").ToString
+							.Ordered = CInt(If(DBNull.Value.Equals(dRead("Ordered")), 0, dRead("Ordered")))
+							.ScheduleDate = CDate(If(DBNull.Value.Equals(dRead("DueDate")), Now, dRead("DueDate")))
+							.WorkCell = If(DBNull.Value.Equals(dRead("WorkCell")), "", dRead("WorkCell").ToString)
+							.OrderId = CInt(dRead("OrderId"))
+							.PartNumber = CType(dRead("PN"), String)
+							.LastUpdate = CDate(If(DBNull.Value.Equals(dRead("Lastupdate")), Now, dRead("LastUpdate")))
+							.QTY = CInt(dRead("Qty"))
+							.PartId = CInt(If(DBNull.Value.Equals(dRead("PartId")), 0, dRead("PartId")))
+							.Status = CType(dRead("Status"), PlanStatus)
+							.Flags = CType(dRead("Flags"), OrderFlags)
+							.Position = CLng(dRead("Priority"))
+							.PPHPP = CSng(dRead("PPHPP"))
+							.Chk = If(DBNull.Value.Equals(dRead("PartId")) OrElse CInt(dRead("PartId")) = 0, "ID?", "OK")
+						End With
+						Items.Add(Itm)
+					End While
+				End Using
+			End Using
+			Pr.PlanData.AddRange(Items.ToList) 'From x In Items Where x.Status = PlanStatus.Scheduled OrElse x.Status = PlanStatus.Suspended OrElse x.Status = PlanStatus.Planed
+		Catch ex As Exception
+			LgSvr.SendAlert(New LogEventArgs("GetActiveOrders_Error", ex))
+		End Try
 
-    Public Function GetWipOrders(OrderId As Integer) As List(Of WipOrder)
-        Dim Wip As New List(Of WipOrder)
-        Using Cn = GetConnection()
-            Cn.Open()
-            'Dim Cmd As New SqlClient.SqlCommand(String.Format(ActiveOrderQuery, If(OrderId > 0, String.Format("Where OrderId = {0}", OrderId), "")), Cn)
-            Dim WC As String = ""
-			If OrderId > 0 Then
-				WC = String.Format("Where OrderId = {0}", OrderId)
-			Else
-				WC = String.Format("Where Status in (2,3)")
-			End If
-			Dim Cmd As New SqlClient.SqlCommand(String.Format(ActiveOrderQuery, WC), Cn)
 
-			Using dRead As IDataReader = Cmd.ExecuteReader()
-                While dRead.Read
-                    'TargetLineId,	priority,	PN,	OrderId,	Ordered,	Built,	Qty,	PartId,	Flags,	Desc,	Name,	Status,	PPHPP, DueDate,ReOrderPercentThreshold,WorkBufferMinutes,Workcell
-                    Dim W As New WipOrder
-                    W.LineId = CInt(dRead("TargetLineId"))
-                    W.Status = CType(dRead("Status"), PlanStatus)
-                    W.Position = CType(dRead("priority"), Long)
-                    W.OrderId = CType(dRead("OrderID"), Integer)
-                    W.PartNumber = CStr(dRead("PN"))
-                    W.TargetQty = CType(dRead("Qty"), Integer)
-                    W.WipHours = CType(dRead("WorkBufferMinutes"), Double) / 60
-                    W.ReOrderAtPercent = CType(dRead("ReOrderPercentThreshold"), Double)
-                    If Not DBNull.Value.Equals(dRead("WorkCell")) Then W.WorkCell = dRead("WorkCell").ToString
-                    If Not DBNull.Value.Equals(dRead("PPHPP")) Then W.PartsPerHourPerPerson = CInt(dRead("PPHPP"))
-                    If Not DBNull.Value.Equals(dRead("Built")) Then W.Built = CInt(dRead("Built"))
-                    If Not DBNull.Value.Equals(dRead("Ordered")) Then W.Ordered = CInt(dRead("Ordered"))
-                    Wip.Add(W)
-                End While
-            End Using
+		Return Pr
+	End Function
+	Public Function GetActiveOrders() As List(Of BuildItem)
+		Dim Items As New List(Of BuildItem)
+		Try
+			Using Cn = GetConnection()
+				Cn.Open()
+				Dim Cmd As New SqlClient.SqlCommand(GetUnPostedProduction, Cn)
+				Using dRead As IDataReader = Cmd.ExecuteReader()
+					While dRead.Read
+						Dim Itm As New BuildItem
+						With Itm
+							Itm.Workcell = dRead("Workcell")
+							Itm.ProdDate = dRead("ProdDate")
+							Itm.ProdItem = dRead("ProdItem")
+							Itm.Qty_Passed = dRead("Qty_Passed")
+							Itm.ProdOrder = dRead("ProdOrder")
+							Itm.Operator = dRead("Operator")
+							Itm.BuiltId = dRead("BuiltId")
+						End With
+						Items.Add(Itm)
+					End While
+				End Using
+			End Using
+		Catch ex As Exception
+			LgSvr.SendAlert(New LogEventArgs("GetActiveOrders Error", ex))
+		End Try
 
-        End Using
-        Return Wip
-    End Function
 
-    Public Function UpdateOrderstatus(OrderId As Integer, status As PlanStatus, Position As Long) As Integer
+		Return Items
+	End Function
+
+	Public Function GetWipOrders(OrderId As Integer) As List(Of WipOrder)
+		Dim Wip As New List(Of WipOrder)
+		Try
+
+			Using Cn = GetConnection()
+				Cn.Open()
+				'Dim Cmd As New SqlClient.SqlCommand(String.Format(ActiveOrderQuery, If(OrderId > 0, String.Format("Where OrderId = {0}", OrderId), "")), Cn)
+				Dim WC As String = ""
+				If OrderId > 0 Then
+					WC = String.Format("Where OrderId = {0}", OrderId)
+				Else
+					WC = String.Format("Where Status in (2,3)")
+				End If
+				Dim Cmd As New SqlClient.SqlCommand(String.Format(ActiveOrderQuery, WC), Cn)
+
+				Using dRead As IDataReader = Cmd.ExecuteReader()
+					While dRead.Read
+						'TargetLineId,	priority,	PN,	OrderId,	Ordered,	Built,	Qty,	PartId,	Flags,	Desc,	Name,	Status,	PPHPP, DueDate,ReOrderPercentThreshold,WorkBufferMinutes,Workcell
+						Dim W As New WipOrder
+						W.LineId = CInt(dRead("TargetLineId"))
+						W.Status = CType(dRead("Status"), PlanStatus)
+						W.Position = CType(dRead("priority"), Long)
+						W.OrderId = CType(dRead("OrderID"), Integer)
+						W.PartNumber = CStr(dRead("PN"))
+						W.TargetQty = CType(dRead("Qty"), Integer)
+						W.WipHours = CType(dRead("WorkBufferMinutes"), Double) / 60
+						W.ReOrderAtPercent = CType(dRead("ReOrderPercentThreshold"), Double)
+						If Not DBNull.Value.Equals(dRead("WorkCell")) Then W.WorkCell = dRead("WorkCell").ToString
+						If Not DBNull.Value.Equals(dRead("PPHPP")) Then W.PartsPerHourPerPerson = CInt(dRead("PPHPP"))
+						If Not DBNull.Value.Equals(dRead("Built")) Then W.Built = CInt(dRead("Built"))
+						If Not DBNull.Value.Equals(dRead("Ordered")) Then W.Ordered = CInt(dRead("Ordered"))
+						Wip.Add(W)
+					End While
+				End Using
+
+			End Using
+
+		Catch ex As Exception
+			LgSvr.SendAlert(New LogEventArgs("GetWipOrders Error", ex))
+		End Try
+		Return Wip
+	End Function
+
+	Public Function UpdateOrderstatus(OrderId As Integer, status As PlanStatus, Position As Long) As Integer
         Try
             Using Cn = GetConnection()
                 Cn.Open()

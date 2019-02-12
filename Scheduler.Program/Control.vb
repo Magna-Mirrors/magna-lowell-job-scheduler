@@ -59,11 +59,13 @@ Public Class Control
 
 
     Public Sub StartOrderHandling()
-        Try
-            ErpTask = mErpHandler.RunAsync(ct.Token)
-        Catch ex As Exception
-            LogService.SendAlert(New Scheduler.core.LogEventArgs("StartOrderHandling Error ErpTask ", ex))
-        End Try
+		Try
+			ErpTask = mErpHandler.RunAsync(ct.Token)
+		Catch ex As Exception
+			LogService.SendAlert(New Scheduler.core.LogEventArgs("StartOrderHandling Error ErpTask ", ex))
+		Finally
+
+		End Try
 
     End Sub
 

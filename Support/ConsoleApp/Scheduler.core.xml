@@ -1,0 +1,37 @@
+﻿<?xml version="1.0"?>
+<doc>
+<assembly>
+<name>
+Scheduler.core
+</name>
+</assembly>
+<members>
+<member name="T:Scheduler.core.My.Resources.Resources">
+<summary>
+  A strongly-typed resource class, for looking up localized strings, etc.
+</summary>
+</member>
+<member name="P:Scheduler.core.My.Resources.Resources.ResourceManager">
+<summary>
+  Returns the cached ResourceManager instance used by this class.
+</summary>
+</member>
+<member name="P:Scheduler.core.My.Resources.Resources.Culture">
+<summary>
+  Overrides the current thread's CurrentUICulture property for all
+  resource lookups using this strongly typed resource class.
+</summary>
+</member>
+<member name="P:Scheduler.core.SvcParams.SqlPw">
+ <summary>
+ Decrypted Pw
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:Scheduler.core.AppTools.GetUnitxTimeStamp">
+ <summary>
+ Returns a time stamp with the 1s and 10s place set to zero for indexing
+ </summary>
+</member>
+</members>
+</doc>

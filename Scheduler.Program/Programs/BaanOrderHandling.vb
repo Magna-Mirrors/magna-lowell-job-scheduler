@@ -19,12 +19,10 @@ Public Class BaanOrderHandling
     Private _IsRunning As Boolean
     Private _LastRan As Date
     Private _Tools As AppTools
-	Public Property RunNow As Boolean
+
 
 	Dim Busy As Boolean
-	Private Sub Enque()
 
-	End Sub
 
 
 	Public ReadOnly Property IsRunning As Boolean
@@ -39,10 +37,9 @@ Public Class BaanOrderHandling
 		While (Not CT.IsCancellationRequested)
 			Await Task.Delay(1000)
 
-			If ((Now.Subtract(_LastRan).TotalMinutes >= _Cfg.UpdateOrdersIntervalMinutes) OrElse (_DataMgr.RequestingUpdateNow)) And Not Busy Then
+			If ((Now.Subtract(_LastRan).TotalMinutes >= _Cfg.UpdateOrdersIntervalMinutes) OrElse (_DataMgr.GetQueue)) And Not Busy Then
 				Try
 					Busy = True
-					_DataMgr.ResetRequestingUpdateNow
 					_DataMgr.ProcessLineOrders()
 					_DataMgr.CommitBuildToProdOrders()
 					Dim Cfg = _Tools.GetProgramParams
@@ -57,9 +54,7 @@ Public Class BaanOrderHandling
 
 			End If
 
-			If RunNow Then
-				RunNow = False
-			End If
+
 
 		End While
 

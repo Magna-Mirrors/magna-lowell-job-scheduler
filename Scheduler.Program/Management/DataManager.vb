@@ -6,9 +6,8 @@ Public Class DataManager
     Protected ReadOnly _MdbAccess As MdbData
     Protected ReadOnly _Tools As AppTools
 	Protected ReadOnly _ErpAccess As ErpSql
-
 	Private _Cfg As SvcParams
-
+	Private ActionReq As Integer
 
 	Public Sub New(LgSvc As iLoggingService, Atool As AppTools, SqlSvc As SqlData, MdbAccess As MdbData, ErpAccess As ErpSql)
 		Dim Prm = Atool.GetProgramParams
@@ -21,7 +20,17 @@ Public Class DataManager
 
 	End Sub
 
-	Public Property RequestingUpdateNow As Boolean
+	Public Sub RequestingUpdateNow()
+		ActionReq += 1
+	End Sub
+
+	Public Function GetQueue() As Boolean
+		If ActionReq > 0 Then
+			ActionReq -= 1
+			Return True
+		End If
+		Return False
+	End Function
 
 	Public Function GetLine(Lineid As Integer) As GetLineResponse
         Dim Rslt As New GetLineResponse
@@ -49,9 +58,6 @@ Public Class DataManager
         Return Rslt
     End Function
 
-	Public Sub ResetRequestingUpdateNow()
-		RequestingUpdateNow = False
-	End Sub
 
 	Public Function GetSqlLines() As List(Of Line)
         Dim Rslt As New GetLinesResponse
@@ -113,7 +119,7 @@ Public Class DataManager
         Dim nPr As New TransactionResult
         If SourceData.LineData.SchedulerMethod = SchedulerMethods.MsSql Then
 			nPr = _SqlAccess.SavePlan(SourceData.PlanData)
-			RequestingUpdateNow = True
+			RequestingUpdateNow()
 		Else
             Dim txTools As New TextData
             nPr = txTools.SavePlan(SourceData)
@@ -201,7 +207,7 @@ Public Class DataManager
 		If SourceData.OrderId > 0 Then
 			Dim Ts As Long = _Tools.GetUnitxTimeStamp + 1000
 			If _SqlAccess.UpdateOrderstatus(SourceData.OrderId, PlanStatus.Suspended, Ts) > 0 Then
-				RequestingUpdateNow = True
+				RequestingUpdateNow()
 			End If
 		End If
 		Return Rslt
@@ -212,7 +218,7 @@ Public Class DataManager
 		If SourceData.OrderId > 0 Then
 			Dim Ts As Long = _Tools.GetUnitxTimeStamp + 1000
 			If _SqlAccess.UpdateOrderstatus(SourceData.OrderId, PlanStatus.Scheduled, Ts) > 0 Then
-				RequestingUpdateNow = True
+				RequestingUpdateNow()
 			End If
 		End If
 		Return Rslt
@@ -245,7 +251,7 @@ Public Class DataManager
                 Rslt.Result = F_Rslt.Result
 				Rslt.ResultString = F_Rslt.ResultString
 
-				RequestingUpdateNow = True
+				RequestingUpdateNow()
 			End If
 
         Catch ex As Exception
@@ -273,52 +279,57 @@ Public Class DataManager
 
 
 
-    Public Sub ProcessLineOrders()
-        Dim CurrentWip As List(Of WipOrder) = _SqlAccess.GetWipOrders(0)
-        If CurrentWip IsNot Nothing AndAlso CurrentWip.Count > 0 Then
-            Dim Lines = CurrentWip.Select(Function(x) x.LineId).Distinct.ToList
-            For Each L In Lines
-                Dim UserCnt As Integer = getLineUserCount(L)
-				Dim Witms = From x In CurrentWip Where x.LineId = L
-				Dim OrdersWithUnOrderedparts = From x In CurrentWip Where x.LineId = L AndAlso (x.Ordered < x.TargetQty)
-				If UserCnt <= 0 Then UserCnt = 1 'minimum user count needs to be 1 for patislpating line
-                If Witms IsNot Nothing AndAlso Witms.Count > 0 Then
-					Dim PPPP As Double = Witms.Select(Function(x) x.PartsPerHourPerPerson).Average
-					Dim SchedOrd = From X In Witms Where X.Status = PlanStatus.Scheduled
-					Dim PartHoursOnHand As Double = CType((((SchedOrd.Select(Function(x) x.Ordered).Sum) - SchedOrd.Select(Function(x) x.Built).Sum) / PPPP) / UserCnt, Double)
-					If PartHoursOnHand < 0 Then
-                        PartHoursOnHand = 0
-                    End If
-					Dim WipHours = Witms.Select(Function(x) x.WipHours).FirstOrDefault
-					Dim Delta As Double = WipHours - PartHoursOnHand
-                    Dim PartsNeeded As Integer = CInt(Delta * (PPPP * UserCnt))
-					Dim TriggerLevel = WipHours * SchedOrd.Select(Function(x) x.ReOrderAtPercent).FirstOrDefault
-					If (PartsNeeded > 0) AndAlso (PartHoursOnHand <= TriggerLevel) Then 'andalso (PartHoursOnHand >= 0) 
-                        For Each W In OrdersWithUnOrderedparts
-                            Try
-                                Dim MaxPosition As Long = 0
-                                Dim SItms = (From V In CurrentWip Where V.LineId = L AndAlso V.Status = PlanStatus.Scheduled)
-                                If SItms IsNot Nothing AndAlso SItms.Any Then
-                                    MaxPosition = SItms.Select(Function(x) x.Position).Max
-                                End If
-                                PartsNeeded -= OrderThisPart(W, PartsNeeded, MaxPosition)
-                                If PartsNeeded <= 0 Then Exit For
-                            Catch ex As Exception
-                                _LoggingService.SendAlert(New LogEventArgs("Processing Orders", ex))
-                            End Try
-                        Next
-                    End If
+	Public Sub ProcessLineOrders()
+		Try
+			Dim CurrentWip As List(Of WipOrder) = _SqlAccess.GetWipOrders(0)
+			If CurrentWip IsNot Nothing AndAlso CurrentWip.Count > 0 Then
+				Dim Lines = CurrentWip.Select(Function(x) x.LineId).Distinct.ToList
+				For Each L In Lines
+					Dim UserCnt As Integer = getLineUserCount(L)
+					Dim Witms = From x In CurrentWip Where x.LineId = L
+					Dim OrdersWithUnOrderedparts = From x In CurrentWip Where x.LineId = L AndAlso (x.Ordered < x.TargetQty)
+					If UserCnt <= 0 Then UserCnt = 1 'minimum user count needs to be 1 for patislpating line
+					If Witms IsNot Nothing AndAlso Witms.Count > 0 Then
+						Dim PPPP As Double = Witms.Select(Function(x) x.PartsPerHourPerPerson).Average
+						Dim SchedOrd = From X In Witms Where X.Status = PlanStatus.Scheduled
+						Dim PartHoursOnHand As Double = CType((((SchedOrd.Select(Function(x) x.Ordered).Sum) - SchedOrd.Select(Function(x) x.Built).Sum) / PPPP) / UserCnt, Double)
+						If PartHoursOnHand < 0 Then
+							PartHoursOnHand = 0
+						End If
+						Dim WipHours = Witms.Select(Function(x) x.WipHours).FirstOrDefault
+						Dim Delta As Double = WipHours - PartHoursOnHand
+						Dim PartsNeeded As Integer = CInt(Delta * (PPPP * UserCnt))
+						Dim TriggerLevel = WipHours * SchedOrd.Select(Function(x) x.ReOrderAtPercent).FirstOrDefault
+						If (PartsNeeded > 0) AndAlso (PartHoursOnHand <= TriggerLevel) Then 'andalso (PartHoursOnHand >= 0) 
+							For Each W In OrdersWithUnOrderedparts
+								Try
+									Dim MaxPosition As Long = 0
+									Dim SItms = (From V In CurrentWip Where V.LineId = L AndAlso V.Status = PlanStatus.Scheduled)
+									If SItms IsNot Nothing AndAlso SItms.Any Then
+										MaxPosition = SItms.Select(Function(x) x.Position).Max
+									End If
+									PartsNeeded -= OrderThisPart(W, PartsNeeded, MaxPosition)
+									If PartsNeeded <= 0 Then Exit For
+								Catch ex As Exception
+									_LoggingService.SendAlert(New LogEventArgs("ProcessLineOrders Error", ex))
+								End Try
+							Next
+						End If
 
-                End If
-                'move on to the next line
-            Next
-        End If
-        'get all orders that are open and ordered Counts less than target Counts
+					End If
+					'move on to the next line
+				Next
+			End If
+			'get all orders that are open and ordered Counts less than target Counts
+		Catch ex As Exception
+			_LoggingService.SendAlert(New LogEventArgs("Ordering Part", ex))
+		End Try
 
-    End Sub
+
+	End Sub
 
 
-    Public Function OrderThisPart(Itm As WipOrder, Required As Integer, MaxPos As Long) As Integer
+	Public Function OrderThisPart(Itm As WipOrder, Required As Integer, MaxPos As Long) As Integer
         Try
             Dim Porder As New PartOrder()
             Dim Qty As Integer = 0
