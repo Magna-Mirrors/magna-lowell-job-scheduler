@@ -231,13 +231,14 @@ Public Class DataManager
         Try
             If WipItem IsNot Nothing Then
                 Dim PrtOrder As New core.PartOrder
-                With PrtOrder
-                    .partnumber = WipItem.PartNumber
-                    .Qty = WipItem.Ordered * -1
-                    .WC = WipItem.WorkCell
-                End With
+				With PrtOrder
+					.Id = WipItem.OrderId
+					.partnumber = WipItem.PartNumber
+					.Qty = WipItem.Ordered * -1
+					.WC = WipItem.WorkCell
+				End With
 
-                If PrtOrder.Qty <> 0 Then
+				If PrtOrder.Qty <> 0 Then
                     Dim ErpRslt As Integer = _ErpAccess.Commit_To_PartCounts_Table(PrtOrder).Result
                     If ErpRslt > 0 Then
                         WipItem.RequestOrderQty = (WipItem.Ordered * -1)

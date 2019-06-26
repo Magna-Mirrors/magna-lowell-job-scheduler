@@ -25,7 +25,6 @@
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <InstallUrl>\\dntbaan01\prod\Schedule\SchedulerClientClickOnceDeployment\</InstallUrl>
-    <UpdateUrl>\\dntbaan01\prod\Schedule\SchedulerClientClickOnceDeployment\</UpdateUrl>
     <ApplicationRevision>11</ApplicationRevision>
     <ApplicationVersion>1.3.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
