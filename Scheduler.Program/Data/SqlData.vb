@@ -5,8 +5,12 @@ Public Class SqlData
     Protected ReadOnly _Cfg As SvcParams
     Private ReadOnly LgSvr As iLoggingService
 
-    'TargetLineId,	priority,	PN,	OrderId,	Ordered,	Built,	Qty,	PartId,	Flags,	Desc,	Name,	Status,	PPHPP, DueDate
-    Private Const ActiveOrderQuery As String = "SELECT [TargetLineId]
+	'TargetLineId,	priority,	PN,	OrderId,	Ordered,	Built,	Qty,	PartId,	Flags,	Desc,	Name,	Status,	PPHPP, DueDate
+
+
+	'TODO: this needs work
+	'ADD to Functions GetOrderedCount, getBuiltCount, get BuiltCount
+	Private Const ActiveOrderQuery As String = "SELECT [TargetLineId]
                      ,[Priority],[PN],[PartId],[OrderId],[Ordered],[Built],[Qty],[Flags],[Desc],[Name],[Status],[PPHPP],[DueDate],[CustOrderId],LastUpdate
                      ,[ReOrderPercentThreshold], [WorkBufferMinutes],[Workcell]
                      FROM [View_ActiveOrders]
@@ -26,59 +30,65 @@ Public Class SqlData
                       {0}
                       ORDER BY eqp_Lines.CustomerId, LineId"
 
-    'PN,	Desc,	LineId,	PartId
-    Private Const GetpartsQuery = "SELECT dbo.Part_Info.PN, dbo.Part_Info.Desc1 AS [Desc], dbo.Part_Program_Line_Map.LineId, dbo.Part_Info.PartId
-                      FROM dbo.Part_Info INNER JOIN
-                      dbo.Part_Programs ON dbo.Part_Info.ProgId = dbo.Part_Programs.ProgId INNER JOIN
-                      dbo.Part_Program_Line_Map ON dbo.Part_Programs.ProgId = dbo.Part_Program_Line_Map.ProgramId
-                      Where dbo.Part_Program_Line_Map.LineId = {0} and dbo.Part_Info.PN in({1}) "
+	'PN,	Desc,	LineId,	PartId
+	Private Const GetpartsQuery = "SELECT dbo.Part_Definition.PartNumber as PN, dbo.Part_Definition.note AS [Desc], dbo.Part_Program_Line_Map.LineId, dbo.Part_Definition.Part_Id as partId
+									FROM dbo.Part_Definition INNER JOIN
+									dbo.Part_Programs ON dbo.Part_Definition.ProgramId = dbo.Part_Programs.ProgId INNER JOIN
+									dbo.Part_Program_Line_Map ON dbo.Part_Programs.ProgId = dbo.Part_Program_Line_Map.ProgramId
+                                    Where dbo.Part_Program_Line_Map.LineId = {0} and dbo.Part_Definition.PartNumber in({1}) "
 
-    Private Const GetpartsForLineQuery = "SELECT Part_Info.PN, Part_Info.Desc1 AS [Desc], Part_Program_Line_Map.LineId, Part_Info.PartID AS partId, Part_Info.RH, Part_Info.LH, Part_Colors.Name AS colorName, 
-                      Part_Colors.ProgId
-                      FROM  Part_Program_Line_Map INNER JOIN
-                      Part_Programs ON Part_Program_Line_Map.ProgramId = Part_Programs.ProgId INNER JOIN
-                      Part_Info ON Part_Program_Line_Map.LH = Part_Info.LH or Part_Program_Line_Map.RH = Part_Info.RH INNER JOIN
-                      Part_Colors ON Part_Info.ColorId = Part_Colors.ColorId AND Part_Programs.ProgId = Part_Colors.ProgId
-                      Where (dbo.Part_Program_Line_Map.LineId = {0})"
+	Private Const GetpartsForLineQuery = "SELECT Part_Definition.PartNumber AS PN, Part_Definition.Note AS [Desc], Part_Program_Line_Map.LineId, Part_Definition.Part_Id AS partId, 
+                         Part_Colors.Name AS colorName, CASE WHEN (Part_Options.LH & 2) > 2 THEN 1 ELSE 0 END AS LH, CASE WHEN (Part_Options.RH & 2) 
+                         > 2 THEN 1 ELSE 0 END AS RH, Part_Programs.ProgId
+                         FROM Part_Program_Line_Map INNER JOIN
+                         Part_Programs ON Part_Program_Line_Map.ProgramId = Part_Programs.ProgId INNER JOIN
+                         Part_Colors ON Part_Programs.ProgId = Part_Colors.ProgId INNER JOIN
+                         Part_Options ON Part_Programs.ProgId = Part_Options.ProgId INNER JOIN
+                         Part_Definition ON Part_Program_Line_Map.ProgramId = Part_Definition.ProgramId AND Part_Colors.ColorIdx = Part_Definition.ColorIdx AND 
+                         Part_Options.NestIdx = Part_Definition.NestIdx
+                         Where (dbo.Part_Program_Line_Map.LineId = {0})"
 
-    'PN,	Desc,	LineId,	PartId
-    Private Const GetFiletedpartsQuery = "SELECT Part_Info.PN, Part_Info.Desc1 AS [Desc], Part_Program_Line_Map.LineId, Part_Info.PartId AS partId, Part_Info.RH, Part_Info.LH, Part_Colors.Name AS colorName, 
-                      Part_Colors.ProgId
-					  FROM Part_Program_Line_Map INNER JOIN
-					   Part_Programs ON Part_Program_Line_Map.ProgramId = Part_Programs.ProgId INNER JOIN
-					  Part_Info ON Part_Program_Line_Map.LH = Part_Info.LH or Part_Program_Line_Map.RH = Part_Info.RH INNER JOIN
-					   Part_Colors ON Part_Info.ColorId = Part_Colors.ColorId AND Part_Programs.ProgId = Part_Colors.ProgId
-                       Where (dbo.Part_Program_Line_Map.LineId = {0}) and (dbo.Part_Info.PN in({1}))"
-
-
-    Private Const GetUnPostedProduction = "SELECT TOP 1000 dbo.Schedule_Part_Production_History.LogDateTime AS ProdDate, 
-                                          dbo.Schedule_Part_Production_History.OrderId AS ProdOrder, dbo.eqp_Lines.Workcell, dbo.Part_Info.PN AS ProdItem, 
-                                          dbo.Schedule_Part_Production_History.Userid AS Operator,dbo.Schedule_Part_Production_History.Qty AS Qty_Passed, 
-                                          dbo.Schedule_Part_Production_History.Id AS BuiltId
-                                          FROM dbo.Schedule_Part_Production_History INNER JOIN
-                                          dbo.Schedule_Order_History ON dbo.Schedule_Part_Production_History.OrderId = dbo.Schedule_Order_History.ID INNER JOIN
-                                          dbo.Part_Info ON dbo.Schedule_Order_History.PartId = dbo.Part_Info.PartId INNER JOIN
-                                          dbo.eqp_Lines ON dbo.Schedule_Part_Production_History.LineId = dbo.eqp_Lines.Id
-                                          WHERE (dbo.Schedule_Part_Production_History.Posted = 0)
-                                          order by dbo.Schedule_Part_Production_History.LogDateTime"
+	'PN,	Desc,	LineId,	PartId
+	Private Const GetFiletedpartsQuery = "SELECT Part_Definition.PartNumber AS PN, Part_Definition.Note AS [Desc], Part_Program_Line_Map.LineId, Part_Definition.Part_Id AS partId, 
+                         Part_Colors.Name AS colorName, CASE WHEN (Part_Options.LH & 2) > 2 THEN 1 ELSE 0 END AS LH, CASE WHEN (Part_Options.RH & 2) 
+                         > 2 THEN 1 ELSE 0 END AS RH, Part_Programs.ProgId
+                         FROM Part_Program_Line_Map INNER JOIN
+                         Part_Programs ON Part_Program_Line_Map.ProgramId = Part_Programs.ProgId INNER JOIN
+                         Part_Colors ON Part_Programs.ProgId = Part_Colors.ProgId INNER JOIN
+                         Part_Options ON Part_Programs.ProgId = Part_Options.ProgId INNER JOIN
+                         Part_Definition ON Part_Program_Line_Map.ProgramId = Part_Definition.ProgramId AND Part_Colors.ColorIdx = Part_Definition.ColorIdx AND 
+                         Part_Options.NestIdx = Part_Definition.NestIdx
+                       Where (dbo.Part_Program_Line_Map.LineId = {0}) and (dbo.Part_Definition.PartNumber in({1}))"
 
 
+	Private Const GetUnPostedProduction = "SELECT TOP 1000 dbo.Schedule_Part_Production_History.LogDateTime AS ProdDate, 
+											dbo.Schedule_Part_Production_History.OrderId AS ProdOrder, dbo.eqp_Lines.Workcell, dbo.Part_Definition.PartNumber AS ProdItem, 
+											dbo.Schedule_Part_Production_History.Userid AS Operator,dbo.Schedule_Part_Production_History.Qty AS Qty_Passed, 
+											dbo.Schedule_Part_Production_History.Id AS BuiltId
+											FROM dbo.Schedule_Part_Production_History INNER JOIN
+											dbo.Schedule_Order_History ON dbo.Schedule_Part_Production_History.OrderId = dbo.Schedule_Order_History.ID INNER JOIN
+											dbo.Part_Definition ON dbo.Schedule_Order_History.PartId = dbo.Part_Definition.Part_Id INNER JOIN
+											dbo.eqp_Lines ON dbo.Schedule_Part_Production_History.LineId = dbo.eqp_Lines.Id
+											WHERE (dbo.Schedule_Part_Production_History.Posted = 0)
+											order by dbo.Schedule_Part_Production_History.LogDateTime"
 
 
-    'SELECT TOP 500 DATEADD(dd, 0, DATEDIFF(dd, 0, dbo.Schedule_Part_Production_History.LogDateTime)) AS ProdDate, 
-    '  dbo.Schedule_Part_Production_History.OrderId AS ProdOrder, dbo.eqp_Lines.Workcell, dbo.Part_Info.PN AS ProdItem, 
-    '  dbo.Schedule_Part_Production_History.Userid AS Operator, SUM(dbo.Schedule_Part_Production_History.Qty) AS Qty_Passed, 
-    '  MAX(dbo.Schedule_Part_Production_History.Id) AS MaxBuiltId,Min(dbo.Schedule_Part_Production_History.Id) AS MinBuiltId
-    '  FROM dbo.Schedule_Part_Production_History INNER JOIN
-    '  dbo.Schedule_Order_History ON dbo.Schedule_Part_Production_History.OrderId = dbo.Schedule_Order_History.ID INNER JOIN
-    '  dbo.Part_Info ON dbo.Schedule_Order_History.PartId = dbo.Part_Info.PartId INNER JOIN
-    '  dbo.eqp_Lines ON dbo.Schedule_Part_Production_History.LineId = dbo.eqp_Lines.Id
-    '  WHERE (dbo.Schedule_Part_Production_History.Posted = 0)
-    '  GROUP BY dbo.Schedule_Part_Production_History.Userid, dbo.Part_Info.PN, dbo.Schedule_Part_Production_History.OrderId, dbo.eqp_Lines.Workcell, DATEADD(dd, 0, 
-    '  DATEDIFF(dd, 0, dbo.Schedule_Part_Production_History.LogDateTime))
-    '  ORDER BY ProdDate, ProdOrder, dbo.eqp_Lines.Workcell, ProdItem, Operator"
 
-    Public Sub New(LgSvr As iLoggingService, Atools As AppTools)
+
+	'SELECT TOP 500 DATEADD(dd, 0, DATEDIFF(dd, 0, dbo.Schedule_Part_Production_History.LogDateTime)) AS ProdDate, 
+	'  dbo.Schedule_Part_Production_History.OrderId AS ProdOrder, dbo.eqp_Lines.Workcell, dbo.Part_Info.PN AS ProdItem, 
+	'  dbo.Schedule_Part_Production_History.Userid AS Operator, SUM(dbo.Schedule_Part_Production_History.Qty) AS Qty_Passed, 
+	'  MAX(dbo.Schedule_Part_Production_History.Id) AS MaxBuiltId,Min(dbo.Schedule_Part_Production_History.Id) AS MinBuiltId
+	'  FROM dbo.Schedule_Part_Production_History INNER JOIN
+	'  dbo.Schedule_Order_History ON dbo.Schedule_Part_Production_History.OrderId = dbo.Schedule_Order_History.ID INNER JOIN
+	'  dbo.Part_Info ON dbo.Schedule_Order_History.PartId = dbo.Part_Info.PartId INNER JOIN
+	'  dbo.eqp_Lines ON dbo.Schedule_Part_Production_History.LineId = dbo.eqp_Lines.Id
+	'  WHERE (dbo.Schedule_Part_Production_History.Posted = 0)
+	'  GROUP BY dbo.Schedule_Part_Production_History.Userid, dbo.Part_Info.PN, dbo.Schedule_Part_Production_History.OrderId, dbo.eqp_Lines.Workcell, DATEADD(dd, 0, 
+	'  DATEDIFF(dd, 0, dbo.Schedule_Part_Production_History.LogDateTime))
+	'  ORDER BY ProdDate, ProdOrder, dbo.eqp_Lines.Workcell, ProdItem, Operator"
+
+	Public Sub New(LgSvr As iLoggingService, Atools As AppTools)
         _Cfg = Atools.GetProgramParams
         Me.LgSvr = LgSvr
     End Sub

@@ -110,6 +110,7 @@
     <Compile Include="Data\SqlData.vb" />
     <Compile Include="Data\TextData.vb" />
     <Compile Include="Management\DataManager.vb" />
+    <Compile Include="Management\PartInformationUpdateManager.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
