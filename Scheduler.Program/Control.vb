@@ -28,18 +28,41 @@ Public Class Control
 
     Private Sub StartServiceHost(Cont As IContainer)
         Try
-            ' Dim svc = Cont.Resolve(Of SchedulerService)
-            Dim baseAddress As New Uri("http://localhost:8045/SchedulerService")
-            SvcHost = New ServiceHost(GetType(SchedulerService), baseAddress)
-            Dim smb As New ServiceMetadataBehavior()
-            smb.HttpGetEnabled = True
-            smb.MetadataExporter.PolicyVersion = PolicyVersion.Policy15
-            SvcHost.AddDependencyInjectionBehavior(Of core.iSchedulerService)(Cont)
-            SvcHost.Description.Behaviors.Add(smb)
-            SvcHost.Open()
-            LogService.SendAlert(New Scheduler.core.LogEventArgs(Scheduler.core.LogType.info, "Scheduler service was started", "Service"))
-        Catch ex As Exception
-            LogService.SendAlert(New Scheduler.core.LogEventArgs("Service Host start", ex))
+			'' Dim svc = Cont.Resolve(Of SchedulerService)
+			'Dim baseAddress As New Uri("http://localhost:8045/SchedulerService")
+			'SvcHost = New ServiceHost(GetType(SchedulerService), baseAddress)
+			'Dim smb As New ServiceMetadataBehavior()
+			'smb.HttpGetEnabled = True
+			'smb.MetadataExporter.PolicyVersion = PolicyVersion.Policy15
+			'SvcHost.AddDependencyInjectionBehavior(Of core.iSchedulerService)(Cont)
+			'SvcHost.Description.Behaviors.Add(smb)
+			'SvcHost.Open()
+			'LogService.SendAlert(New Scheduler.core.LogEventArgs(Scheduler.core.LogType.info, "Scheduler service was started", "Service"))
+
+			Dim contract As Type = GetType(core.iSchedulerService)
+			Dim implementation As Type = GetType(SchedulerService)
+			Dim baseAddress As New Uri("http://localhost:8045/SchedulerService")
+			SvcHost = New ServiceHost(implementation, baseAddress)
+			Dim Binding As New BasicHttpBinding()
+			SvcHost.AddServiceEndpoint(contract, Binding, baseAddress)
+			Binding.MaxReceivedMessageSize = Int32.MaxValue
+			'binding.Security.Mode = SecurityMode.None;
+			'binding.MaxBufferPoolSize = 524288;
+			'binding.MaxReceivedMessageSize = 2147483647;
+			'binding.MaxBufferSize = 2147483647;
+			'binding.ReaderQuotas.MaxDepth = 64;
+			'binding.ReaderQuotas.MaxArrayLength = 2147483647;
+			'binding.ReaderQuotas.MaxStringContentLength = 2147483647;
+			Dim smb As New ServiceMetadataBehavior()
+			smb.HttpGetEnabled = True
+			smb.MetadataExporter.PolicyVersion = PolicyVersion.Policy15
+			SvcHost.AddDependencyInjectionBehavior(Of core.iSchedulerService)(Cont)
+			SvcHost.Description.Behaviors.Add(smb)
+			SvcHost.Open()
+
+			LogService.SendAlert(New Scheduler.core.LogEventArgs(Scheduler.core.LogType.info, "Scheduler service was started", "Service"))
+		Catch ex As Exception
+			LogService.SendAlert(New Scheduler.core.LogEventArgs("Service Host start", ex))
         End Try
     End Sub
 

@@ -382,9 +382,10 @@ Public Class MainView
         Dim cfgt = New CfgTool()
         Dim binding As New BasicHttpBinding()
         Dim Address As New EndpointAddress(cfgt.Read().ServiceAddress + "/SchedulerService")
-        'Dim Address As New EndpointAddress("http://localhost:8045/SchedulerService")
-        ClientAccess = New SchedulerClient(binding, Address)
-        ClientAccess.Open()
+		'Dim Address As New EndpointAddress("http://localhost:8045/SchedulerService")
+		ClientAccess = New SchedulerClient(binding, Address)
+		binding.MaxReceivedMessageSize = Int32.MaxValue
+		ClientAccess.Open()
     End Sub
 
     Private Sub MovePlanItem(Up As Boolean)
