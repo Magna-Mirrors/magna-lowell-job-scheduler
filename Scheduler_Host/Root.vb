@@ -41,9 +41,10 @@ Module Root
         Builder.RegisterType(Of SvcParams)().SingleInstance()
         Builder.RegisterType(Of MdbData).SingleInstance()
         Builder.RegisterType(Of BaanOrderHandling).SingleInstance()
-        Builder.RegisterType(Of ErpSql).SingleInstance()
+		Builder.RegisterType(Of ErpSql).SingleInstance()
+		Builder.RegisterType(Of PartInformationUpdateManager).SingleInstance()
 
-        Container = Builder.Build()
+		Container = Builder.Build()
 
         Ccont = Container.Resolve(Of Control)
         Ccont.StartController(Container)

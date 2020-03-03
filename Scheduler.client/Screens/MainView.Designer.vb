@@ -58,14 +58,14 @@ Partial Class MainView
 		Me.Status = New System.Windows.Forms.DataGridViewTextBoxColumn()
 		Me.ScheduleDataSource = New System.Windows.Forms.BindingSource(Me.components)
 		Me.lblNew = New System.Windows.Forms.Label()
-		Me.cmdDown = New System.Windows.Forms.Button()
-		Me.cmdUp = New System.Windows.Forms.Button()
-		Me.cmdReadPlan = New System.Windows.Forms.Button()
-		Me.cmdSendPlan = New System.Windows.Forms.Button()
-		Me.BtnApproveEdits = New System.Windows.Forms.Button()
 		Me.btnRefresh = New System.Windows.Forms.Button()
 		Me.TableLayoutPanel1 = New System.Windows.Forms.TableLayoutPanel()
 		Me.Label1 = New System.Windows.Forms.Label()
+		Me.cmdSendPlan = New System.Windows.Forms.Button()
+		Me.BtnApproveEdits = New System.Windows.Forms.Button()
+		Me.cmdReadPlan = New System.Windows.Forms.Button()
+		Me.cmdUp = New System.Windows.Forms.Button()
+		Me.cmdDown = New System.Windows.Forms.Button()
 		Me.lblMsg = New System.Windows.Forms.Label()
 		Me.DgvHistory = New System.Windows.Forms.DataGridView()
 		Me.PartNumberDataGridViewTextBoxColumn2 = New System.Windows.Forms.DataGridViewTextBoxColumn()
@@ -82,7 +82,11 @@ Partial Class MainView
 		Me.Button3 = New System.Windows.Forms.Button()
 		Me.Button2 = New System.Windows.Forms.Button()
 		Me.Button1 = New System.Windows.Forms.Button()
+		Me.GetPartListPb = New System.Windows.Forms.Button()
 		Me.DataGridViewTextBoxColumn1 = New System.Windows.Forms.DataGridViewTextBoxColumn()
+		Me.MenuStrip1 = New System.Windows.Forms.MenuStrip()
+		Me.ToolsToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+		Me.PullXmlPartAttributeDataNowToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
 		CType(Me.dgvEdit, System.ComponentModel.ISupportInitialize).BeginInit()
 		Me.mnuEdit.SuspendLayout()
 		CType(Me.PlandataSource, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -92,6 +96,7 @@ Partial Class MainView
 		CType(Me.DgvHistory, System.ComponentModel.ISupportInitialize).BeginInit()
 		CType(Me.CompleteAndRemovedDataSource, System.ComponentModel.ISupportInitialize).BeginInit()
 		Me.Panel1.SuspendLayout()
+		Me.MenuStrip1.SuspendLayout()
 		Me.SuspendLayout()
 		'
 		'LineTree
@@ -103,11 +108,11 @@ Partial Class MainView
 		Me.LineTree.ImageIndex = 0
 		Me.LineTree.ImageList = Me.ilCustomers
 		Me.LineTree.ItemHeight = 20
-		Me.LineTree.Location = New System.Drawing.Point(13, 28)
+		Me.LineTree.Location = New System.Drawing.Point(13, 57)
 		Me.LineTree.Name = "LineTree"
 		Me.TableLayoutPanel1.SetRowSpan(Me.LineTree, 10)
 		Me.LineTree.SelectedImageIndex = 0
-		Me.LineTree.Size = New System.Drawing.Size(194, 572)
+		Me.LineTree.Size = New System.Drawing.Size(194, 521)
 		Me.LineTree.TabIndex = 0
 		'
 		'ilCustomers
@@ -135,7 +140,7 @@ Partial Class MainView
 		Me.lblLineName.Font = New System.Drawing.Font("Microsoft Sans Serif", 21.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
 		Me.lblLineName.Location = New System.Drawing.Point(0, 0)
 		Me.lblLineName.Name = "lblLineName"
-		Me.lblLineName.Size = New System.Drawing.Size(1330, 33)
+		Me.lblLineName.Size = New System.Drawing.Size(1349, 33)
 		Me.lblLineName.TabIndex = 2
 		Me.lblLineName.Text = "Select Line to Edit"
 		'
@@ -164,16 +169,16 @@ Partial Class MainView
 		DataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
 		Me.dgvEdit.DefaultCellStyle = DataGridViewCellStyle4
 		Me.dgvEdit.Dock = System.Windows.Forms.DockStyle.Fill
-		Me.dgvEdit.Location = New System.Drawing.Point(213, 28)
+		Me.dgvEdit.Location = New System.Drawing.Point(213, 57)
 		Me.dgvEdit.MultiSelect = False
 		Me.dgvEdit.Name = "dgvEdit"
 		Me.dgvEdit.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None
 		Me.dgvEdit.RowHeadersVisible = False
 		Me.dgvEdit.RowHeadersWidth = 20
-		Me.TableLayoutPanel1.SetRowSpan(Me.dgvEdit, 10)
+		Me.TableLayoutPanel1.SetRowSpan(Me.dgvEdit, 9)
 		Me.dgvEdit.RowTemplate.DefaultCellStyle.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
 		Me.dgvEdit.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect
-		Me.dgvEdit.Size = New System.Drawing.Size(495, 572)
+		Me.dgvEdit.Size = New System.Drawing.Size(504, 475)
 		Me.dgvEdit.TabIndex = 3
 		'
 		'PartNumberDataGridViewTextBoxColumn
@@ -287,7 +292,7 @@ Partial Class MainView
 		Me.dgv.DefaultCellStyle = DataGridViewCellStyle8
 		Me.dgv.Dock = System.Windows.Forms.DockStyle.Fill
 		Me.dgv.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically
-		Me.dgv.Location = New System.Drawing.Point(814, 28)
+		Me.dgv.Location = New System.Drawing.Point(823, 57)
 		Me.dgv.MultiSelect = False
 		Me.dgv.Name = "dgv"
 		Me.dgv.ReadOnly = True
@@ -298,7 +303,7 @@ Partial Class MainView
 		Me.dgv.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
 		Me.dgv.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect
 		Me.dgv.ShowEditingIcon = False
-		Me.dgv.Size = New System.Drawing.Size(495, 241)
+		Me.dgv.Size = New System.Drawing.Size(504, 219)
 		Me.dgv.TabIndex = 5
 		'
 		'PartNumberDataGridViewTextBoxColumn1
@@ -368,93 +373,17 @@ Partial Class MainView
 		Me.lblNew.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
 		Me.lblNew.Location = New System.Drawing.Point(213, 0)
 		Me.lblNew.Name = "lblNew"
-		Me.lblNew.Size = New System.Drawing.Size(495, 25)
+		Me.lblNew.Size = New System.Drawing.Size(504, 54)
 		Me.lblNew.TabIndex = 6
 		Me.lblNew.Text = "Plan Items"
 		Me.lblNew.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
 		'
-		'cmdDown
-		'
-		Me.cmdDown.BackgroundImage = Global.Scheduler.client.My.Resources.Resources.arrow_down
-		Me.cmdDown.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch
-		Me.cmdDown.Dock = System.Windows.Forms.DockStyle.Fill
-		Me.cmdDown.Enabled = False
-		Me.cmdDown.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-		Me.cmdDown.Location = New System.Drawing.Point(714, 219)
-		Me.cmdDown.Name = "cmdDown"
-		Me.cmdDown.Size = New System.Drawing.Size(94, 50)
-		Me.cmdDown.TabIndex = 15
-		Me.cmdDown.Text = "Move Down"
-		Me.cmdDown.TextAlign = System.Drawing.ContentAlignment.BottomCenter
-		Me.cmdDown.UseVisualStyleBackColor = True
-		'
-		'cmdUp
-		'
-		Me.cmdUp.BackgroundImage = Global.Scheduler.client.My.Resources.Resources.arrow_up
-		Me.cmdUp.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch
-		Me.cmdUp.Dock = System.Windows.Forms.DockStyle.Fill
-		Me.cmdUp.Enabled = False
-		Me.cmdUp.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-		Me.cmdUp.Location = New System.Drawing.Point(714, 163)
-		Me.cmdUp.Name = "cmdUp"
-		Me.cmdUp.Size = New System.Drawing.Size(94, 50)
-		Me.cmdUp.TabIndex = 14
-		Me.cmdUp.Text = "Move Up"
-		Me.cmdUp.TextAlign = System.Drawing.ContentAlignment.BottomCenter
-		Me.cmdUp.UseVisualStyleBackColor = True
-		'
-		'cmdReadPlan
-		'
-		Me.cmdReadPlan.BackColor = System.Drawing.Color.Yellow
-		Me.cmdReadPlan.BackgroundImage = Global.Scheduler.client.My.Resources.Resources.briefcase_download
-		Me.cmdReadPlan.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch
-		Me.cmdReadPlan.Dock = System.Windows.Forms.DockStyle.Fill
-		Me.cmdReadPlan.Enabled = False
-		Me.cmdReadPlan.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-		Me.cmdReadPlan.Location = New System.Drawing.Point(714, 28)
-		Me.cmdReadPlan.Name = "cmdReadPlan"
-		Me.cmdReadPlan.Size = New System.Drawing.Size(94, 73)
-		Me.cmdReadPlan.TabIndex = 9
-		Me.cmdReadPlan.Text = "Get Plan"
-		Me.cmdReadPlan.TextAlign = System.Drawing.ContentAlignment.BottomCenter
-		Me.cmdReadPlan.UseVisualStyleBackColor = False
-		'
-		'cmdSendPlan
-		'
-		Me.cmdSendPlan.BackColor = System.Drawing.Color.Yellow
-		Me.cmdSendPlan.BackgroundImage = Global.Scheduler.client.My.Resources.Resources.briefcase_upload
-		Me.cmdSendPlan.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch
-		Me.cmdSendPlan.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-		Me.cmdSendPlan.Location = New System.Drawing.Point(714, 555)
-		Me.cmdSendPlan.Name = "cmdSendPlan"
-		Me.cmdSendPlan.Size = New System.Drawing.Size(94, 45)
-		Me.cmdSendPlan.TabIndex = 8
-		Me.cmdSendPlan.Text = "Save Plan"
-		Me.cmdSendPlan.TextAlign = System.Drawing.ContentAlignment.BottomCenter
-		Me.cmdSendPlan.UseVisualStyleBackColor = False
-		'
-		'BtnApproveEdits
-		'
-		Me.BtnApproveEdits.BackgroundImage = Global.Scheduler.client.My.Resources.Resources.approve
-		Me.BtnApproveEdits.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch
-		Me.BtnApproveEdits.Dock = System.Windows.Forms.DockStyle.Fill
-		Me.BtnApproveEdits.Enabled = False
-		Me.BtnApproveEdits.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-		Me.BtnApproveEdits.Location = New System.Drawing.Point(714, 331)
-		Me.BtnApproveEdits.Name = "BtnApproveEdits"
-		Me.BtnApproveEdits.Size = New System.Drawing.Size(94, 50)
-		Me.BtnApproveEdits.TabIndex = 4
-		Me.BtnApproveEdits.Text = "Validate Edits"
-		Me.BtnApproveEdits.TextAlign = System.Drawing.ContentAlignment.BottomCenter
-		Me.BtnApproveEdits.UseVisualStyleBackColor = True
-		Me.BtnApproveEdits.Visible = False
-		'
 		'btnRefresh
 		'
-		Me.btnRefresh.Dock = System.Windows.Forms.DockStyle.Bottom
+		Me.btnRefresh.Dock = System.Windows.Forms.DockStyle.Fill
 		Me.btnRefresh.Location = New System.Drawing.Point(13, 3)
 		Me.btnRefresh.Name = "btnRefresh"
-		Me.btnRefresh.Size = New System.Drawing.Size(194, 19)
+		Me.btnRefresh.Size = New System.Drawing.Size(194, 48)
 		Me.btnRefresh.TabIndex = 16
 		Me.btnRefresh.Text = "Refresh"
 		Me.btnRefresh.UseVisualStyleBackColor = True
@@ -470,7 +399,7 @@ Partial Class MainView
 		Me.TableLayoutPanel1.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
 		Me.TableLayoutPanel1.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100.0!))
 		Me.TableLayoutPanel1.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
-		Me.TableLayoutPanel1.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 19.0!))
+		Me.TableLayoutPanel1.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20.0!))
 		Me.TableLayoutPanel1.Controls.Add(Me.btnRefresh, 1, 0)
 		Me.TableLayoutPanel1.Controls.Add(Me.LineTree, 1, 1)
 		Me.TableLayoutPanel1.Controls.Add(Me.dgvEdit, 2, 1)
@@ -486,23 +415,26 @@ Partial Class MainView
 		Me.TableLayoutPanel1.Controls.Add(Me.DgvHistory, 4, 7)
 		Me.TableLayoutPanel1.Controls.Add(Me.Label2, 4, 6)
 		Me.TableLayoutPanel1.Controls.Add(Me.Panel1, 4, 5)
-		Me.TableLayoutPanel1.Location = New System.Drawing.Point(-1, 36)
+		Me.TableLayoutPanel1.Controls.Add(Me.GetPartListPb, 2, 10)
+		Me.TableLayoutPanel1.Location = New System.Drawing.Point(-1, 60)
 		Me.TableLayoutPanel1.Name = "TableLayoutPanel1"
 		Me.TableLayoutPanel1.RowCount = 13
-		Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25.0!))
-		Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 13.65186!))
-		Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 9.685412!))
-		Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 9.685412!))
-		Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 9.685412!))
-		Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 9.685412!))
-		Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 9.685412!))
-		Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 9.685412!))
-		Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 9.685412!))
-		Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 9.685412!))
-		Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 8.864842!))
-		Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20.0!))
+		Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 54.0!))
+		Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 13.64225!))
+		Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 9.678595!))
+		Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 9.678595!))
+		Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 9.678595!))
+		Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 9.678595!))
+		Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 9.678595!))
+		Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 9.678595!))
+		Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 9.678595!))
+		Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 9.820668!))
+		Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 8.786913!))
+		Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 24.0!))
 		Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 4.0!))
-		Me.TableLayoutPanel1.Size = New System.Drawing.Size(1331, 628)
+		Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20.0!))
+		Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20.0!))
+		Me.TableLayoutPanel1.Size = New System.Drawing.Size(1350, 616)
 		Me.TableLayoutPanel1.TabIndex = 18
 		'
 		'Label1
@@ -511,12 +443,88 @@ Partial Class MainView
 		Me.Label1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
 		Me.Label1.Dock = System.Windows.Forms.DockStyle.Fill
 		Me.Label1.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-		Me.Label1.Location = New System.Drawing.Point(814, 0)
+		Me.Label1.Location = New System.Drawing.Point(823, 0)
 		Me.Label1.Name = "Label1"
-		Me.Label1.Size = New System.Drawing.Size(495, 25)
+		Me.Label1.Size = New System.Drawing.Size(504, 54)
 		Me.Label1.TabIndex = 17
 		Me.Label1.Text = "Scheduled Items"
 		Me.Label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+		'
+		'cmdSendPlan
+		'
+		Me.cmdSendPlan.BackColor = System.Drawing.Color.Yellow
+		Me.cmdSendPlan.BackgroundImage = Global.Scheduler.client.My.Resources.Resources.briefcase_upload
+		Me.cmdSendPlan.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch
+		Me.cmdSendPlan.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+		Me.cmdSendPlan.Location = New System.Drawing.Point(723, 538)
+		Me.cmdSendPlan.Name = "cmdSendPlan"
+		Me.cmdSendPlan.Size = New System.Drawing.Size(94, 40)
+		Me.cmdSendPlan.TabIndex = 8
+		Me.cmdSendPlan.Text = "Save Plan"
+		Me.cmdSendPlan.TextAlign = System.Drawing.ContentAlignment.BottomCenter
+		Me.cmdSendPlan.UseVisualStyleBackColor = False
+		'
+		'BtnApproveEdits
+		'
+		Me.BtnApproveEdits.BackgroundImage = Global.Scheduler.client.My.Resources.Resources.approve
+		Me.BtnApproveEdits.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch
+		Me.BtnApproveEdits.Dock = System.Windows.Forms.DockStyle.Fill
+		Me.BtnApproveEdits.Enabled = False
+		Me.BtnApproveEdits.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+		Me.BtnApproveEdits.Location = New System.Drawing.Point(723, 333)
+		Me.BtnApproveEdits.Name = "BtnApproveEdits"
+		Me.BtnApproveEdits.Size = New System.Drawing.Size(94, 45)
+		Me.BtnApproveEdits.TabIndex = 4
+		Me.BtnApproveEdits.Text = "Validate Edits"
+		Me.BtnApproveEdits.TextAlign = System.Drawing.ContentAlignment.BottomCenter
+		Me.BtnApproveEdits.UseVisualStyleBackColor = True
+		Me.BtnApproveEdits.Visible = False
+		'
+		'cmdReadPlan
+		'
+		Me.cmdReadPlan.BackColor = System.Drawing.Color.Yellow
+		Me.cmdReadPlan.BackgroundImage = Global.Scheduler.client.My.Resources.Resources.briefcase_download
+		Me.cmdReadPlan.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch
+		Me.cmdReadPlan.Dock = System.Windows.Forms.DockStyle.Fill
+		Me.cmdReadPlan.Enabled = False
+		Me.cmdReadPlan.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+		Me.cmdReadPlan.Location = New System.Drawing.Point(723, 57)
+		Me.cmdReadPlan.Name = "cmdReadPlan"
+		Me.cmdReadPlan.Size = New System.Drawing.Size(94, 66)
+		Me.cmdReadPlan.TabIndex = 9
+		Me.cmdReadPlan.Text = "Get Plan"
+		Me.cmdReadPlan.TextAlign = System.Drawing.ContentAlignment.BottomCenter
+		Me.cmdReadPlan.UseVisualStyleBackColor = False
+		'
+		'cmdUp
+		'
+		Me.cmdUp.BackgroundImage = Global.Scheduler.client.My.Resources.Resources.arrow_up
+		Me.cmdUp.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch
+		Me.cmdUp.Dock = System.Windows.Forms.DockStyle.Fill
+		Me.cmdUp.Enabled = False
+		Me.cmdUp.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+		Me.cmdUp.Location = New System.Drawing.Point(723, 180)
+		Me.cmdUp.Name = "cmdUp"
+		Me.cmdUp.Size = New System.Drawing.Size(94, 45)
+		Me.cmdUp.TabIndex = 14
+		Me.cmdUp.Text = "Move Up"
+		Me.cmdUp.TextAlign = System.Drawing.ContentAlignment.BottomCenter
+		Me.cmdUp.UseVisualStyleBackColor = True
+		'
+		'cmdDown
+		'
+		Me.cmdDown.BackgroundImage = Global.Scheduler.client.My.Resources.Resources.arrow_down
+		Me.cmdDown.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch
+		Me.cmdDown.Dock = System.Windows.Forms.DockStyle.Fill
+		Me.cmdDown.Enabled = False
+		Me.cmdDown.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+		Me.cmdDown.Location = New System.Drawing.Point(723, 231)
+		Me.cmdDown.Name = "cmdDown"
+		Me.cmdDown.Size = New System.Drawing.Size(94, 45)
+		Me.cmdDown.TabIndex = 15
+		Me.cmdDown.Text = "Move Down"
+		Me.cmdDown.TextAlign = System.Drawing.ContentAlignment.BottomCenter
+		Me.cmdDown.UseVisualStyleBackColor = True
 		'
 		'lblMsg
 		'
@@ -526,9 +534,9 @@ Partial Class MainView
 		Me.lblMsg.Dock = System.Windows.Forms.DockStyle.Fill
 		Me.lblMsg.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
 		Me.lblMsg.ForeColor = System.Drawing.Color.White
-		Me.lblMsg.Location = New System.Drawing.Point(13, 603)
+		Me.lblMsg.Location = New System.Drawing.Point(13, 581)
 		Me.lblMsg.Name = "lblMsg"
-		Me.lblMsg.Size = New System.Drawing.Size(1315, 20)
+		Me.lblMsg.Size = New System.Drawing.Size(1334, 24)
 		Me.lblMsg.TabIndex = 19
 		'
 		'DgvHistory
@@ -550,12 +558,12 @@ Partial Class MainView
 		Me.DgvHistory.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.PartNumberDataGridViewTextBoxColumn2, Me.ShipdateDataGridViewTextBoxColumn2, Me.DataGridViewTextBoxColumn2, Me.QTYDataGridViewTextBoxColumn2, Me.BuiltDataGridViewTextBoxColumn, Me.OrderedDataGridViewTextBoxColumn, Me.StatusDataGridViewTextBoxColumn})
 		Me.DgvHistory.DataSource = Me.CompleteAndRemovedDataSource
 		Me.DgvHistory.Dock = System.Windows.Forms.DockStyle.Fill
-		Me.DgvHistory.Location = New System.Drawing.Point(814, 387)
+		Me.DgvHistory.Location = New System.Drawing.Point(823, 384)
 		Me.DgvHistory.Name = "DgvHistory"
 		Me.DgvHistory.ReadOnly = True
 		Me.DgvHistory.RowHeadersVisible = False
 		Me.TableLayoutPanel1.SetRowSpan(Me.DgvHistory, 4)
-		Me.DgvHistory.Size = New System.Drawing.Size(495, 213)
+		Me.DgvHistory.Size = New System.Drawing.Size(504, 194)
 		Me.DgvHistory.TabIndex = 20
 		'
 		'PartNumberDataGridViewTextBoxColumn2
@@ -622,9 +630,9 @@ Partial Class MainView
 		'
 		Me.Label2.Dock = System.Windows.Forms.DockStyle.Bottom
 		Me.Label2.Font = New System.Drawing.Font("Microsoft Sans Serif", 14.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-		Me.Label2.Location = New System.Drawing.Point(814, 361)
+		Me.Label2.Location = New System.Drawing.Point(823, 358)
 		Me.Label2.Name = "Label2"
-		Me.Label2.Size = New System.Drawing.Size(495, 23)
+		Me.Label2.Size = New System.Drawing.Size(504, 23)
 		Me.Label2.TabIndex = 21
 		Me.Label2.Text = "Completed and Removed Order History View Last 24HR"
 		'
@@ -635,9 +643,9 @@ Partial Class MainView
 		Me.Panel1.Controls.Add(Me.Button2)
 		Me.Panel1.Controls.Add(Me.Button1)
 		Me.Panel1.Dock = System.Windows.Forms.DockStyle.Fill
-		Me.Panel1.Location = New System.Drawing.Point(814, 275)
+		Me.Panel1.Location = New System.Drawing.Point(823, 282)
 		Me.Panel1.Name = "Panel1"
-		Me.Panel1.Size = New System.Drawing.Size(495, 50)
+		Me.Panel1.Size = New System.Drawing.Size(504, 45)
 		Me.Panel1.TabIndex = 22
 		'
 		'Button4
@@ -680,6 +688,17 @@ Partial Class MainView
 		Me.Button1.UseVisualStyleBackColor = True
 		Me.Button1.Visible = False
 		'
+		'GetPartListPb
+		'
+		Me.GetPartListPb.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+			Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+		Me.GetPartListPb.Location = New System.Drawing.Point(612, 538)
+		Me.GetPartListPb.Name = "GetPartListPb"
+		Me.GetPartListPb.Size = New System.Drawing.Size(105, 40)
+		Me.GetPartListPb.TabIndex = 23
+		Me.GetPartListPb.Text = "Lookup Parts"
+		Me.GetPartListPb.UseVisualStyleBackColor = True
+		'
 		'DataGridViewTextBoxColumn1
 		'
 		Me.DataGridViewTextBoxColumn1.DataPropertyName = "Status"
@@ -687,14 +706,38 @@ Partial Class MainView
 		Me.DataGridViewTextBoxColumn1.Name = "DataGridViewTextBoxColumn1"
 		Me.DataGridViewTextBoxColumn1.Width = 246
 		'
+		'MenuStrip1
+		'
+		Me.MenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ToolsToolStripMenuItem})
+		Me.MenuStrip1.Location = New System.Drawing.Point(0, 33)
+		Me.MenuStrip1.Name = "MenuStrip1"
+		Me.MenuStrip1.Size = New System.Drawing.Size(1349, 24)
+		Me.MenuStrip1.TabIndex = 19
+		Me.MenuStrip1.Text = "MenuStrip1"
+		'
+		'ToolsToolStripMenuItem
+		'
+		Me.ToolsToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.PullXmlPartAttributeDataNowToolStripMenuItem})
+		Me.ToolsToolStripMenuItem.Name = "ToolsToolStripMenuItem"
+		Me.ToolsToolStripMenuItem.Size = New System.Drawing.Size(48, 20)
+		Me.ToolsToolStripMenuItem.Text = "Tools"
+		'
+		'PullXmlPartAttributeDataNowToolStripMenuItem
+		'
+		Me.PullXmlPartAttributeDataNowToolStripMenuItem.Name = "PullXmlPartAttributeDataNowToolStripMenuItem"
+		Me.PullXmlPartAttributeDataNowToolStripMenuItem.Size = New System.Drawing.Size(247, 22)
+		Me.PullXmlPartAttributeDataNowToolStripMenuItem.Text = "Pull Xml Part Attribute Data Now"
+		'
 		'MainView
 		'
 		Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
 		Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-		Me.ClientSize = New System.Drawing.Size(1330, 667)
+		Me.ClientSize = New System.Drawing.Size(1349, 679)
+		Me.Controls.Add(Me.MenuStrip1)
 		Me.Controls.Add(Me.TableLayoutPanel1)
 		Me.Controls.Add(Me.lblLineName)
 		Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
+		Me.MainMenuStrip = Me.MenuStrip1
 		Me.MaximizeBox = False
 		Me.Name = "MainView"
 		Me.Text = "Magna Mirrors Schedule"
@@ -707,7 +750,10 @@ Partial Class MainView
 		CType(Me.DgvHistory, System.ComponentModel.ISupportInitialize).EndInit()
 		CType(Me.CompleteAndRemovedDataSource, System.ComponentModel.ISupportInitialize).EndInit()
 		Me.Panel1.ResumeLayout(False)
+		Me.MenuStrip1.ResumeLayout(False)
+		Me.MenuStrip1.PerformLayout()
 		Me.ResumeLayout(False)
+		Me.PerformLayout()
 
 	End Sub
 	Friend WithEvents LineTree As System.Windows.Forms.TreeView
@@ -760,4 +806,8 @@ Partial Class MainView
 	Friend WithEvents BuiltDataGridViewTextBoxColumn As DataGridViewTextBoxColumn
 	Friend WithEvents OrderedDataGridViewTextBoxColumn As DataGridViewTextBoxColumn
 	Friend WithEvents StatusDataGridViewTextBoxColumn As DataGridViewTextBoxColumn
+	Friend WithEvents GetPartListPb As Button
+	Friend WithEvents MenuStrip1 As MenuStrip
+	Friend WithEvents ToolsToolStripMenuItem As ToolStripMenuItem
+	Friend WithEvents PullXmlPartAttributeDataNowToolStripMenuItem As ToolStripMenuItem
 End Class

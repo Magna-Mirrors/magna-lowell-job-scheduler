@@ -6,9 +6,10 @@ Public Class MainView
     Private Lines As List(Of Line) = Nothing
     Private CurrentLine As Line
     Private LoadingPlan As Boolean
-    Private Property ClientAccess As SchedulerClient
+	Private Property ClientAccess As SchedulerClient
+	Private _Cfg As ClientCfg
 
-    Public Sub New()
+	Public Sub New()
         ' This call is required by the designer.
         CurrentLine = New Line
         InitializeComponent()
@@ -26,20 +27,23 @@ Public Class MainView
         cmdReadPlan.Enabled = True
         setPlanView()
     End Sub
-    Private Sub MainView_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        ConnectToService()
+	Private Sub MainView_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+
+
+
+		ConnectToService()
 		RetreshLineData()
 #If DEBUG Then
-		Button1.visible = true
-		Button2.visible = true
-		Button3.visible = true
-		Button4.visible = true
+		Button1.Visible = True
+		Button2.Visible = True
+		Button3.Visible = True
+		Button4.Visible = True
 #End If
 	End Sub
 
 #Region "Clicks"
-    'Private EditList As List(Of PlanItem)
-    Private Sub Button4_Click(sender As Object, e As EventArgs)
+	'Private EditList As List(Of PlanItem)
+	Private Sub Button4_Click(sender As Object, e As EventArgs)
         PlandataSource.DataSource = New List(Of PlanItem)
     End Sub
 
@@ -379,10 +383,25 @@ Public Class MainView
 
     End Sub
     Public Sub ConnectToService()
-        Dim cfgt = New CfgTool()
-        Dim binding As New BasicHttpBinding()
-        Dim Address As New EndpointAddress(cfgt.Read().ServiceAddress + "/SchedulerService")
-		'Dim Address As New EndpointAddress("http://localhost:8045/SchedulerService")
+		Dim cfgt = New CfgTool()
+		_Cfg = cfgt.Read
+		Dim arguments As String() = Environment.GetCommandLineArgs()
+		If arguments IsNot Nothing AndAlso arguments.Length > 0 Then
+			If arguments.Length > 1 Then
+				Try
+					Dim Parts() = arguments(1).Split(",")
+					If Parts.Length = 2 AndAlso Utility.CountCharacter(Parts(0), ".") = 3 AndAlso IsNumeric(Parts(1)) Then
+						_Cfg.ServiceAddress = Trim(Parts(0))
+						_Cfg.ServicePort = CInt(Parts(1))
+					End If
+				Catch ex As Exception
+
+				End Try
+			End If
+		End If
+
+		Dim binding As New BasicHttpBinding()
+		Dim Address As New EndpointAddress(_Cfg.ServiceUrl)
 		ClientAccess = New SchedulerClient(binding, Address)
 		binding.MaxReceivedMessageSize = Int32.MaxValue
 		ClientAccess.Open()
@@ -767,6 +786,47 @@ Public Class MainView
 	End Sub
 
 	Private Sub dgv_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles dgv.CellContentClick
+
+	End Sub
+
+	Private Sub GetPartListPb_Click(sender As Object, e As EventArgs) Handles GetPartListPb.Click
+		GetPartListPb.Enabled = False
+		Dim Retparts As List(Of Part) = Nothing
+		If CurrentLine IsNot Nothing AndAlso CurrentLine.Id > 0 Then
+			Dim Rslt As getPartsforLineResponse = ClientAccess.GetpartsForLine(New GetPartsForLineRequest With {.LineData = CurrentLine})
+			Using PrtsSelect As New PartSelectDialog With {.PartData = Rslt, .LineData = CurrentLine}
+				PrtsSelect.Owner = Me
+				Dim dlgRslt As DialogResult = PrtsSelect.ShowDialog
+				If dlgRslt = DialogResult.OK Then
+					'push these items to the play view
+					Retparts = PrtsSelect.SelectedParts
+				End If
+			End Using
+			If Retparts IsNot Nothing AndAlso Retparts.Count > 0 Then
+				Dim CurrentPlan As List(Of PlanItem) = DirectCast(PlandataSource.DataSource, List(Of PlanItem))
+				For Each R In Retparts
+					CurrentPlan.Add(New PlanItem With {.Desc = R.Desc, .CreationDate = Now, .PartNumber = R.PN, .QTY = R.Qty, .TargetLineId = CurrentLine.Id})
+				Next
+				PlandataSource.ResetBindings(False)
+			End If
+		End If
+		GetPartListPb.Enabled = True
+	End Sub
+
+
+
+	Private Sub PullXmlPartAttributeDataNowToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles PullXmlPartAttributeDataNowToolStripMenuItem.Click
+		PullXmlPartAttributeDataNowToolStripMenuItem.Enabled = False
+		Try
+			ClientAccess.UpdatePartsFromXmlSupportFilesNow(New UpdatePartInfoFromSupportFilesNowRequest)
+		Catch ex As Exception
+
+Finally
+			PullXmlPartAttributeDataNowToolStripMenuItem.Enabled = True
+
+		End Try
+
+
 
 	End Sub
 End Class

@@ -59,4 +59,8 @@ Public Class SchedulerService
 	Public Function UnSuspendOrder(SourceData As SuspendOrderRequest) As SuspendOrderResult Implements iSchedulerService.UnSuspendOrder
 		Return DataMgr.UnSuspendThisorder(SourceData)
 	End Function
+
+	Public Function UpdatePartsFromXmlSupportFilesNow(Source As UpdatePartInfoFromSupportFilesNowRequest) As TransactionResult Implements iSchedulerService.UpdatePartsFromXmlSupportFilesNow
+		Return DataMgr.UpdatePartsFromXmlSupportFiles(Source)
+	End Function
 End Class

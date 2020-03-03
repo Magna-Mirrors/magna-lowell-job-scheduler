@@ -111,4 +111,8 @@ Public Class SchedulerClient
 	Public Function UnSuspendOrder(SourceData As SuspendOrderRequest) As SuspendOrderResult Implements iSchedulerService.UnSuspendOrder
 		Return MyBase.Channel.UnSuspendOrder(SourceData)
 	End Function
+
+	Public Function UpdatePartsFromXmlSupportFilesNow(Source As UpdatePartInfoFromSupportFilesNowRequest) As TransactionResult Implements iSchedulerService.UpdatePartsFromXmlSupportFilesNow
+		Return MyBase.Channel.UpdatePartsFromXmlSupportFilesNow(Source)
+	End Function
 End Class

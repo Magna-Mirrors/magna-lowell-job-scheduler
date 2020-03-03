@@ -5,18 +5,22 @@ Imports System.Xml.Serialization
 Public Class SvcParams
     Public Shared ReadOnly ParamPath As String = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "MagnaSchedulerService", "Settings")
     Public Shared ReadOnly ParamPathAndFile As String = Path.Combine(ParamPath, "Config.xml")
-
-    Private _ErpEncUserPw As String
+	Private _PartInfoUpdateTime As DateTime
+	Private _ErpEncUserPw As String
     Private _PwUpdate As Boolean
     Private _encUserPw As String
     <DataMember()>
     Public Property SqlSeverName As String
     <DataMember()>
     Public Property SqlDbName As String
-    <DataMember()>
-    Public Property SqlUserName As String
+	<DataMember()>
+	Public Property SqlUserName As String
 
-    <XmlIgnore()>
+	<DataMember()>
+	Public Property TcpPortNumberForWcf As Integer
+
+
+	<XmlIgnore()>
     Public ReadOnly Property PasswordUpdate As Boolean
         Get
             Return _PwUpdate
@@ -65,13 +69,12 @@ Public Class SvcParams
             _encUserPw = value
         End Set
     End Property
-
-
-
-
-    Public Property ErpSqlServername As String
-    Public Property ErpSqlDbName As String
-    Public Property ErpSqlUserName As String
+	<DataMember()>
+	Public Property ErpSqlServername As String
+	<DataMember()>
+	Public Property ErpSqlDbName As String
+	<DataMember()>
+	Public Property ErpSqlUserName As String
 
     <XmlIgnore>
     Public Property ErpSqlPassword As String 'encrypted
@@ -83,8 +86,8 @@ Public Class SvcParams
         End Set
     End Property
 
-
-    Public Property ErpSqlPw As String 'encrypted
+	<DataMember()>
+	Public Property ErpSqlPw As String 'encrypted
         Get
             Return _ErpEncUserPw
         End Get
@@ -94,8 +97,8 @@ Public Class SvcParams
     End Property
 
 
-
-    Public Property NewErpSqlPw As String 'InjectedValue
+	<DataMember()>
+	Public Property NewErpSqlPw As String 'InjectedValue
         Get
             Return ""
         End Get
@@ -106,12 +109,34 @@ Public Class SvcParams
             End If
         End Set
     End Property
+	Public Sub New()
+
+	End Sub
+	<DataMember()>
+	Public Property UpdateOrdersIntervalMinutes As Integer
+	<DataMember()>
+	Public Property UpdatePartInfoTime As DateTime
+		Get
+			Return _PartInfoUpdateTime
+		End Get
+		Set(value As DateTime)
+			If IsDate(value) Then
+				_PartInfoUpdateTime = value
+			Else
+				_PartInfoUpdateTime = New Date(2020, 1, 1, 19, 0, 0)
+			End If
+		End Set
+	End Property
+
+	Public ReadOnly Property XferTime As TimeSpan
+		Get
+			Return New TimeSpan(UpdatePartInfoTime.Hour, UpdatePartInfoTime.Minute, UpdatePartInfoTime.Second)
+		End Get
+	End Property
 
 
-    Public Property UpdateOrdersIntervalMinutes As Integer
 
-
-    Public Shared Function getDefaults() As SvcParams
+	Public Shared Function getDefaults() As SvcParams
         Dim p As New SvcParams
         With p
             .SqlSeverName = "Localhost"
@@ -120,13 +145,14 @@ Public Class SvcParams
             .SqlPw = "1234"
             .WcfRootPath = "E:\_Projects\M\Magna\Lowell\DainaWare\SupportFiles\WCF\"
             .PlanTextRootPath = "E:\_Projects\M\Magna\Lowell\DainaWare\SupportFiles\Schedule\"
-
-            .ErpSqlServername = "HOLMSDBDEV02"  'Test server = "HOLMSDBDEV02" '"holmssqlinst01\instance01"
-            .ErpSqlDbName = "MALshopfloorTD"
+			.ErpSqlServername = "HOLMSDBDEV02"  'Test server = "HOLMSDBDEV02" '"holmssqlinst01\instance01"
+			.ErpSqlDbName = "MALshopfloorTD"
             .ErpSqlUserName = "MALsfEOL"
             .NewErpSqlPw = "test123"
-            .UpdateOrdersIntervalMinutes = 5
-        End With
+			.UpdateOrdersIntervalMinutes = 5
+			.UpdatePartInfoTime = New Date(2020, 1, 1, 19, 0, 0)
+			.TcpPortNumberForWcf = 8045
+		End With
         Return p
     End Function
 End Class

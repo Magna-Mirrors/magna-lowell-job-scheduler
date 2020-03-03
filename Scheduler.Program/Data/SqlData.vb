@@ -38,8 +38,8 @@ Public Class SqlData
                                     Where dbo.Part_Program_Line_Map.LineId = {0} and dbo.Part_Definition.PartNumber in({1}) "
 
 	Private Const GetpartsForLineQuery = "SELECT Part_Definition.PartNumber AS PN, Part_Definition.Note AS [Desc], Part_Program_Line_Map.LineId, Part_Definition.Part_Id AS partId, 
-                         Part_Colors.Name AS colorName, CASE WHEN (Part_Options.LH & 2) > 2 THEN 1 ELSE 0 END AS LH, CASE WHEN (Part_Options.RH & 2) 
-                         > 2 THEN 1 ELSE 0 END AS RH, Part_Programs.ProgId
+                         Part_Colors.Name AS colorName, CASE WHEN (Part_Options.LH =3)  THEN 1 ELSE 0 END AS LH, CASE WHEN (Part_Options.RH =3) 
+                          THEN 1 ELSE 0 END AS RH, Part_Programs.ProgId
                          FROM Part_Program_Line_Map INNER JOIN
                          Part_Programs ON Part_Program_Line_Map.ProgramId = Part_Programs.ProgId INNER JOIN
                          Part_Colors ON Part_Programs.ProgId = Part_Colors.ProgId INNER JOIN
@@ -75,18 +75,6 @@ Public Class SqlData
 
 
 
-	'SELECT TOP 500 DATEADD(dd, 0, DATEDIFF(dd, 0, dbo.Schedule_Part_Production_History.LogDateTime)) AS ProdDate, 
-	'  dbo.Schedule_Part_Production_History.OrderId AS ProdOrder, dbo.eqp_Lines.Workcell, dbo.Part_Info.PN AS ProdItem, 
-	'  dbo.Schedule_Part_Production_History.Userid AS Operator, SUM(dbo.Schedule_Part_Production_History.Qty) AS Qty_Passed, 
-	'  MAX(dbo.Schedule_Part_Production_History.Id) AS MaxBuiltId,Min(dbo.Schedule_Part_Production_History.Id) AS MinBuiltId
-	'  FROM dbo.Schedule_Part_Production_History INNER JOIN
-	'  dbo.Schedule_Order_History ON dbo.Schedule_Part_Production_History.OrderId = dbo.Schedule_Order_History.ID INNER JOIN
-	'  dbo.Part_Info ON dbo.Schedule_Order_History.PartId = dbo.Part_Info.PartId INNER JOIN
-	'  dbo.eqp_Lines ON dbo.Schedule_Part_Production_History.LineId = dbo.eqp_Lines.Id
-	'  WHERE (dbo.Schedule_Part_Production_History.Posted = 0)
-	'  GROUP BY dbo.Schedule_Part_Production_History.Userid, dbo.Part_Info.PN, dbo.Schedule_Part_Production_History.OrderId, dbo.eqp_Lines.Workcell, DATEADD(dd, 0, 
-	'  DATEDIFF(dd, 0, dbo.Schedule_Part_Production_History.LogDateTime))
-	'  ORDER BY ProdDate, ProdOrder, dbo.eqp_Lines.Workcell, ProdItem, Operator"
 
 	Public Sub New(LgSvr As iLoggingService, Atools As AppTools)
         _Cfg = Atools.GetProgramParams
@@ -135,14 +123,25 @@ Public Class SqlData
         Dim Rslt As New getPartsforLineResponse
         Using Cn = GetConnection()
             Cn.Open()
-            Dim Cmd As New SqlClient.SqlCommand(String.Format("{0} Where Lineid = {1}", GetpartsForLineQuery, PartReq.LineData.Id), Cn)
-            Using dRead As IDataReader = Cmd.ExecuteReader()
+			Dim Cmd As New SqlClient.SqlCommand(String.Format(GetpartsForLineQuery, PartReq.LineData.Id), Cn)
+			Using dRead As IDataReader = Cmd.ExecuteReader()
                 While dRead.Read
-                    Dim P As New Part
-                    P.PN = CStr(dRead("PN"))
-                    ' P.Desc = CStr(dRead("Desc"))
-                    P.Id = CType(dRead("PartId"), Integer?)
-                    Rslt.parts.Add(P)
+					Dim P As New Part
+					P.PN = CStr(dRead("PN"))
+					P.Desc = CStr(dRead("Desc"))
+					P.ColorName = CStr(dRead("ColorName"))
+					P.Id = CType(dRead("PartId"), Integer?)
+					Dim LH As Boolean = CBool(dRead("LH"))
+					Dim RH As Boolean = CBool(dRead("RH"))
+
+					If LH Then
+						P.Hand = "LH"
+					ElseIf RH Then
+						P.Hand = "RH"
+					Else
+						P.Hand = "?"
+					End If
+					Rslt.parts.Add(P)
                 End While
             End Using
         End Using
@@ -521,23 +520,22 @@ Public Class SqlData
         Return dCmd
     End Function
 
-    'used by save plan
-    Private Function GetPlanUpdate(Pi As PlanItem) As SqlClient.SqlCommand
-        Dim dCmd As New SqlClient.SqlCommand
-        dCmd.Parameters.Add(New SqlClient.SqlParameter("@ID", Pi.OrderId))
-        '   dCmd.Parameters.Add(New SqlClient.SqlParameter("@CreationDate", Now))
-        dCmd.Parameters.Add(New SqlClient.SqlParameter("@ShipDate", Pi.Shipdate))
-        '  dCmd.Parameters.Add(New SqlClient.SqlParameter("@ScheduleDate", Pi.ScheduleDate))
-        dCmd.Parameters.Add(New SqlClient.SqlParameter("@PartId", Pi.PartId))
-        dCmd.Parameters.Add(New SqlClient.SqlParameter("@Quantity", Pi.QTY))
-        dCmd.Parameters.Add(New SqlClient.SqlParameter("@TargetLineId", Pi.TargetLineId))
-        dCmd.Parameters.Add(New SqlClient.SqlParameter("@Position", Pi.Position))
-        dCmd.Parameters.Add(New SqlClient.SqlParameter("@Status", Pi.Status))
-        dCmd.Parameters.Add(New SqlClient.SqlParameter("@LastUpdate", Now))
-        dCmd.Parameters.Add(New SqlClient.SqlParameter("@Flags", Pi.Flags))
-        dCmd.Parameters.Add(New SqlClient.SqlParameter("@PartDesc", Pi.Desc))
+	'used by save plan
+	Private Function GetPlanUpdate(Pi As PlanItem) As SqlClient.SqlCommand
+		Dim dCmd As New SqlClient.SqlCommand
+		dCmd.Parameters.Add(New SqlClient.SqlParameter("@ID", Pi.OrderId))
+		'   dCmd.Parameters.Add(New SqlClient.SqlParameter("@CreationDate", Now))
+		dCmd.Parameters.Add(New SqlClient.SqlParameter("@ShipDate", Pi.Shipdate))
+		'  dCmd.Parameters.Add(New SqlClient.SqlParameter("@ScheduleDate", Pi.ScheduleDate))
+		dCmd.Parameters.Add(New SqlClient.SqlParameter("@PartId", Pi.PartId))
+		dCmd.Parameters.Add(New SqlClient.SqlParameter("@Quantity", Pi.QTY))
+		dCmd.Parameters.Add(New SqlClient.SqlParameter("@TargetLineId", Pi.TargetLineId))
+		dCmd.Parameters.Add(New SqlClient.SqlParameter("@Position", Pi.Position))
+		dCmd.Parameters.Add(New SqlClient.SqlParameter("@Status", Pi.Status))
+		dCmd.Parameters.Add(New SqlClient.SqlParameter("@LastUpdate", Now))
+		dCmd.Parameters.Add(New SqlClient.SqlParameter("@Flags", Pi.Flags))
+		dCmd.Parameters.Add(New SqlClient.SqlParameter("@PartDesc", Pi.Desc))
 		dCmd.Parameters.Add(New SqlClient.SqlParameter("@CustOrderId", Pi.CustOrderId))
-
 
 		dCmd.CommandText = String.Format("Update Schedule_Order_History 
             set ShipDate = @ShipDate,
@@ -550,22 +548,324 @@ Public Class SqlData
             Flags = @Flags,
             CustOrderId = @CustOrderId
             where Id = @ID and Status = 2", If(Pi.Status = PlanStatus.Removed, "Status = @Status,", ""))
-        Return dCmd
-    End Function
-    Private Function GetConnection() As SqlConnection
+		Return dCmd
+	End Function
+
+
+
+	Public Function GetLastXmlFileInfo(ProgId As Integer, FileName As String, Path As String) As AttributeFileLog
+		Dim dCmd As New SqlClient.SqlCommand
+		dCmd.Parameters.Add(New SqlClient.SqlParameter("@FileName", Path & "\" & FileName))
+		dCmd.Parameters.Add(New SqlClient.SqlParameter("@ProgId", ProgId))
+		dCmd.CommandText = "SELECT top 1 [Id],[ProgId],[FileName],[Size],[Updated]
+                           FROM XMLFileChangeHistory
+                           Where ProgId = @ProgId and Filename = @FileName
+						   order by ID desc"
+		Try
+			Using Cn = GetConnection()
+				Cn.Open()
+				dCmd.Connection = Cn
+				Using dRead As IDataReader = dCmd.ExecuteReader()
+					If dRead.Read Then
+						Return New AttributeFileLog With {.ProgID = dRead("ProgId"), .ID = dRead("ID"), .PathAndFile = dRead("FileName"), .Updated = dRead("Updated"), .Size = dRead("Size")}
+					End If
+				End Using
+			End Using
+		Catch ex As Exception
+
+		End Try
+
+		Return New AttributeFileLog With {.ID = 0, .PathAndFile = Path & "\" & FileName, .ProgID = ProgId, .Size = 0, .Updated = DateTime.MinValue}
+	End Function
+
+	Public Function SaveXmlAttributeFileName(F As AttributeFileLog) As Integer
+
+		Dim dCmd As New SqlClient.SqlCommand
+
+		dCmd.Parameters.Add(New SqlClient.SqlParameter("@FileName", F.PathAndFile))
+		dCmd.Parameters.Add(New SqlClient.SqlParameter("@ProgId", F.ProgID))
+		dCmd.Parameters.Add(New SqlClient.SqlParameter("@Updated", Now))
+		dCmd.Parameters.Add(New SqlClient.SqlParameter("@Size", F.Size))
+		dCmd.Parameters.Add(New SqlClient.SqlParameter("@ID", CInt(0)))
+		Try
+			Using Cn = GetConnection()
+				Cn.Open()
+				dCmd.Connection = Cn
+
+				dCmd.CommandText = "Insert into XMLFileChangeHistory ([ProgId], [FileName], [Size], [Updated]) Values(@ProgId,@FileName,@Size,@Updated)"
+				Return CInt(dCmd.ExecuteScalar)
+			End Using
+		Catch ex As Exception
+
+		End Try
+
+		Return 0
+	End Function
+
+	Public Function getProgramData() As List(Of Part_Program)
+		Dim ProgData As New List(Of Part_Program)
+
+		Try
+			Using Cn = GetConnection()
+				Cn.Open()
+				Dim dCmd As New SqlClient.SqlCommand
+
+				dCmd.CommandText = "Select ProgId,[Name],AttributeFilePath From part_Programs"
+				dCmd.Connection = Cn
+				Using dRead As IDataReader = dCmd.ExecuteReader()
+					While dRead.Read
+						ProgData.Add(New Part_Program With {.ProgId = dRead("ProgId"), .Name = dRead("Name"), .AttributeFilePath = dRead("AttributeFilePath")})
+					End While
+				End Using
+			End Using
+			Return ProgData
+		Catch ex As Exception
+
+		End Try
+		Return Nothing
+	End Function
+
+	Public Function GetPartOptions(ProgId As Integer) As List(Of part_Options)
+		Dim PartOpt As New List(Of part_Options)
+
+		Try
+			Using Cn = GetConnection()
+				Cn.Open()
+				Dim dCmd As New SqlClient.SqlCommand
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@ProgId", ProgId))
+				dCmd.CommandText = "Select NestIdx,OptionId,[ProgId],Description From part_Options where ProgId = @ProgId"
+				dCmd.Connection = Cn
+				Using dRead As IDataReader = dCmd.ExecuteReader()
+					While dRead.Read
+						PartOpt.Add(New part_Options With {.ProgId = dRead("ProgId"), .Description = dRead("Description"), .OptionId = dRead("OptionId"), .NestIdx = dRead("nestIdx")})
+					End While
+				End Using
+			End Using
+			Return PartOpt
+		Catch ex As Exception
+
+		End Try
+		Return Nothing
+	End Function
+
+	Public Function UpdatePartOptionItem(ParamArray Item() As part_Options) As Integer
+		Dim dCmd As New SqlClient.SqlCommand
+		Try
+			Using Cn = GetConnection()
+				Cn.Open()
+				dCmd.Connection = Cn
+				dCmd.CommandText = "Update Part_Options set Description = @Desc where ProgId = @ProgId and NestIdx = @NestIdx"
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@Desc", DbType.String))
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@NestIdx", DbType.String))
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@ProgId", DbType.String))
+				For Each i In Item
+					dCmd.Parameters.Item("@Desc").Value = i.Description
+					dCmd.Parameters.Item("@NestIdx").Value = i.NestIdx
+					dCmd.Parameters.Item("@ProgId").Value = i.ProgId
+					dCmd.ExecuteNonQuery()
+				Next
+				Return Item.Count
+			End Using
+		Catch ex As Exception
+
+		End Try
+		Return 0
+	End Function
+
+	Public Function GetPartDefinitions(ProgId As Integer) As List(Of Part_Definition)
+		Dim PartInfo As New List(Of Part_Definition)
+
+		Try
+			Using Cn = GetConnection()
+				Cn.Open()
+				Dim dCmd As New SqlClient.SqlCommand
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@ProgId", ProgId))
+				dCmd.CommandText = "Select [Part_Id],[ProgramId],[PartNumber],[CPN],[NestIdx],[ColorIdx],[SpecialCode],[Service],[Note],[StyleIdx],[Status],[PartsPertote]
+                                                      From [dbo].[Part_Definition] where ProgramId = @ProgId"
+				dCmd.Connection = Cn
+				Using dRead As IDataReader = dCmd.ExecuteReader()
+					While dRead.Read
+						PartInfo.Add(New Part_Definition With {.ProgramId = dRead("ProgramId"), .PartNumber = dRead("partNumber"),
+									  .CPN = dRead("Cpn"), .NestIdx = dRead("nestIdx"), .ColorIdx = dRead("ColorIdx"), .Note = dRead("Note"),
+									  .PartsPerTote = dRead("PartsPertote"), .Service = dRead("Service")})
+					End While
+				End Using
+			End Using
+			Return PartInfo
+		Catch ex As Exception
+
+		End Try
+		Return Nothing
+	End Function
+	Public Function UpdatePartDefinitionItem(ParamArray Item() As Part_Definition) As Integer
+		Try
+			Using Cn = GetConnection()
+				Cn.Open()
+				Dim dCmd As New SqlClient.SqlCommand
+				dCmd.Connection = Cn
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@ProgId", DbType.Int32))
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@NestIdx", DbType.Int32))
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@ColorIdx", DbType.Int32))
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@Service", DbType.Boolean))
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@PartsPerTote", DbType.Int32))
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@CPN", DbType.String))
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@PartNumber", DbType.String))
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@Note", DbType.String))
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@Part_Id", DbType.Int32))
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@Status", Part_Definition_Status.NewlyUpdated))
+
+				dCmd.CommandText = "Update Part_Definition set NestIdx = @NestIdx,ColorIdx = @ColorIdx, Status=@Status,
+				                       Service = @Service,PartsPerTote = @PartsPerTote,CPN = @CPN,PartNumber = @PartNumber,
+					                   Note = @Note
+				                       where ProgramId = @ProgId And PartNumber = @PartNumber"
+				For Each i In Item
+					dCmd.Parameters.Item("@ProgId").Value = i.ProgramId
+					dCmd.Parameters.Item("@NestIdx").Value = i.NestIdx
+					dCmd.Parameters.Item("@ColorIdx").Value = i.ColorIdx
+					dCmd.Parameters.Item("@Service").Value = i.Service
+					dCmd.Parameters.Item("@PartsPerTote").Value = i.PartsPerTote
+					dCmd.Parameters.Item("@CPN").Value = i.CPN
+					dCmd.Parameters.Item("@PartNumber").Value = i.PartNumber
+					dCmd.Parameters.Item("@Note").Value = i.Note
+					dCmd.ExecuteNonQuery()
+				Next
+				Return Item.Count
+			End Using
+			Return 1
+		Catch ex As Exception
+
+		End Try
+		Return 0
+	End Function
+
+	Public Function AddPartDefinitionItem(ParamArray Item() As Part_Definition) As Integer
+		Try
+			Using Cn = GetConnection()
+				Cn.Open()
+				Dim dCmd As New SqlClient.SqlCommand
+				dCmd.Connection = Cn
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@ProgId", DbType.Int32))
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@NestIdx", DbType.Int32))
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@ColorIdx", DbType.Int32))
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@Service", DbType.Boolean))
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@PartsPerTote", DbType.Int32))
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@CPN", DbType.String))
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@PartNumber", DbType.String))
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@Note", DbType.String))
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@PPT", DbType.Int32))
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@Status", Part_Definition_Status.NewleyInserted))
+
+				For Each i In Item
+					dCmd.Parameters.Item("@ProgId").Value = i.ProgramId
+					dCmd.Parameters.Item("@NestIdx").Value = i.NestIdx
+					dCmd.Parameters.Item("@ColorIdx").Value = i.ColorIdx
+					dCmd.Parameters.Item("@Service").Value = i.Service
+					dCmd.Parameters.Item("@PartsPerTote").Value = i.PartsPerTote
+					dCmd.Parameters.Item("@CPN").Value = i.CPN
+					dCmd.Parameters.Item("@PartNumber").Value = i.PartNumber
+					dCmd.Parameters.Item("@Note").Value = i.Note
+					dCmd.CommandText = "INSERT INTO [dbo].[Part_Definition]
+										 ([ProgramId],[PartNumber],[CPN],[Status],[NestIdx],[ColorIdx],[Service],[Note],[PartsPerTote])
+										 VALUES(@ProgId,@PartNumber,@CPN,@Status,@NestIdx,@ColorIdx,@Service,@Note,@PartsPerTote)"
+					dCmd.ExecuteNonQuery()
+				Next
+				Return Item.Count
+			End Using
+		Catch ex As Exception
+			Return 0
+		End Try
+		Return 0
+	End Function
+
+	Public Function GetPartColors(ProgId As Integer) As List(Of Part_Color)
+		Dim PartColor As New List(Of Part_Color)
+
+		Try
+			Using Cn = GetConnection()
+				Cn.Open()
+				Dim dCmd As New SqlClient.SqlCommand
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@ProgId", ProgId))
+				dCmd.CommandText = "Select [ColorId],[Name],[ProgId],[ColorIdx]
+                                                      From [dbo].[Part_Colors] where ProgId = @ProgId"
+				dCmd.Connection = Cn
+				Using dRead As IDataReader = dCmd.ExecuteReader()
+					While dRead.Read
+						PartColor.Add(New Part_Color With {.ProgId = dRead("ProgId"), .ColorId = dRead("ColorId"),
+									  .ColorIdx = dRead("ColorIdx"), .Name = dRead("Name")})
+					End While
+				End Using
+			End Using
+			Return PartColor
+		Catch ex As Exception
+
+		End Try
+		Return Nothing
+	End Function
+
+	Public Function UpdateColorItems(ParamArray Item() As Part_Color) As Integer
+		Try
+			Dim dCmd As New SqlClient.SqlCommand
+			Using Cn = GetConnection()
+				Cn.Open()
+				dCmd.Connection = Cn
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@Name", DbType.String))
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@ColorIdx", DbType.String))
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@ProgId", DbType.String))
+
+				For Each i In Item
+					dCmd.Parameters.Item("@Name").Value = i.Name
+					dCmd.Parameters.Item("@ColorIdx").Value = i.ColorIdx
+					dCmd.Parameters.Item("@ProgId").Value = i.ProgId
+					dCmd.CommandText = "Update Part_Color set Name = @Name where ProgId = @ProgId and ColorIdx = @ColorIdx"
+					dCmd.ExecuteNonQuery()
+				Next
+				Return Item.Count
+			End Using
+		Catch ex As Exception
+
+		End Try
+		Return 0
+	End Function
+
+	''' <summary>
+	''' when you are done with the processing of a file write the file details here
+	''' </summary>
+	''' <param name="F"></param>
+	''' <returns></returns>
+	Public Function AddFileDateAndSize(F As AttributeFileLog) As Integer
+		If F.ID = 0 Then
+			Return 0
+		End If
+		Dim dCmd As New SqlClient.SqlCommand
+		dCmd.Parameters.Add(New SqlClient.SqlParameter("@Updated", F.Updated))
+		dCmd.Parameters.Add(New SqlClient.SqlParameter("@ProgId", F.ProgID))
+		dCmd.Parameters.Add(New SqlClient.SqlParameter("@FileName", F.PathAndFile))
+		dCmd.Parameters.Add(New SqlClient.SqlParameter("@Size", F.Size))
+		dCmd.Parameters.Add(New SqlClient.SqlParameter("@ID", F.ID))
+		dCmd.CommandText = "Insert Into XMLFileChangeHistory [Progid],[Filename], [Updated],[Size] Values(@ProgId,@FileName, @Updated, @Size)"
+		Using Cn = GetConnection()
+			Cn.Open()
+			dCmd.Connection = Cn
+			Return CInt(dCmd.ExecuteScalar)
+		End Using
+		Return 0
+	End Function
+
+	Private Function GetConnection() As SqlConnection
         Dim connstr = GetConnectionString() + "; Persist Security Info=True;"
         Return New SqlClient.SqlConnection(connstr)
     End Function
-    Private Function GetConnectionString() As String
-        Dim CnS As New Data.SqlClient.SqlConnectionStringBuilder
-        With CnS
-            .DataSource = _Cfg.SqlSeverName
-            .UserID = _Cfg.SqlUserName
-            .Password = _Cfg.SqlPw
-            .InitialCatalog = _Cfg.SqlDbName
-        End With
 
-        Return CnS.ConnectionString
-    End Function
+	Private Function GetConnectionString() As String
+		Dim CnS As New Data.SqlClient.SqlConnectionStringBuilder
+		With CnS
+			.DataSource = _Cfg.SqlSeverName
+			.UserID = _Cfg.SqlUserName
+			.Password = _Cfg.SqlPw
+			.InitialCatalog = _Cfg.SqlDbName
+		End With
+
+		Return CnS.ConnectionString
+	End Function
 
 End Class
