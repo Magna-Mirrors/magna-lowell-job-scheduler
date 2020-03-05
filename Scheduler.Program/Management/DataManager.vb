@@ -8,6 +8,7 @@ Public Class DataManager
 	Protected ReadOnly _ErpAccess As ErpSql
 	Private _Cfg As SvcParams
 	Private ActionReq As Integer
+	Public Event RequestPnDataUpdateNow()
 
 	Public Sub New(LgSvc As iLoggingService, Atool As AppTools, SqlSvc As SqlData, MdbAccess As MdbData, ErpAccess As ErpSql)
 		Dim Prm = Atool.GetProgramParams
@@ -17,7 +18,6 @@ Public Class DataManager
 		_LoggingService = LgSvc
 		_SqlAccess = SqlSvc
 		_ErpAccess = ErpAccess
-
 	End Sub
 
 	Public Sub RequestingUpdateNow()
@@ -33,143 +33,143 @@ Public Class DataManager
 	End Function
 
 	Public Function GetLine(Lineid As Integer) As GetLineResponse
-        Dim Rslt As New GetLineResponse
-        Try
-            Rslt.LineInfo = _SqlAccess.GetLineData(Lineid)
-            Rslt.Result = 1
-        Catch ex As Exception
-            Rslt.Result = -1
-            Rslt.ResultString = ex.Message
-        End Try
+		Dim Rslt As New GetLineResponse
+		Try
+			Rslt.LineInfo = _SqlAccess.GetLineData(Lineid)
+			Rslt.Result = 1
+		Catch ex As Exception
+			Rslt.Result = -1
+			Rslt.ResultString = ex.Message
+		End Try
 
-        Return Rslt
-    End Function
+		Return Rslt
+	End Function
 
-    Public Function GetLines() As GetLinesResponse
-        Dim Rslt As New GetLinesResponse
-        Try
-            Rslt = _SqlAccess.GetLinesData(False)
-            Rslt.Result = 1
-        Catch ex As Exception
-            Rslt.Result = -1
-            Rslt.ResultString = "GetLines Error " & ex.Message
-        End Try
+	Public Function GetLines() As GetLinesResponse
+		Dim Rslt As New GetLinesResponse
+		Try
+			Rslt = _SqlAccess.GetLinesData(False)
+			Rslt.Result = 1
+		Catch ex As Exception
+			Rslt.Result = -1
+			Rslt.ResultString = "GetLines Error " & ex.Message
+		End Try
 
-        Return Rslt
-    End Function
+		Return Rslt
+	End Function
 
 
 	Public Function GetSqlLines() As List(Of Line)
-        Dim Rslt As New GetLinesResponse
-        Try
-            Rslt = _SqlAccess.GetLinesData(True)
-            Rslt.Result = 1
-        Catch ex As Exception
-            Rslt.Result = -1
-            Rslt.ResultString = "GetLines Error " & ex.Message
-        End Try
+		Dim Rslt As New GetLinesResponse
+		Try
+			Rslt = _SqlAccess.GetLinesData(True)
+			Rslt.Result = 1
+		Catch ex As Exception
+			Rslt.Result = -1
+			Rslt.ResultString = "GetLines Error " & ex.Message
+		End Try
 
-        Return Rslt.Lines
-    End Function
-
-
-
-    Public Function getLineUserCount(LineId As Integer) As Integer
-        Return _SqlAccess.GetUsersOnLine(LineId)
-    End Function
-
-    Public Function GetSubscribingLines() As GetLinesResponse
-        Dim Rslt As New GetLinesResponse
-        Try
-            Rslt = _SqlAccess.GetLinesData(False)
-            Rslt.Result = 1
-        Catch ex As Exception
-            Rslt.Result = -1
-            Rslt.ResultString = "GetLines Error " & ex.Message
-        End Try
-
-        Return Rslt
-    End Function
+		Return Rslt.Lines
+	End Function
 
 
-    Public Function GetPlan(Sourcedata As GetPlanRequest) As GetPlanResponse
-        Dim nPr As New GetPlanResponse With {.Result = -1}
-        If Sourcedata.LineData.SchedulerMethod = SchedulerMethods.MsSql Then
-            Try
-                nPr = _SqlAccess.GetActiveOrders(Sourcedata)
-                nPr.Result = 1
-            Catch ex As Exception
-                nPr.ResultString = "GetPlan -> MsSql Exception :::: " + ex.Message
-            End Try
-        ElseIf Sourcedata.LineData.SchedulerMethod = SchedulerMethods.MdbAndPlanFiles Then
-            Dim PlanTxt As New TextData(_Tools, _Cfg)
-            Try
-                nPr = PlanTxt.getPlanData(Sourcedata.LineData)
-                nPr.Result = 1
-            Catch ex As Exception
-                nPr.ResultString = "GetPlan -> MdbAndPlanFiles Exception :::: " + ex.Message
-            End Try
-        Else
-            nPr.ResultString = "SchedulerMethod must be MsSql OR MdbAndPlanFiles"
-        End If
-        Return nPr
-    End Function
 
-    Public Function SavePlan(SourceData As SavePlanRequest) As TransactionResult
-        Dim nPr As New TransactionResult
-        If SourceData.LineData.SchedulerMethod = SchedulerMethods.MsSql Then
+	Public Function getLineUserCount(LineId As Integer) As Integer
+		Return _SqlAccess.GetUsersOnLine(LineId)
+	End Function
+
+	Public Function GetSubscribingLines() As GetLinesResponse
+		Dim Rslt As New GetLinesResponse
+		Try
+			Rslt = _SqlAccess.GetLinesData(False)
+			Rslt.Result = 1
+		Catch ex As Exception
+			Rslt.Result = -1
+			Rslt.ResultString = "GetLines Error " & ex.Message
+		End Try
+
+		Return Rslt
+	End Function
+
+
+	Public Function GetPlan(Sourcedata As GetPlanRequest) As GetPlanResponse
+		Dim nPr As New GetPlanResponse With {.Result = -1}
+		If Sourcedata.LineData.SchedulerMethod = SchedulerMethods.MsSql Then
+			Try
+				nPr = _SqlAccess.GetActiveOrders(Sourcedata)
+				nPr.Result = 1
+			Catch ex As Exception
+				nPr.ResultString = "GetPlan -> MsSql Exception :::: " + ex.Message
+			End Try
+		ElseIf Sourcedata.LineData.SchedulerMethod = SchedulerMethods.MdbAndPlanFiles Then
+			Dim PlanTxt As New TextData(_Tools, _Cfg)
+			Try
+				nPr = PlanTxt.getPlanData(Sourcedata.LineData)
+				nPr.Result = 1
+			Catch ex As Exception
+				nPr.ResultString = "GetPlan -> MdbAndPlanFiles Exception :::: " + ex.Message
+			End Try
+		Else
+			nPr.ResultString = "SchedulerMethod must be MsSql OR MdbAndPlanFiles"
+		End If
+		Return nPr
+	End Function
+
+	Public Function SavePlan(SourceData As SavePlanRequest) As TransactionResult
+		Dim nPr As New TransactionResult
+		If SourceData.LineData.SchedulerMethod = SchedulerMethods.MsSql Then
 			nPr = _SqlAccess.SavePlan(SourceData.PlanData)
 			RequestingUpdateNow()
 		Else
-            Dim txTools As New TextData
-            nPr = txTools.SavePlan(SourceData)
-        End If
-        Return nPr
-    End Function
+			Dim txTools As New TextData
+			nPr = txTools.SavePlan(SourceData)
+		End If
+		Return nPr
+	End Function
 
-    Public Function ValidatePlanItems(SourceData As ValidatePartsRequest) As ValidatePartsResponse
-        Dim Rslt As New ValidatePartsResponse
-        If SourceData.LineData.SchedulerMethod = SchedulerMethods.MsSql Then
-            Rslt = _SqlAccess.ValidateParts(SourceData)
-        Else
-            Rslt = _MdbAccess.ValidateParts(SourceData)
-        End If
-        Return Rslt
-    End Function
+	Public Function ValidatePlanItems(SourceData As ValidatePartsRequest) As ValidatePartsResponse
+		Dim Rslt As New ValidatePartsResponse
+		If SourceData.LineData.SchedulerMethod = SchedulerMethods.MsSql Then
+			Rslt = _SqlAccess.ValidateParts(SourceData)
+		Else
+			Rslt = _MdbAccess.ValidateParts(SourceData)
+		End If
+		Return Rslt
+	End Function
 
-    Public Function GetpartsForLine(SourceData As GetPartsForLineRequest) As getPartsforLineResponse
-        Dim Rslt As New getPartsforLineResponse
-        If SourceData.LineData.SchedulerMethod = SchedulerMethods.MsSql Then
-            Rslt = _SqlAccess.GetParts(SourceData)
-        Else
-            Rslt = _MdbAccess.GetParts(SourceData)
-        End If
-        Return Rslt
-    End Function
+	Public Function GetpartsForLine(SourceData As GetPartsForLineRequest) As getPartsforLineResponse
+		Dim Rslt As New getPartsforLineResponse
+		If SourceData.LineData.SchedulerMethod = SchedulerMethods.MsSql Then
+			Rslt = _SqlAccess.GetParts(SourceData)
+		Else
+			Rslt = _MdbAccess.GetParts(SourceData)
+		End If
+		Return Rslt
+	End Function
 
-    Public Function GetNextOrder(SourceData As GetNextOrderRequest) As GetNextOrderResult
-        Dim Rslt As New GetNextOrderResult
-        If SourceData.LineId > 0 Then
-            Dim Sd = GetScheduledOrders(SourceData.LineId)
-            If Sd IsNot Nothing AndAlso Sd.Any() Then
-                Rslt.Item = Sd(0)
-                Rslt.Result = 1
-            Else
-                Rslt.Result = 0
-                Rslt.ResultString = "No Scheduled Orders"
-            End If
-        End If
-        Return Rslt
-    End Function
+	Public Function GetNextOrder(SourceData As GetNextOrderRequest) As GetNextOrderResult
+		Dim Rslt As New GetNextOrderResult
+		If SourceData.LineId > 0 Then
+			Dim Sd = GetScheduledOrders(SourceData.LineId)
+			If Sd IsNot Nothing AndAlso Sd.Any() Then
+				Rslt.Item = Sd(0)
+				Rslt.Result = 1
+			Else
+				Rslt.Result = 0
+				Rslt.ResultString = "No Scheduled Orders"
+			End If
+		End If
+		Return Rslt
+	End Function
 
-    Public Function CommitBuildToProdOrders() As Integer
-        Dim BuiltItems = _SqlAccess.GetActiveOrders
-        Dim Rslt = _ErpAccess.Commit_Built_Items_To_ProdCounts(BuiltItems)
-        If Rslt.Result > 0 Then
-            Return _SqlAccess.Update_PartBuilt_Postings(BuiltItems.Min(Function(x) x.BuiltId), BuiltItems.Max(Function(x) x.BuiltId))
-        End If
-        Return 0
-    End Function
+	Public Function CommitBuildToProdOrders() As Integer
+		Dim BuiltItems = _SqlAccess.GetActiveOrders
+		Dim Rslt = _ErpAccess.Commit_Built_Items_To_ProdCounts(BuiltItems)
+		If Rslt.Result > 0 Then
+			Return _SqlAccess.Update_PartBuilt_Postings(BuiltItems.Min(Function(x) x.BuiltId), BuiltItems.Max(Function(x) x.BuiltId))
+		End If
+		Return 0
+	End Function
 
 
 	Public Function SkipThisorder(SourceData As SkipOrderRequest) As SkipOrderResult
@@ -195,7 +195,7 @@ Public Class DataManager
 					End If
 				End If
 
-		Else
+			Else
 				Rslt.ResultString = "No Scheduled Orders"
 			End If
 		End If
@@ -222,6 +222,14 @@ Public Class DataManager
 			End If
 		End If
 		Return Rslt
+	End Function
+
+
+	Public Function UpdatePartsFromXmlSupportFiles(Source As UpdatePartInfoFromSupportFilesNowRequest) As TransactionResult
+		Dim rSLT As New TransactionResult
+		rSLT.Result = 1
+		RaiseEvent RequestPnDataUpdateNow()
+		Return rSLT
 	End Function
 
 	Public Function RemoveThisorder(SourceData As RemoveOrderRequest) As RemoveOrderResult
@@ -383,22 +391,23 @@ Public Class DataManager
 
     End Function
 
-    'TODO: test this
-    Private Function GetScheduledOrders(lineid As Integer) As List(Of PlanItem)
-        If lineid <= 0 Then
-            Throw New ArgumentException("Line Id must be greater than zero.", NameOf(lineid))
-        End If
+	'TODO: test this
+	Private Function GetScheduledOrders(lineid As Integer) As List(Of PlanItem)
+		If lineid <= 0 Then
+			Throw New ArgumentException("Line Id must be greater than zero.", NameOf(lineid))
+		End If
 
-        Dim Ln As New Line With {.Id = lineid}
-        Dim L As New GetPlanRequest(Ln)
+		Dim Ln As New Line With {.Id = lineid}
+		Dim L As New GetPlanRequest(Ln)
 
-        Dim Resp = _SqlAccess.GetActiveOrders(L)
+		Dim Resp = _SqlAccess.GetActiveOrders(L)
 
-        If Resp.Result <> 1 Then
-            Dim plans = (From x In Resp.PlanData Where x.Status = PlanStatus.Scheduled).ToList()
-            Return plans
-        End If
-        Return Nothing
-    End Function
+		If Resp.Result <> 1 Then
+			Dim plans = (From x In Resp.PlanData Where x.Status = PlanStatus.Scheduled).ToList()
+			Return plans
+		End If
+		Return Nothing
+	End Function
+
 
 End Class

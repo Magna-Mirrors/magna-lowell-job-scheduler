@@ -26,5 +26,6 @@ Public Interface iSchedulerService
 	Function SuspendOrder(SourceData As SuspendOrderRequest) As SuspendOrderResult
 	<OperationContract()>
 	Function UnSuspendOrder(SourceData As SuspendOrderRequest) As SuspendOrderResult
-
+	<OperationContract()>
+	Function UpdatePartsFromXmlSupportFilesNow(Source As UpdatePartInfoFromSupportFilesNowRequest) As TransactionResult
 End Interface

@@ -9,12 +9,18 @@ Public Enum SchedulerMethods
 End Enum
 <DataContract(Name:="PartStatus")>
 Public Enum PartStatus
-    <EnumMember> NF = 0
-    <EnumMember> OK = 1
-    <EnumMember> DT = 2
-    <EnumMember> ND = 3
+	<EnumMember> NF = 0
+	<EnumMember> OK = 1
+	<EnumMember> DT = 2
+	<EnumMember> ND = 3
 End Enum
 
+Public Enum Part_Definition_Status
+	Unavailable = 0
+	NewleyInserted = 1
+	AvailableForProduction = 2
+	NewlyUpdated = 3
+End Enum
 
 <DataContract(Name:="PlanStatus")>
 Public Enum PlanStatus

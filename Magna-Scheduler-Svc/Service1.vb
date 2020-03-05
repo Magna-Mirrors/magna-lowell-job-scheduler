@@ -27,9 +27,10 @@ Public Class Service1
                                Builder.RegisterType(Of SvcParams)().SingleInstance()
                                Builder.RegisterType(Of MdbData).SingleInstance()
                                Builder.RegisterType(Of BaanOrderHandling).SingleInstance()
-                               Builder.RegisterType(Of ErpSql).SingleInstance()
+							   Builder.RegisterType(Of ErpSql).SingleInstance()
+							   Builder.RegisterType(Of PartInformationUpdateManager).SingleInstance()
 
-                               Con_tainer = Builder.Build()
+							   Con_tainer = Builder.Build()
 
                                Ccont = Con_tainer.Resolve(Of Control)
                                Ccont.StartController(Con_tainer)
@@ -46,9 +47,6 @@ Public Class Service1
         Ccont.StopController()
         Are.Set()
     End Sub
-
-
-
 
 
 End Class

@@ -104,15 +104,23 @@
     <Import Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\AttributeFileLog.vb" />
     <Compile Include="Data\BuildItem.vb" />
+    <Compile Include="Data\Part_Program.vb" />
+    <Compile Include="Data\Part_Attributes.vb" />
+    <Compile Include="Data\Part_Color.vb" />
+    <Compile Include="Data\Part_Definition.vb" />
+    <Compile Include="Data\part_Options.vb" />
     <Compile Include="Data\ProductData.vb" />
     <Compile Include="Data\WipOrder.vb" />
+    <Compile Include="Data\XmlattributesDefinitions.vb" />
     <Compile Include="Interfaces\iSchedulerService.vb" />
     <Compile Include="Structures\ClientRequests\GetNextOrderRequest.vb" />
     <Compile Include="Structures\ClientRequests\GetScheduleRequest.vb" />
     <Compile Include="Structures\ClientRequests\RemoveOrderRequest.vb" />
     <Compile Include="Structures\ClientRequests\SkipOrderRequest.vb" />
     <Compile Include="Structures\ClientRequests\SuspendOrderRequest.vb" />
+    <Compile Include="Structures\ClientRequests\UpdatePartInfoFromSupportFilesNowRequest.vb" />
     <Compile Include="Structures\ClientResponces\GetNextOrderResult.vb" />
     <Compile Include="Structures\ClientResponces\GetScheduleResult.vb" />
     <Compile Include="Structures\ClientResponces\RemoveOrderResult.vb" />
