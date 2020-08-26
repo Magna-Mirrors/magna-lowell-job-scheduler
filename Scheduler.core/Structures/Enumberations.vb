@@ -17,7 +17,7 @@ End Enum
 
 Public Enum Part_Definition_Status
 	Unavailable = 0
-	NewleyInserted = 1
+	NewlyInserted = 1
 	AvailableForProduction = 2
 	NewlyUpdated = 3
 End Enum

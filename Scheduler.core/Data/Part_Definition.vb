@@ -27,7 +27,7 @@
 		CPN = String.Empty
 		SpecialCode = String.Empty
 		Note = String.Empty
-		Status = Part_Definition_Status.NewleyInserted
+		Status = Part_Definition_Status.NewlyInserted
 	End Sub
 
 End Class

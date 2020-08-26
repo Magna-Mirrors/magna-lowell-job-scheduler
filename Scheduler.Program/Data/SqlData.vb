@@ -753,7 +753,7 @@ Public Class SqlData
 				dCmd.Parameters.Add(New SqlClient.SqlParameter("@PartNumber", DbType.String))
 				dCmd.Parameters.Add(New SqlClient.SqlParameter("@Note", DbType.String))
 				dCmd.Parameters.Add(New SqlClient.SqlParameter("@PPT", DbType.Int32))
-				dCmd.Parameters.Add(New SqlClient.SqlParameter("@Status", Part_Definition_Status.NewleyInserted))
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@Status", Part_Definition_Status.NewlyInserted))
 
 				For Each i In Item
 					dCmd.Parameters.Item("@ProgId").Value = i.ProgramId
