@@ -159,15 +159,15 @@ Public Class SvcParams
         Dim p As New SvcParams
         With p
             .SqlSeverName = "Localhost"
-            .SqlDbName = "MagnaLowell"
-            .SqlUserName = "sa"
-            .SqlPw = "1234"
-            .WcfRootPath = "E:\_Projects\M\Magna\Lowell\DainaWare\SupportFiles\WCF\"
+			.SqlDbName = "MagnaLowell"
+			.SqlUserName = "sa"
+			.SqlPw = "Winston"
+			.WcfRootPath = "E:\_Projects\M\Magna\Lowell\DainaWare\SupportFiles\WCF\"
             .PlanTextRootPath = "E:\_Projects\M\Magna\Lowell\DainaWare\SupportFiles\Schedule\"
 			.ErpSqlServername = "HOLMSDBDEV02"  'Test server = "HOLMSDBDEV02" '"holmssqlinst01\instance01"
 			.ErpSqlDbName = "MALshopfloorTD"
             .ErpSqlUserName = "MALsfEOL"
-            .NewErpSqlPw = "test123"
+			.NewErpSqlPw = "Myron.002"
 			.UpdateOrdersIntervalMinutes = 5
 			.UpdatePartInfoTime = New Date(2020, 1, 1, 19, 0, 0)
 			.TcpPortNumberForWcf = 8045

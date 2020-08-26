@@ -8,7 +8,7 @@
 	''' <returns></returns>
 	Public Property CPN As String
 	Public Property NestIdx As Integer
-	Public Property ColorIdx As Integer
+	Public Property ColIdx As Integer
 	Public Property SpecialCode As String
 	Public Property Service As Boolean
 	Public Property StyleIdx As Integer

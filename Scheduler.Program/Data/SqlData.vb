@@ -44,7 +44,7 @@ Public Class SqlData
                          Part_Programs ON Part_Program_Line_Map.ProgramId = Part_Programs.ProgId INNER JOIN
                          Part_Colors ON Part_Programs.ProgId = Part_Colors.ProgId INNER JOIN
                          Part_Options ON Part_Programs.ProgId = Part_Options.ProgId INNER JOIN
-                         Part_Definition ON Part_Program_Line_Map.ProgramId = Part_Definition.ProgramId AND Part_Colors.ColorIdx = Part_Definition.ColorIdx AND 
+                         Part_Definition ON Part_Program_Line_Map.ProgramId = Part_Definition.ProgramId AND Part_Colors.ColIdx = Part_Definition.ColIdx AND 
                          Part_Options.NestIdx = Part_Definition.NestIdx
                          Where (dbo.Part_Program_Line_Map.LineId = {0})"
 
@@ -56,7 +56,7 @@ Public Class SqlData
                          Part_Programs ON Part_Program_Line_Map.ProgramId = Part_Programs.ProgId INNER JOIN
                          Part_Colors ON Part_Programs.ProgId = Part_Colors.ProgId INNER JOIN
                          Part_Options ON Part_Programs.ProgId = Part_Options.ProgId INNER JOIN
-                         Part_Definition ON Part_Program_Line_Map.ProgramId = Part_Definition.ProgramId AND Part_Colors.ColorIdx = Part_Definition.ColorIdx AND 
+                         Part_Definition ON Part_Program_Line_Map.ProgramId = Part_Definition.ProgramId AND Part_Colors.ColIdx = Part_Definition.ColIdx AND 
                          Part_Options.NestIdx = Part_Definition.NestIdx
                        Where (dbo.Part_Program_Line_Map.LineId = {0}) and (dbo.Part_Definition.PartNumber in({1}))"
 
@@ -680,13 +680,13 @@ Public Class SqlData
 				Cn.Open()
 				Dim dCmd As New SqlClient.SqlCommand
 				dCmd.Parameters.Add(New SqlClient.SqlParameter("@ProgId", ProgId))
-				dCmd.CommandText = "Select [Part_Id],[ProgramId],[PartNumber],[CPN],[NestIdx],[ColorIdx],[SpecialCode],[Service],[Note],[StyleIdx],[Status],[PartsPertote]
+				dCmd.CommandText = "Select [Part_Id],[ProgramId],[PartNumber],[CPN],[NestIdx],[ColIdx],[SpecialCode],[Service],[Note],[StyleIdx],[Status],[PartsPertote]
                                                       From [dbo].[Part_Definition] where ProgramId = @ProgId"
 				dCmd.Connection = Cn
 				Using dRead As IDataReader = dCmd.ExecuteReader()
 					While dRead.Read
 						PartInfo.Add(New Part_Definition With {.ProgramId = dRead("ProgramId"), .PartNumber = dRead("partNumber"),
-									  .CPN = dRead("Cpn"), .NestIdx = dRead("nestIdx"), .ColorIdx = dRead("ColorIdx"), .Note = dRead("Note"),
+									  .CPN = dRead("Cpn"), .NestIdx = dRead("nestIdx"), .ColIdx = dRead("ColIdx"), .Note = dRead("Note"),
 									  .PartsPerTote = dRead("PartsPertote"), .Service = dRead("Service")})
 					End While
 				End Using
@@ -705,7 +705,7 @@ Public Class SqlData
 				dCmd.Connection = Cn
 				dCmd.Parameters.Add(New SqlClient.SqlParameter("@ProgId", DbType.Int32))
 				dCmd.Parameters.Add(New SqlClient.SqlParameter("@NestIdx", DbType.Int32))
-				dCmd.Parameters.Add(New SqlClient.SqlParameter("@ColorIdx", DbType.Int32))
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@ColIdx", DbType.Int32))
 				dCmd.Parameters.Add(New SqlClient.SqlParameter("@Service", DbType.Boolean))
 				dCmd.Parameters.Add(New SqlClient.SqlParameter("@PartsPerTote", DbType.Int32))
 				dCmd.Parameters.Add(New SqlClient.SqlParameter("@CPN", DbType.String))
@@ -714,14 +714,14 @@ Public Class SqlData
 				dCmd.Parameters.Add(New SqlClient.SqlParameter("@Part_Id", DbType.Int32))
 				dCmd.Parameters.Add(New SqlClient.SqlParameter("@Status", Part_Definition_Status.NewlyUpdated))
 
-				dCmd.CommandText = "Update Part_Definition set NestIdx = @NestIdx,ColorIdx = @ColorIdx, Status=@Status,
+				dCmd.CommandText = "Update Part_Definition set NestIdx = @NestIdx,ColIdx = @ColIdx, Status=@Status,
 				                       Service = @Service,PartsPerTote = @PartsPerTote,CPN = @CPN,PartNumber = @PartNumber,
 					                   Note = @Note
 				                       where ProgramId = @ProgId And PartNumber = @PartNumber"
 				For Each i In Item
 					dCmd.Parameters.Item("@ProgId").Value = i.ProgramId
 					dCmd.Parameters.Item("@NestIdx").Value = i.NestIdx
-					dCmd.Parameters.Item("@ColorIdx").Value = i.ColorIdx
+					dCmd.Parameters.Item("@ColIdx").Value = i.ColIdx
 					dCmd.Parameters.Item("@Service").Value = i.Service
 					dCmd.Parameters.Item("@PartsPerTote").Value = i.PartsPerTote
 					dCmd.Parameters.Item("@CPN").Value = i.CPN
@@ -746,7 +746,7 @@ Public Class SqlData
 				dCmd.Connection = Cn
 				dCmd.Parameters.Add(New SqlClient.SqlParameter("@ProgId", DbType.Int32))
 				dCmd.Parameters.Add(New SqlClient.SqlParameter("@NestIdx", DbType.Int32))
-				dCmd.Parameters.Add(New SqlClient.SqlParameter("@ColorIdx", DbType.Int32))
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@ColIdx", DbType.Int32))
 				dCmd.Parameters.Add(New SqlClient.SqlParameter("@Service", DbType.Boolean))
 				dCmd.Parameters.Add(New SqlClient.SqlParameter("@PartsPerTote", DbType.Int32))
 				dCmd.Parameters.Add(New SqlClient.SqlParameter("@CPN", DbType.String))
@@ -758,15 +758,15 @@ Public Class SqlData
 				For Each i In Item
 					dCmd.Parameters.Item("@ProgId").Value = i.ProgramId
 					dCmd.Parameters.Item("@NestIdx").Value = i.NestIdx
-					dCmd.Parameters.Item("@ColorIdx").Value = i.ColorIdx
+					dCmd.Parameters.Item("@ColIdx").Value = i.ColIdx
 					dCmd.Parameters.Item("@Service").Value = i.Service
 					dCmd.Parameters.Item("@PartsPerTote").Value = i.PartsPerTote
 					dCmd.Parameters.Item("@CPN").Value = i.CPN
 					dCmd.Parameters.Item("@PartNumber").Value = i.PartNumber
 					dCmd.Parameters.Item("@Note").Value = i.Note
 					dCmd.CommandText = "INSERT INTO [dbo].[Part_Definition]
-										 ([ProgramId],[PartNumber],[CPN],[Status],[NestIdx],[ColorIdx],[Service],[Note],[PartsPerTote])
-										 VALUES(@ProgId,@PartNumber,@CPN,@Status,@NestIdx,@ColorIdx,@Service,@Note,@PartsPerTote)"
+										 ([ProgramId],[PartNumber],[CPN],[Status],[NestIdx],[ColIdx],[Service],[Note],[PartsPerTote])
+										 VALUES(@ProgId,@PartNumber,@CPN,@Status,@NestIdx,@ColIdx,@Service,@Note,@PartsPerTote)"
 					dCmd.ExecuteNonQuery()
 				Next
 				Return Item.Count
@@ -785,13 +785,13 @@ Public Class SqlData
 				Cn.Open()
 				Dim dCmd As New SqlClient.SqlCommand
 				dCmd.Parameters.Add(New SqlClient.SqlParameter("@ProgId", ProgId))
-				dCmd.CommandText = "Select [ColorId],[Name],[ProgId],[ColorIdx]
+				dCmd.CommandText = "Select [ColorId],[Name],[ProgId],[ColIdx]
                                                       From [dbo].[Part_Colors] where ProgId = @ProgId"
 				dCmd.Connection = Cn
 				Using dRead As IDataReader = dCmd.ExecuteReader()
 					While dRead.Read
 						PartColor.Add(New Part_Color With {.ProgId = dRead("ProgId"), .ColorId = dRead("ColorId"),
-									  .ColorIdx = dRead("ColorIdx"), .Name = dRead("Name")})
+									  .ColIdx = dRead("ColIdx"), .Name = dRead("Name")})
 					End While
 				End Using
 			End Using
@@ -809,14 +809,14 @@ Public Class SqlData
 				Cn.Open()
 				dCmd.Connection = Cn
 				dCmd.Parameters.Add(New SqlClient.SqlParameter("@Name", DbType.String))
-				dCmd.Parameters.Add(New SqlClient.SqlParameter("@ColorIdx", DbType.String))
+				dCmd.Parameters.Add(New SqlClient.SqlParameter("@ColIdx", DbType.String))
 				dCmd.Parameters.Add(New SqlClient.SqlParameter("@ProgId", DbType.String))
 
 				For Each i In Item
 					dCmd.Parameters.Item("@Name").Value = i.Name
-					dCmd.Parameters.Item("@ColorIdx").Value = i.ColorIdx
+					dCmd.Parameters.Item("@ColIdx").Value = i.ColIdx
 					dCmd.Parameters.Item("@ProgId").Value = i.ProgId
-					dCmd.CommandText = "Update Part_Color set Name = @Name where ProgId = @ProgId and ColorIdx = @ColorIdx"
+					dCmd.CommandText = "Update Part_Color set Name = @Name where ProgId = @ProgId and ColIdx = @ColIdx"
 					dCmd.ExecuteNonQuery()
 				Next
 				Return Item.Count

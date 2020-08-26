@@ -136,8 +136,8 @@ Public Class PartInformationUpdateManager
 
 			'Color Id Change check
 			If xColoridx IsNot Nothing AndAlso IsNumeric(xColoridx) Then
-				If DB_Part.ColorIdx <> CInt(xColoridx) Then
-					DB_Part.ColorIdx = CInt(xColoridx)
+				If DB_Part.ColIdx <> CInt(xColoridx) Then
+					DB_Part.ColIdx = CInt(xColoridx)
 					If Not DB_Part.AddIt Then
 						DB_Part.UpdateIt = True
 					End If
@@ -204,7 +204,7 @@ Public Class PartInformationUpdateManager
 		Try
 			If Colors IsNot Nothing Then
 				For Each c In cls
-					Dim ColItm = (From y In Colors Where y.ColorIdx = c.AttributeValue).FirstOrDefault
+					Dim ColItm = (From y In Colors Where y.ColIdx = c.AttributeValue).FirstOrDefault
 					If ColItm IsNot Nothing Then
 						If ColItm.Name <> c.AttributeValueDesc Then
 							_Log.SendAlert(New Scheduler.core.LogEventArgs(String.Format("ColorId Name CHanges From {0} to {1} for ColorIdx {2} ProgId {3}) ", ColItm.Name, c.AttributeValueDesc, c.AttributeValue, Progid), "Color Name"))
