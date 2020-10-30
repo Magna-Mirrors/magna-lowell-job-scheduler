@@ -159,9 +159,9 @@ Public Class SvcParams
         Dim p As New SvcParams
         With p
             .SqlSeverName = "Localhost"
-			.SqlDbName = "MagnaLowell"
+			.SqlDbName = "MagnaLowellB1"
 			.SqlUserName = "sa"
-			.SqlPw = "Winston"
+			.SqlPw = "Winston1"
 			.WcfRootPath = "E:\_Projects\M\Magna\Lowell\DainaWare\SupportFiles\WCF\"
             .PlanTextRootPath = "E:\_Projects\M\Magna\Lowell\DainaWare\SupportFiles\Schedule\"
 			.ErpSqlServername = "HOLMSDBDEV02"  'Test server = "HOLMSDBDEV02" '"holmssqlinst01\instance01"

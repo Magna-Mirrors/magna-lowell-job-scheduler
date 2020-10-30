@@ -816,7 +816,7 @@ Public Class SqlData
 					dCmd.Parameters.Item("@Name").Value = i.Name
 					dCmd.Parameters.Item("@ColIdx").Value = i.ColIdx
 					dCmd.Parameters.Item("@ProgId").Value = i.ProgId
-					dCmd.CommandText = "Update Part_Color set Name = @Name where ProgId = @ProgId and ColIdx = @ColIdx"
+					dCmd.CommandText = "Update Part_Colors set Name = @Name where ProgId = @ProgId and ColIdx = @ColIdx"
 					dCmd.ExecuteNonQuery()
 				Next
 				Return Item.Count
