@@ -142,6 +142,7 @@ Public Class MainView
                             P.CreationDate = Now
                             P.DueDate = Now
                             P.Chk = "*"
+                            '                            P.Truck = False
                             P.CustOrderId = CustOrderId
                             Litms.Add(P)
                         End If
@@ -181,7 +182,7 @@ Public Class MainView
                 Dim Litms As List(Of PlanItem) = DirectCast(PlandataSource.DataSource, List(Of PlanItem))
                 For Each I In Litms
                     If I.Chk <> "OK" Then
-                        '   I.Chk = "PN?"
+                        'I.Chk = "PN?"
                     End If
                 Next
             End If

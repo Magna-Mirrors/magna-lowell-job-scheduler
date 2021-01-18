@@ -59,7 +59,7 @@ Public Class PlanItem
     <DataMember>
     Public Property Truck As Boolean
         Get
-            Return Flags.HasFlag(OrderFlags.Truck)
+            Return CBool(Flags.HasFlag(OrderFlags.Truck))
         End Get
         Set(value As Boolean)
             If value Then

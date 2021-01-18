@@ -214,10 +214,10 @@ Partial Class MainView
         'Truck
         '
         Me.Truck.DataPropertyName = "Truck"
-        Me.Truck.FalseValue = "0"
+        Me.Truck.FalseValue = 0
         Me.Truck.HeaderText = "Truck"
         Me.Truck.Name = "Truck"
-        Me.Truck.TrueValue = "1"
+        Me.Truck.TrueValue = 1
         '
         'Chk
         '
